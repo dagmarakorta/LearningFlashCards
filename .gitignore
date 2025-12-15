@@ -1,0 +1,44 @@
+# Build output
+bin/
+obj/
+**/bin/
+**/obj/
+
+# IDE
+.vs/
+.idea/
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
+*.userprefs
+
+# Logs
+*.log
+*.tlog
+
+# Testing
+TestResult*/
+[Tt]est[Rr]esult*/
+*.coverage
+*.coveragexml
+
+# Packages
+packages/
+*.nupkg
+*.snupkg
+
+# OS
+[Tt]humbs.db
+*.DS_Store
+
+# MAUI / mobile artifacts
+*.apk
+*.aab
+*.ipa
+*.app
+*.xcarchive
+*.xcuserstate
+*.xcworkspace
+*.xcuserdata
+*.crash
