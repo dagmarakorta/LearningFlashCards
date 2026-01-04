@@ -75,4 +75,22 @@ public class TagsControllerTests
         var saved = Assert.IsType<Tag>(ok.Value);
         Assert.Equal(ownerId, saved.OwnerId);
     }
+
+    [Fact]
+    public async Task SoftDeleteTag_ReturnsNotFound_WhenHandlerNotFound()
+    {
+        var handlerMock = new Mock<TagsHandler>(MockBehavior.Strict, null!);
+        handlerMock.Setup(h => h.SoftDeleteTagAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(HandlerResult<string?>.NotFound());
+
+        var controller = new TagsController(handlerMock.Object)
+        {
+            ControllerContext = ControllerContextFactory.WithOwner(Guid.NewGuid())
+        };
+
+        var result = await controller.SoftDeleteTag(Guid.NewGuid(), CancellationToken.None);
+
+        var notFound = Assert.IsType<ObjectResult>(result);
+        Assert.Equal(StatusCodes.Status404NotFound, notFound.StatusCode);
+    }
 }

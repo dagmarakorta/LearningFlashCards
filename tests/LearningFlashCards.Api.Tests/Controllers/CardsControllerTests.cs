@@ -92,4 +92,22 @@ public class CardsControllerTests
         var saved = Assert.IsType<Card>(ok.Value);
         Assert.Equal(deckId, saved.DeckId);
     }
+
+    [Fact]
+    public async Task SoftDeleteCard_ReturnsNotFound_WhenHandlerNotFound()
+    {
+        var handlerMock = new Mock<CardsHandler>(MockBehavior.Strict, null!, null!);
+        handlerMock.Setup(h => h.SoftDeleteCardAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(HandlerResult<string?>.NotFound());
+
+        var controller = new CardsController(handlerMock.Object)
+        {
+            ControllerContext = ControllerContextFactory.WithOwner(Guid.NewGuid())
+        };
+
+        var result = await controller.SoftDeleteCard(Guid.NewGuid(), Guid.NewGuid(), CancellationToken.None);
+
+        var notFound = Assert.IsType<ObjectResult>(result);
+        Assert.Equal(StatusCodes.Status404NotFound, notFound.StatusCode);
+    }
 }

@@ -3,7 +3,6 @@ using LearningFlashCards.Api.Services;
 using LearningFlashCards.Core.Domain.Entities;
 using LearningFlashCards.Api.Tests.TestUtilities;
 using LearningFlashCards.Infrastructure.Persistence.Repositories;
-using LearningFlashCards.Api.Tests.TestUtilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -82,5 +81,23 @@ public class DecksControllerTests
         var decks = Assert.IsAssignableFrom<IReadOnlyList<Deck>>(ok.Value);
         Assert.Single(decks);
         Assert.Equal("Mine", decks.First().Name);
+    }
+
+    [Fact]
+    public async Task SoftDeleteDeck_ReturnsNotFound_WhenHandlerNotFound()
+    {
+        var handlerMock = new Mock<DeckHandler>(MockBehavior.Strict, null!);
+        handlerMock.Setup(h => h.SoftDeleteDeckAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(HandlerResult<string?>.NotFound());
+
+        var controller = new DecksController(handlerMock.Object)
+        {
+            ControllerContext = ControllerContextFactory.WithOwner(Guid.NewGuid())
+        };
+
+        var result = await controller.SoftDeleteDeck(Guid.NewGuid(), CancellationToken.None);
+
+        var notFound = Assert.IsType<ObjectResult>(result);
+        Assert.Equal(StatusCodes.Status404NotFound, notFound.StatusCode);
     }
 }

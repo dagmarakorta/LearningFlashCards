@@ -110,4 +110,20 @@ public class UsersControllerTests
         var ownerId = Guid.Parse(controller.HttpContext.Request.Headers["X-Owner-Id"]!);
         Assert.Equal(ownerId, updated.Id);
     }
+
+    [Fact]
+    public async Task UpsertProfile_ReturnsBadRequest_WhenHeaderMissing()
+    {
+        using var dbContext = Api.Tests.TestUtilities.TestDbContextFactory.CreateContext();
+        var repository = new UserProfileRepository(dbContext);
+        var handler = new CreateUserProfileHandler(repository);
+        var controller = new UsersController(repository, handler)
+        {
+            ControllerContext = ControllerContextFactory.WithoutOwner()
+        };
+
+        var result = await controller.UpsertProfile(new UserProfile(), CancellationToken.None);
+
+        Assert.IsType<BadRequestObjectResult>(result.Result);
+    }
 }
