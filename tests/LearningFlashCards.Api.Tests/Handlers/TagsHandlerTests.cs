@@ -51,4 +51,57 @@ public class TagsHandlerTests
         Assert.False(result.IsSuccess);
         Assert.Equal(StatusCodes.Status403Forbidden, result.StatusCode);
     }
+
+    [Fact]
+    public async Task SoftDeleteTag_ReturnsNoContent_WhenOwned()
+    {
+        using var dbContext = TestDbContextFactory.CreateContext();
+        var repository = new TagRepository(dbContext);
+        var handler = new TagsHandler(repository);
+        var ownerId = Guid.NewGuid();
+        var tagId = Guid.NewGuid();
+
+        dbContext.Tags.Add(new Tag
+        {
+            Id = tagId,
+            OwnerId = ownerId,
+            Name = "Tag",
+            RowVersion = Guid.NewGuid().ToByteArray()
+        });
+        await dbContext.SaveChangesAsync();
+
+        var result = await handler.SoftDeleteTagAsync(tagId, ownerId, CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(StatusCodes.Status204NoContent, result.StatusCode);
+
+        var stored = await repository.GetAsync(tagId, CancellationToken.None);
+        Assert.NotNull(stored);
+        Assert.NotNull(stored!.DeletedAt);
+    }
+
+    [Fact]
+    public async Task SoftDeleteTag_ReturnsNotFound_WhenNotOwned()
+    {
+        using var dbContext = TestDbContextFactory.CreateContext();
+        var repository = new TagRepository(dbContext);
+        var handler = new TagsHandler(repository);
+        var ownerId = Guid.NewGuid();
+        var otherOwnerId = Guid.NewGuid();
+        var tagId = Guid.NewGuid();
+
+        dbContext.Tags.Add(new Tag
+        {
+            Id = tagId,
+            OwnerId = otherOwnerId,
+            Name = "Tag",
+            RowVersion = Guid.NewGuid().ToByteArray()
+        });
+        await dbContext.SaveChangesAsync();
+
+        var result = await handler.SoftDeleteTagAsync(tagId, ownerId, CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(StatusCodes.Status404NotFound, result.StatusCode);
+    }
 }

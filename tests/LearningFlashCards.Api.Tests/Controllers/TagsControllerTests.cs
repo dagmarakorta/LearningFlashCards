@@ -1,0 +1,78 @@
+using LearningFlashCards.Api.Controllers;
+using LearningFlashCards.Api.Services;
+using LearningFlashCards.Core.Domain.Entities;
+using LearningFlashCards.Api.Tests.TestUtilities;
+using LearningFlashCards.Infrastructure.Persistence.Repositories;
+using LearningFlashCards.Api.Tests.TestUtilities;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Moq;
+
+namespace LearningFlashCards.Api.Tests.Controllers;
+
+public class TagsControllerTests
+{
+    [Fact]
+    public async Task GetTags_ReturnsBadRequest_WhenHeaderMissing()
+    {
+        var handler = Mock.Of<TagsHandler>();
+        var controller = new TagsController(handler)
+        {
+            ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext()
+            }
+        };
+
+        var result = await controller.GetTags(CancellationToken.None);
+
+        Assert.IsType<BadRequestObjectResult>(result.Result);
+    }
+
+    [Fact]
+    public async Task UpsertTag_ReturnsForbidden_FromHandler()
+    {
+        var handlerMock = new Mock<TagsHandler>(MockBehavior.Strict, null!);
+        handlerMock.Setup(h => h.UpsertTagAsync(It.IsAny<Tag>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(HandlerResult<Tag>.Forbidden());
+
+        var controller = new TagsController(handlerMock.Object)
+        {
+            ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext()
+            }
+        };
+        controller.HttpContext.Request.Headers["X-Owner-Id"] = Guid.NewGuid().ToString();
+
+        var result = await controller.UpsertTag(new Tag(), CancellationToken.None);
+
+        var forbidden = Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(StatusCodes.Status403Forbidden, forbidden.StatusCode);
+    }
+
+    [Fact]
+    public async Task UpsertTag_ReturnsOk_WhenOwned()
+    {
+        using var dbContext = Api.Tests.TestUtilities.TestDbContextFactory.CreateContext();
+        var repository = new TagRepository(dbContext);
+        var handler = new TagsHandler(repository);
+        var ownerId = Guid.NewGuid();
+
+        var controller = new TagsController(handler)
+        {
+            ControllerContext = ControllerContextFactory.WithOwner(ownerId)
+        };
+
+        var tag = new Tag
+        {
+            Name = "Tag"
+        };
+
+        var result = await controller.UpsertTag(tag, CancellationToken.None);
+
+        var ok = Assert.IsType<ObjectResult>(result.Result);
+        var saved = Assert.IsType<Tag>(ok.Value);
+        Assert.Equal(ownerId, saved.OwnerId);
+    }
+}

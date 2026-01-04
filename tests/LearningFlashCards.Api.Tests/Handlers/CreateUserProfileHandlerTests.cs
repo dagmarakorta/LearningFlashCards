@@ -59,4 +59,43 @@ public class CreateUserProfileHandlerTests
         Assert.NotNull(result.Profile.RowVersion);
         Assert.NotEmpty(result.Profile.RowVersion);
     }
+
+    [Fact]
+    public async Task HandleAsync_ReturnsBadRequest_WhenUnsafeCharactersPresent()
+    {
+        using var dbContext = TestDbContextFactory.CreateContext();
+        var repository = new UserProfileRepository(dbContext);
+        var handler = new CreateUserProfileHandler(repository);
+
+        var request = new CreateUserRequest
+        {
+            Email = "bad/<email@example.com>",
+            DisplayName = "Bad/User"
+        };
+
+        var result = await handler.HandleAsync(request, CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task HandleAsync_ReturnsBadRequest_WhenAvatarUrlInvalid()
+    {
+        using var dbContext = TestDbContextFactory.CreateContext();
+        var repository = new UserProfileRepository(dbContext);
+        var handler = new CreateUserProfileHandler(repository);
+
+        var request = new CreateUserRequest
+        {
+            Email = "good@example.com",
+            DisplayName = "Good User",
+            AvatarUrl = "not-a-url"
+        };
+
+        var result = await handler.HandleAsync(request, CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
+    }
 }
