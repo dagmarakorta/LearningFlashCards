@@ -32,7 +32,16 @@ public class DeckRepository : IDeckRepository
 
     public async Task UpsertAsync(Deck deck, CancellationToken cancellationToken)
     {
-        _db.Decks.Update(deck);
+        var exists = await _db.Decks.AsNoTracking().AnyAsync(d => d.Id == deck.Id, cancellationToken);
+        if (exists)
+        {
+            _db.Decks.Update(deck);
+        }
+        else
+        {
+            _db.Decks.Add(deck);
+        }
+
         await _db.SaveChangesAsync(cancellationToken);
     }
 

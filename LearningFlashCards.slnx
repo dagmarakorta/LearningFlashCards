@@ -1,6 +1,10 @@
 <Solution>
   <Project Path="src/LearningFlashCards.Core/LearningFlashCards.Core.csproj" />
   <Project Path="src/LearningFlashCards.Infrastructure/LearningFlashCards.Infrastructure.csproj" Id="61f25741-ed92-43fe-8da8-579c33e083dc" />
+  <Folder Name="/tests/">
+    <Project Path="tests/LearningFlashCards.Api.Tests/LearningFlashCards.Api.Tests.csproj" />
+    <Project Path="tests/LearningFlashCards.Infrastructure.Tests/LearningFlashCards.Infrastructure.Tests.csproj" />
+  </Folder>
   <Project Path="src/LearningFlashCards.Api/LearningFlashCards.Api.csproj" />
   <Project Path="src/LearningFlashCards.Maui/LearningFlashCards.Maui.csproj">
     <Deploy Solution="Debug|*" />

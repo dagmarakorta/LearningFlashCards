@@ -30,7 +30,16 @@ public class TagRepository : ITagRepository
 
     public async Task UpsertAsync(Tag tag, CancellationToken cancellationToken)
     {
-        _db.Tags.Update(tag);
+        var exists = await _db.Tags.AsNoTracking().AnyAsync(t => t.Id == tag.Id, cancellationToken);
+        if (exists)
+        {
+            _db.Tags.Update(tag);
+        }
+        else
+        {
+            _db.Tags.Add(tag);
+        }
+
         await _db.SaveChangesAsync(cancellationToken);
     }
 
