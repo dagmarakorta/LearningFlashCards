@@ -29,7 +29,9 @@ public class DeckConfiguration : IEntityTypeConfiguration<Deck>
             .IsRequired();
 
         builder.Property(d => d.RowVersion)
-            .IsRowVersion();
+            .IsRequired()
+            .IsConcurrencyToken()
+            .ValueGeneratedNever();
 
         builder.HasIndex(d => new { d.OwnerId, d.ModifiedAt });
         builder.HasIndex(d => new { d.OwnerId, d.DeletedAt });

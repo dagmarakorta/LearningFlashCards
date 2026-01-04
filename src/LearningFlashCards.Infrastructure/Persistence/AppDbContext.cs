@@ -29,13 +29,16 @@ public class AppDbContext : DbContext
             if (entry.State == EntityState.Modified)
             {
                 entry.Entity.ModifiedAt = utcNow;
+                entry.Entity.RowVersion = Guid.NewGuid().ToByteArray();
             }
             else if (entry.State == EntityState.Added)
             {
                 entry.Entity.ModifiedAt = utcNow;
+                entry.Entity.RowVersion = Guid.NewGuid().ToByteArray();
             }
         }
 
+        // TODO: Consider moving to a database provider with native rowversion support to drop the manual token updates.
         return base.SaveChangesAsync(cancellationToken);
     }
 }

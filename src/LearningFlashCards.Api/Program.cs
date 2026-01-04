@@ -1,5 +1,7 @@
 using LearningFlashCards.Api.Services;
 using LearningFlashCards.Infrastructure;
+using LearningFlashCards.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,6 +23,13 @@ builder.Services.AddScoped<CardsHandler>();
 builder.Services.AddScoped<TagsHandler>();
 
 var app = builder.Build();
+
+// Apply pending migrations on startup to ensure the database schema is up to date.
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+}
 
 if (app.Environment.IsDevelopment())
 {

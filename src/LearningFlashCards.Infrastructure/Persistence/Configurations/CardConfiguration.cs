@@ -33,7 +33,9 @@ public class CardConfiguration : IEntityTypeConfiguration<Card>
             .IsRequired();
 
         builder.Property(c => c.RowVersion)
-            .IsRowVersion();
+            .IsRequired()
+            .IsConcurrencyToken()
+            .ValueGeneratedNever();
 
         builder.HasIndex(c => new { c.DeckId, c.ModifiedAt });
         builder.HasIndex(c => new { c.DeckId, c.DeletedAt });

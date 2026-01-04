@@ -33,7 +33,9 @@ public class UserProfileConfiguration : IEntityTypeConfiguration<UserProfile>
             .IsRequired();
 
         builder.Property(u => u.RowVersion)
-            .IsRowVersion();
+            .IsRequired()
+            .IsConcurrencyToken()
+            .ValueGeneratedNever();
 
         builder.HasIndex(u => u.Email).IsUnique();
     }

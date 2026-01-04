@@ -26,7 +26,9 @@ public class TagConfiguration : IEntityTypeConfiguration<Tag>
             .IsRequired();
 
         builder.Property(t => t.RowVersion)
-            .IsRowVersion();
+            .IsRequired()
+            .IsConcurrencyToken()
+            .ValueGeneratedNever();
 
         builder.HasIndex(t => new { t.OwnerId, t.ModifiedAt });
         builder.HasIndex(t => new { t.OwnerId, t.DeletedAt });
