@@ -1,4 +1,4 @@
-using LearningFlashCards.Core.Application.Abstractions.Repositories;
+using LearningFlashCards.Api.Services;
 using LearningFlashCards.Core.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,13 +7,11 @@ namespace LearningFlashCards.Api.Controllers;
 [Route("api/decks/{deckId:guid}/[controller]")]
 public class CardsController : ApiControllerBase
 {
-    private readonly ICardRepository _cardRepository;
-    private readonly IDeckRepository _deckRepository;
+    private readonly CardsHandler _cardsHandler;
 
-    public CardsController(ICardRepository cardRepository, IDeckRepository deckRepository)
+    public CardsController(CardsHandler cardsHandler)
     {
-        _cardRepository = cardRepository;
-        _deckRepository = deckRepository;
+        _cardsHandler = cardsHandler;
     }
 
     [HttpGet]
@@ -24,14 +22,8 @@ public class CardsController : ApiControllerBase
             return BadRequest("Missing X-Owner-Id header.");
         }
 
-        var deck = await _deckRepository.GetAsync(deckId, cancellationToken);
-        if (deck is null || deck.DeletedAt != null || deck.OwnerId != ownerId)
-        {
-            return NotFound();
-        }
-
-        var cards = await _cardRepository.GetByDeckAsync(deckId, cancellationToken);
-        return Ok(cards);
+        var result = await _cardsHandler.GetCardsAsync(deckId, ownerId, cancellationToken);
+        return ToActionResult(result);
     }
 
     [HttpGet("{cardId:guid}")]
@@ -42,19 +34,8 @@ public class CardsController : ApiControllerBase
             return BadRequest("Missing X-Owner-Id header.");
         }
 
-        var deck = await _deckRepository.GetAsync(deckId, cancellationToken);
-        if (deck is null || deck.DeletedAt != null || deck.OwnerId != ownerId)
-        {
-            return NotFound();
-        }
-
-        var card = await _cardRepository.GetAsync(cardId, cancellationToken);
-        if (card is null || card.DeletedAt != null || card.DeckId != deckId)
-        {
-            return NotFound();
-        }
-
-        return Ok(card);
+        var result = await _cardsHandler.GetCardAsync(deckId, cardId, ownerId, cancellationToken);
+        return ToActionResult(result);
     }
 
     [HttpPost]
@@ -65,17 +46,8 @@ public class CardsController : ApiControllerBase
             return BadRequest("Missing X-Owner-Id header.");
         }
 
-        var deck = await _deckRepository.GetAsync(deckId, cancellationToken);
-        if (deck is null || deck.DeletedAt != null || deck.OwnerId != ownerId)
-        {
-            return NotFound();
-        }
-
-        card.DeckId = deckId;
-        card.ModifiedAt = DateTimeOffset.UtcNow;
-
-        await _cardRepository.UpsertAsync(card, cancellationToken);
-        return Ok(card);
+        var result = await _cardsHandler.UpsertCardAsync(deckId, card, ownerId, cancellationToken);
+        return ToActionResult(result);
     }
 
     [HttpDelete("{cardId:guid}")]
@@ -86,20 +58,17 @@ public class CardsController : ApiControllerBase
             return BadRequest("Missing X-Owner-Id header.");
         }
 
-        var deck = await _deckRepository.GetAsync(deckId, cancellationToken);
-        if (deck is null || deck.DeletedAt != null || deck.OwnerId != ownerId)
+        var result = await _cardsHandler.SoftDeleteCardAsync(deckId, cardId, ownerId, cancellationToken);
+        return result.IsSuccess ? StatusCode(result.StatusCode) : StatusCode(result.StatusCode, result.Error);
+    }
+
+    private ActionResult ToActionResult<T>(HandlerResult<T> result)
+    {
+        if (!result.IsSuccess)
         {
-            return NotFound();
+            return StatusCode(result.StatusCode, result.Error);
         }
 
-        var card = await _cardRepository.GetAsync(cardId, cancellationToken);
-        if (card is null || card.DeletedAt != null || card.DeckId != deckId)
-        {
-            return NotFound();
-        }
-
-        var deletedAt = DateTimeOffset.UtcNow;
-        await _cardRepository.SoftDeleteAsync(cardId, deletedAt, cancellationToken);
-        return NoContent();
+        return StatusCode(result.StatusCode, result.Value);
     }
 }

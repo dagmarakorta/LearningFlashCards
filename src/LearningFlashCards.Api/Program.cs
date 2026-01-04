@@ -1,3 +1,4 @@
+using LearningFlashCards.Api.Services;
 using LearningFlashCards.Infrastructure;
 using Microsoft.OpenApi.Models;
 
@@ -15,6 +16,9 @@ builder.Services.AddSwaggerGen(options =>
 });
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddScoped<CreateUserProfileHandler>();
+builder.Services.AddScoped<DeckHandler>();
+builder.Services.AddScoped<CardsHandler>();
+builder.Services.AddScoped<TagsHandler>();
 
 var app = builder.Build();
 

@@ -1,4 +1,4 @@
-using LearningFlashCards.Core.Application.Abstractions.Repositories;
+using LearningFlashCards.Api.Services;
 using LearningFlashCards.Core.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,11 +7,11 @@ namespace LearningFlashCards.Api.Controllers;
 [Route("api/[controller]")]
 public class DecksController : ApiControllerBase
 {
-    private readonly IDeckRepository _deckRepository;
+    private readonly DeckHandler _deckHandler;
 
-    public DecksController(IDeckRepository deckRepository)
+    public DecksController(DeckHandler deckHandler)
     {
-        _deckRepository = deckRepository;
+        _deckHandler = deckHandler;
     }
 
     [HttpGet]
@@ -22,8 +22,8 @@ public class DecksController : ApiControllerBase
             return BadRequest("Missing X-Owner-Id header.");
         }
 
-        var decks = await _deckRepository.GetByOwnerAsync(ownerId, cancellationToken);
-        return Ok(decks);
+        var result = await _deckHandler.GetDecksAsync(ownerId, cancellationToken);
+        return StatusCode(result.StatusCode, result.Value);
     }
 
     [HttpGet("{deckId:guid}")]
@@ -34,13 +34,8 @@ public class DecksController : ApiControllerBase
             return BadRequest("Missing X-Owner-Id header.");
         }
 
-        var deck = await _deckRepository.GetAsync(deckId, cancellationToken);
-        if (deck is null || deck.DeletedAt != null || deck.OwnerId != ownerId)
-        {
-            return NotFound();
-        }
-
-        return Ok(deck);
+        var result = await _deckHandler.GetDeckAsync(deckId, ownerId, cancellationToken);
+        return ToActionResult(result);
     }
 
     [HttpPost]
@@ -51,18 +46,8 @@ public class DecksController : ApiControllerBase
             return BadRequest("Missing X-Owner-Id header.");
         }
 
-        if (deck.OwnerId == Guid.Empty)
-        {
-            deck.OwnerId = ownerId;
-        }
-        else if (deck.OwnerId != ownerId)
-        {
-            return Forbid();
-        }
-
-        deck.ModifiedAt = DateTimeOffset.UtcNow;
-        await _deckRepository.UpsertAsync(deck, cancellationToken);
-        return Ok(deck);
+        var result = await _deckHandler.UpsertDeckAsync(deck, ownerId, cancellationToken);
+        return ToActionResult(result);
     }
 
     [HttpDelete("{deckId:guid}")]
@@ -73,14 +58,17 @@ public class DecksController : ApiControllerBase
             return BadRequest("Missing X-Owner-Id header.");
         }
 
-        var existing = await _deckRepository.GetAsync(deckId, cancellationToken);
-        if (existing is null || existing.DeletedAt != null || existing.OwnerId != ownerId)
+        var result = await _deckHandler.SoftDeleteDeckAsync(deckId, ownerId, cancellationToken);
+        return result.IsSuccess ? StatusCode(result.StatusCode) : StatusCode(result.StatusCode, result.Error);
+    }
+
+    private ActionResult ToActionResult<T>(HandlerResult<T> result)
+    {
+        if (!result.IsSuccess)
         {
-            return NotFound();
+            return StatusCode(result.StatusCode, result.Error);
         }
 
-        var deletedAt = DateTimeOffset.UtcNow;
-        await _deckRepository.SoftDeleteAsync(deckId, deletedAt, cancellationToken);
-        return NoContent();
+        return StatusCode(result.StatusCode, result.Value);
     }
 }

@@ -1,4 +1,4 @@
-using LearningFlashCards.Core.Application.Abstractions.Repositories;
+using LearningFlashCards.Api.Services;
 using LearningFlashCards.Core.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,11 +7,11 @@ namespace LearningFlashCards.Api.Controllers;
 [Route("api/[controller]")]
 public class TagsController : ApiControllerBase
 {
-    private readonly ITagRepository _tagRepository;
+    private readonly TagsHandler _tagsHandler;
 
-    public TagsController(ITagRepository tagRepository)
+    public TagsController(TagsHandler tagsHandler)
     {
-        _tagRepository = tagRepository;
+        _tagsHandler = tagsHandler;
     }
 
     [HttpGet]
@@ -22,8 +22,8 @@ public class TagsController : ApiControllerBase
             return BadRequest("Missing X-Owner-Id header.");
         }
 
-        var tags = await _tagRepository.GetByOwnerAsync(ownerId, cancellationToken);
-        return Ok(tags);
+        var result = await _tagsHandler.GetTagsAsync(ownerId, cancellationToken);
+        return StatusCode(result.StatusCode, result.Value);
     }
 
     [HttpPost]
@@ -34,18 +34,8 @@ public class TagsController : ApiControllerBase
             return BadRequest("Missing X-Owner-Id header.");
         }
 
-        if (tag.OwnerId == Guid.Empty)
-        {
-            tag.OwnerId = ownerId;
-        }
-        else if (tag.OwnerId != ownerId)
-        {
-            return Forbid();
-        }
-
-        tag.ModifiedAt = DateTimeOffset.UtcNow;
-        await _tagRepository.UpsertAsync(tag, cancellationToken);
-        return Ok(tag);
+        var result = await _tagsHandler.UpsertTagAsync(tag, ownerId, cancellationToken);
+        return ToActionResult(result);
     }
 
     [HttpDelete("{tagId:guid}")]
@@ -56,14 +46,17 @@ public class TagsController : ApiControllerBase
             return BadRequest("Missing X-Owner-Id header.");
         }
 
-        var existing = await _tagRepository.GetAsync(tagId, cancellationToken);
-        if (existing is null || existing.DeletedAt != null || existing.OwnerId != ownerId)
+        var result = await _tagsHandler.SoftDeleteTagAsync(tagId, ownerId, cancellationToken);
+        return result.IsSuccess ? StatusCode(result.StatusCode) : StatusCode(result.StatusCode, result.Error);
+    }
+
+    private ActionResult ToActionResult<T>(HandlerResult<T> result)
+    {
+        if (!result.IsSuccess)
         {
-            return NotFound();
+            return StatusCode(result.StatusCode, result.Error);
         }
 
-        var deletedAt = DateTimeOffset.UtcNow;
-        await _tagRepository.SoftDeleteAsync(tagId, deletedAt, cancellationToken);
-        return NoContent();
+        return StatusCode(result.StatusCode, result.Value);
     }
 }
