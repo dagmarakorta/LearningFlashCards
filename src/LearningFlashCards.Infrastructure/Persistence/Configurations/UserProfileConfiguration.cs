@@ -31,5 +31,10 @@ public class UserProfileConfiguration : IEntityTypeConfiguration<UserProfile>
 
         builder.Property(u => u.ModifiedAt)
             .IsRequired();
+
+        builder.Property(u => u.RowVersion)
+            .IsRowVersion();
+
+        builder.HasIndex(u => u.Email).IsUnique();
     }
 }

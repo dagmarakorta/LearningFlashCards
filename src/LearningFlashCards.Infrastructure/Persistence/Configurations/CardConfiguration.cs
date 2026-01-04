@@ -32,6 +32,12 @@ public class CardConfiguration : IEntityTypeConfiguration<Card>
         builder.Property(c => c.ModifiedAt)
             .IsRequired();
 
+        builder.Property(c => c.RowVersion)
+            .IsRowVersion();
+
+        builder.HasIndex(c => new { c.DeckId, c.ModifiedAt });
+        builder.HasIndex(c => new { c.DeckId, c.DeletedAt });
+
         builder.OwnsOne(c => c.State, owned =>
         {
             owned.Property(s => s.DueAt).IsRequired();

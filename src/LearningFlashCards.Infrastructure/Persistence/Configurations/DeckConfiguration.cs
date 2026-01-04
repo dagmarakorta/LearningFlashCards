@@ -28,6 +28,12 @@ public class DeckConfiguration : IEntityTypeConfiguration<Deck>
         builder.Property(d => d.ModifiedAt)
             .IsRequired();
 
+        builder.Property(d => d.RowVersion)
+            .IsRowVersion();
+
+        builder.HasIndex(d => new { d.OwnerId, d.ModifiedAt });
+        builder.HasIndex(d => new { d.OwnerId, d.DeletedAt });
+
         builder.HasMany(d => d.Cards)
             .WithOne()
             .HasForeignKey(c => c.DeckId)

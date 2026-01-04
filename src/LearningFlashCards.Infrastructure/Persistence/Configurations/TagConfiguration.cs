@@ -24,5 +24,12 @@ public class TagConfiguration : IEntityTypeConfiguration<Tag>
 
         builder.Property(t => t.ModifiedAt)
             .IsRequired();
+
+        builder.Property(t => t.RowVersion)
+            .IsRowVersion();
+
+        builder.HasIndex(t => new { t.OwnerId, t.ModifiedAt });
+        builder.HasIndex(t => new { t.OwnerId, t.DeletedAt });
+        builder.HasIndex(t => new { t.OwnerId, t.Name }).IsUnique();
     }
 }
