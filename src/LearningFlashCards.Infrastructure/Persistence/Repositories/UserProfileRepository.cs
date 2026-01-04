@@ -14,11 +14,24 @@ public class UserProfileRepository : IUserProfileRepository
         _db = db;
     }
 
+    public async Task<bool> ExistsByEmailAsync(string email, CancellationToken cancellationToken)
+    {
+        return await _db.Users.AnyAsync(u => u.Email == email, cancellationToken);
+    }
+
     public async Task<UserProfile?> GetAsync(Guid userId, CancellationToken cancellationToken)
     {
         return await _db.Users
             .AsNoTracking()
             .FirstOrDefaultAsync(u => u.Id == userId && u.DeletedAt == null, cancellationToken);
+    }
+
+    public async Task<UserProfile> CreateAsync(UserProfile profile, CancellationToken cancellationToken)
+    {
+        _db.Users.Add(profile);
+        await _db.SaveChangesAsync(cancellationToken);
+
+        return profile;
     }
 
     public async Task UpsertAsync(UserProfile profile, CancellationToken cancellationToken)

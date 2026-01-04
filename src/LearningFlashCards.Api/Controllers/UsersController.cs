@@ -1,6 +1,7 @@
 using LearningFlashCards.Core.Application.Abstractions.Repositories;
 using LearningFlashCards.Core.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
+using LearningFlashCards.Api.Services;
 
 namespace LearningFlashCards.Api.Controllers;
 
@@ -8,10 +9,25 @@ namespace LearningFlashCards.Api.Controllers;
 public class UsersController : ApiControllerBase
 {
     private readonly IUserProfileRepository _userProfileRepository;
+    private readonly CreateUserProfileHandler _createUserProfileHandler;
 
-    public UsersController(IUserProfileRepository userProfileRepository)
+    public UsersController(IUserProfileRepository userProfileRepository, CreateUserProfileHandler createUserProfileHandler)
     {
         _userProfileRepository = userProfileRepository;
+        _createUserProfileHandler = createUserProfileHandler;
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<UserProfile>> CreateProfile([FromBody] CreateUserRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _createUserProfileHandler.HandleAsync(request, cancellationToken);
+        if (!result.IsSuccess)
+        {
+            return StatusCode(result.StatusCode, result.Error);
+        }
+
+        Response.Headers.Append("X-Owner-Id", result.Profile!.Id.ToString());
+        return Created("/api/users/me", result.Profile);
     }
 
     [HttpGet("me")]

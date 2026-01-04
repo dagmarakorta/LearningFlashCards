@@ -14,6 +14,7 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddScoped<CreateUserProfileHandler>();
 
 var app = builder.Build();
 
