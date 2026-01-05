@@ -2,6 +2,7 @@ using LearningFlashCards.Core.Domain.Entities;
 using LearningFlashCards.Infrastructure.Persistence.Repositories;
 using LearningFlashCards.Infrastructure.Tests.TestUtilities;
 using LearningFlashCards.Core.Domain.Sync;
+using Microsoft.EntityFrameworkCore;
 
 namespace LearningFlashCards.Infrastructure.Tests.Repositories;
 
@@ -29,13 +30,14 @@ public class RepositoryTests
         Assert.NotNull(inserted);
         Assert.Equal("Initial", inserted!.Name);
         Assert.NotEmpty(inserted.RowVersion);
+        var firstRowVersion = inserted.RowVersion.ToArray();
 
         inserted.Name = "Updated";
         await repository.UpsertAsync(inserted, CancellationToken.None);
 
         var updated = await repository.GetAsync(deckId, CancellationToken.None);
         Assert.Equal("Updated", updated!.Name);
-        Assert.NotEqual(inserted.RowVersion, updated.RowVersion);
+        Assert.NotEqual(firstRowVersion, updated.RowVersion);
     }
 
     [Fact]
@@ -58,13 +60,14 @@ public class RepositoryTests
         var inserted = await repository.GetAsync(tagId, CancellationToken.None);
         Assert.NotNull(inserted);
         Assert.NotEmpty(inserted!.RowVersion);
+        var firstRowVersion = inserted.RowVersion.ToArray();
 
         inserted.Name = "Updated Tag";
         await repository.UpsertAsync(inserted, CancellationToken.None);
 
         var updated = await repository.GetAsync(tagId, CancellationToken.None);
         Assert.Equal("Updated Tag", updated!.Name);
-        Assert.NotEqual(inserted.RowVersion, updated.RowVersion);
+        Assert.NotEqual(firstRowVersion, updated.RowVersion);
     }
 
     [Fact]
@@ -105,7 +108,7 @@ public class RepositoryTests
         var deletedAt = DateTimeOffset.UtcNow;
         await cardRepository.SoftDeleteAsync(cardId, deletedAt, CancellationToken.None);
 
-        var stored = await cardRepository.GetAsync(cardId, CancellationToken.None);
+        var stored = await dbContext.Cards.AsNoTracking().FirstOrDefaultAsync(c => c.Id == cardId, CancellationToken.None);
         Assert.NotNull(stored);
         Assert.NotNull(stored!.DeletedAt);
         Assert.True(stored.DeletedAt >= deletedAt.AddSeconds(-1));
@@ -129,7 +132,7 @@ public class RepositoryTests
         var deletedAt = DateTimeOffset.UtcNow;
         await repository.SoftDeleteAsync(tagId, deletedAt, CancellationToken.None);
 
-        var stored = await repository.GetAsync(tagId, CancellationToken.None);
+        var stored = await dbContext.Tags.AsNoTracking().FirstOrDefaultAsync(t => t.Id == tagId, CancellationToken.None);
         Assert.NotNull(stored);
         Assert.NotNull(stored!.DeletedAt);
         Assert.True(stored.DeletedAt >= deletedAt.AddSeconds(-1));

@@ -3,7 +3,7 @@ using LearningFlashCards.Api.Services;
 using LearningFlashCards.Core.Domain.Entities;
 using LearningFlashCards.Api.Tests.TestUtilities;
 using LearningFlashCards.Infrastructure.Persistence.Repositories;
-using LearningFlashCards.Api.Tests.TestUtilities;
+using LearningFlashCards.Core.Application.Abstractions.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -15,7 +15,7 @@ public class TagsControllerTests
     [Fact]
     public async Task GetTags_ReturnsBadRequest_WhenHeaderMissing()
     {
-        var handler = Mock.Of<TagsHandler>();
+        var handler = new TagsHandler(Mock.Of<ITagRepository>());
         var controller = new TagsController(handler)
         {
             ControllerContext = new ControllerContext
@@ -32,20 +32,19 @@ public class TagsControllerTests
     [Fact]
     public async Task UpsertTag_ReturnsForbidden_FromHandler()
     {
-        var handlerMock = new Mock<TagsHandler>(MockBehavior.Strict, null!);
-        handlerMock.Setup(h => h.UpsertTagAsync(It.IsAny<Tag>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(HandlerResult<Tag>.Forbidden());
+        var handler = new TagsHandler(Mock.Of<ITagRepository>());
 
-        var controller = new TagsController(handlerMock.Object)
+        var controller = new TagsController(handler)
         {
             ControllerContext = new ControllerContext
             {
                 HttpContext = new DefaultHttpContext()
             }
         };
-        controller.HttpContext.Request.Headers["X-Owner-Id"] = Guid.NewGuid().ToString();
+        var ownerId = Guid.NewGuid();
+        controller.HttpContext.Request.Headers["X-Owner-Id"] = ownerId.ToString();
 
-        var result = await controller.UpsertTag(new Tag(), CancellationToken.None);
+        var result = await controller.UpsertTag(new Tag { OwnerId = Guid.NewGuid() }, CancellationToken.None);
 
         var forbidden = Assert.IsType<ObjectResult>(result.Result);
         Assert.Equal(StatusCodes.Status403Forbidden, forbidden.StatusCode);
@@ -79,11 +78,12 @@ public class TagsControllerTests
     [Fact]
     public async Task SoftDeleteTag_ReturnsNotFound_WhenHandlerNotFound()
     {
-        var handlerMock = new Mock<TagsHandler>(MockBehavior.Strict, null!);
-        handlerMock.Setup(h => h.SoftDeleteTagAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(HandlerResult<string?>.NotFound());
+        var repoMock = new Mock<ITagRepository>();
+        repoMock.Setup(r => r.GetAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Tag?)null);
+        var handler = new TagsHandler(repoMock.Object);
 
-        var controller = new TagsController(handlerMock.Object)
+        var controller = new TagsController(handler)
         {
             ControllerContext = ControllerContextFactory.WithOwner(Guid.NewGuid())
         };

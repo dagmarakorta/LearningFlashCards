@@ -3,6 +3,7 @@ using LearningFlashCards.Core.Domain.Entities;
 using LearningFlashCards.Infrastructure.Persistence.Repositories;
 using LearningFlashCards.Api.Tests.TestUtilities;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 
 namespace LearningFlashCards.Api.Tests.Handlers;
 
@@ -143,7 +144,7 @@ public class CardsHandlerTests
         Assert.True(result.IsSuccess);
         Assert.Equal(StatusCodes.Status204NoContent, result.StatusCode);
 
-        var stored = await cardRepository.GetAsync(cardId, CancellationToken.None);
+        var stored = await dbContext.Cards.AsNoTracking().FirstOrDefaultAsync(c => c.Id == cardId, CancellationToken.None);
         Assert.NotNull(stored);
         Assert.NotNull(stored!.DeletedAt);
     }

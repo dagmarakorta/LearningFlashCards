@@ -3,7 +3,7 @@ using LearningFlashCards.Api.Services;
 using LearningFlashCards.Core.Domain.Entities;
 using LearningFlashCards.Api.Tests.TestUtilities;
 using LearningFlashCards.Infrastructure.Persistence.Repositories;
-using LearningFlashCards.Api.Tests.TestUtilities;
+using LearningFlashCards.Core.Application.Abstractions.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -15,7 +15,7 @@ public class CardsControllerTests
     [Fact]
     public async Task GetCards_ReturnsBadRequest_WhenHeaderMissing()
     {
-        var handler = Mock.Of<CardsHandler>();
+        var handler = new CardsHandler(Mock.Of<ICardRepository>(), Mock.Of<IDeckRepository>());
         var controller = new CardsController(handler)
         {
             ControllerContext = new ControllerContext
@@ -32,11 +32,12 @@ public class CardsControllerTests
     [Fact]
     public async Task GetCard_ReturnsNotFound_WhenHandlerNotFound()
     {
-        var handlerMock = new Mock<CardsHandler>(MockBehavior.Strict, null!, null!);
-        handlerMock.Setup(h => h.GetCardAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(HandlerResult<Card>.NotFound());
+        var deckRepo = new Mock<IDeckRepository>();
+        deckRepo.Setup(r => r.GetAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Deck?)null);
+        var handler = new CardsHandler(Mock.Of<ICardRepository>(), deckRepo.Object);
 
-        var controller = new CardsController(handlerMock.Object)
+        var controller = new CardsController(handler)
         {
             ControllerContext = new ControllerContext
             {
@@ -96,11 +97,12 @@ public class CardsControllerTests
     [Fact]
     public async Task SoftDeleteCard_ReturnsNotFound_WhenHandlerNotFound()
     {
-        var handlerMock = new Mock<CardsHandler>(MockBehavior.Strict, null!, null!);
-        handlerMock.Setup(h => h.SoftDeleteCardAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(HandlerResult<string?>.NotFound());
+        var deckRepo = new Mock<IDeckRepository>();
+        deckRepo.Setup(r => r.GetAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Deck?)null);
+        var handler = new CardsHandler(Mock.Of<ICardRepository>(), deckRepo.Object);
 
-        var controller = new CardsController(handlerMock.Object)
+        var controller = new CardsController(handler)
         {
             ControllerContext = ControllerContextFactory.WithOwner(Guid.NewGuid())
         };

@@ -36,7 +36,16 @@ public class UserProfileRepository : IUserProfileRepository
 
     public async Task UpsertAsync(UserProfile profile, CancellationToken cancellationToken)
     {
-        _db.Users.Update(profile);
+        var exists = await _db.Users.AsNoTracking().AnyAsync(u => u.Id == profile.Id, cancellationToken);
+        if (exists)
+        {
+            _db.Users.Update(profile);
+        }
+        else
+        {
+            _db.Users.Add(profile);
+        }
+
         await _db.SaveChangesAsync(cancellationToken);
     }
 
@@ -86,7 +95,15 @@ public class UserProfileRepository : IUserProfileRepository
             }
             else
             {
-                _db.Users.Update(profile);
+                var exists = await _db.Users.AsNoTracking().AnyAsync(u => u.Id == profile.Id, cancellationToken);
+                if (exists)
+                {
+                    _db.Users.Update(profile);
+                }
+                else
+                {
+                    _db.Users.Add(profile);
+                }
             }
         }
 

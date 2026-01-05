@@ -103,7 +103,15 @@ public class TagRepository : ITagRepository
             }
             else
             {
-                _db.Tags.Update(tag);
+                var exists = await _db.Tags.AsNoTracking().AnyAsync(t => t.Id == tag.Id, cancellationToken);
+                if (exists)
+                {
+                    _db.Tags.Update(tag);
+                }
+                else
+                {
+                    _db.Tags.Add(tag);
+                }
             }
         }
 

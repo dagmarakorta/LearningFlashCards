@@ -1,9 +1,9 @@
 using LearningFlashCards.Api.Controllers;
 using LearningFlashCards.Api.Services;
-using LearningFlashCards.Core.Application.Abstractions.Repositories;
 using LearningFlashCards.Core.Domain.Entities;
 using LearningFlashCards.Api.Tests.TestUtilities;
 using LearningFlashCards.Infrastructure.Persistence.Repositories;
+using LearningFlashCards.Core.Application.Abstractions.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -16,12 +16,19 @@ public class UsersControllerTests
     public async Task CreateProfile_ReturnsCreated_WhenHandlerSucceeds()
     {
         var repoMock = new Mock<IUserProfileRepository>();
-        var handlerMock = new Mock<CreateUserProfileHandler>(repoMock.Object);
+        repoMock.Setup(r => r.ExistsByEmailAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
         var createdProfile = new UserProfile { Id = Guid.NewGuid(), Email = "a@b.com", DisplayName = "Test" };
-        handlerMock.Setup(h => h.HandleAsync(It.IsAny<CreateUserRequest>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(CreateUserProfileResult.Success(createdProfile));
+        repoMock.Setup(r => r.CreateAsync(It.IsAny<UserProfile>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(createdProfile);
+        var handler = new CreateUserProfileHandler(repoMock.Object);
 
-        var controller = new UsersController(repoMock.Object, handlerMock.Object);
+        var controller = new UsersController(repoMock.Object, handler)
+        {
+            ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext()
+            }
+        };
         var result = await controller.CreateProfile(new CreateUserRequest { DisplayName = "t", Email = "e@x.com" }, CancellationToken.None);
 
         var created = Assert.IsType<CreatedResult>(result.Result);
@@ -33,11 +40,16 @@ public class UsersControllerTests
     public async Task CreateProfile_ReturnsStatus_WhenHandlerFails()
     {
         var repoMock = new Mock<IUserProfileRepository>();
-        var handlerMock = new Mock<CreateUserProfileHandler>(repoMock.Object);
-        handlerMock.Setup(h => h.HandleAsync(It.IsAny<CreateUserRequest>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(CreateUserProfileResult.Failure(StatusCodes.Status409Conflict, "exists"));
+        repoMock.Setup(r => r.ExistsByEmailAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        var handler = new CreateUserProfileHandler(repoMock.Object);
 
-        var controller = new UsersController(repoMock.Object, handlerMock.Object);
+        var controller = new UsersController(repoMock.Object, handler)
+        {
+            ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext()
+            }
+        };
         var result = await controller.CreateProfile(new CreateUserRequest { DisplayName = "t", Email = "e@x.com" }, CancellationToken.None);
 
         var status = Assert.IsType<ObjectResult>(result.Result);
@@ -48,7 +60,7 @@ public class UsersControllerTests
     public async Task GetProfile_ReturnsBadRequest_WhenHeaderMissing()
     {
         var repoMock = new Mock<IUserProfileRepository>();
-        var controller = new UsersController(repoMock.Object, Mock.Of<CreateUserProfileHandler>());
+        var controller = new UsersController(repoMock.Object, new CreateUserProfileHandler(repoMock.Object));
         controller.ControllerContext = new ControllerContext
         {
             HttpContext = new DefaultHttpContext()

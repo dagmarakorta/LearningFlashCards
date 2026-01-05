@@ -86,6 +86,11 @@ public class DeckRepository : IDeckRepository
         foreach (var change in changes)
         {
             var deck = change.Entity;
+            if (deck.OwnerId != Guid.Empty && deck.OwnerId != ownerId)
+            {
+                continue;
+            }
+
             deck.OwnerId = ownerId;
 
             if (change.Operation == SyncOperation.Delete)
@@ -105,7 +110,15 @@ public class DeckRepository : IDeckRepository
             }
             else
             {
-                _db.Decks.Update(deck);
+                var exists = await _db.Decks.AsNoTracking().AnyAsync(d => d.Id == deck.Id, cancellationToken);
+                if (exists)
+                {
+                    _db.Decks.Update(deck);
+                }
+                else
+                {
+                    _db.Decks.Add(deck);
+                }
             }
         }
 

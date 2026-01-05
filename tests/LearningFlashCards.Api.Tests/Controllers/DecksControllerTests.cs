@@ -3,6 +3,7 @@ using LearningFlashCards.Api.Services;
 using LearningFlashCards.Core.Domain.Entities;
 using LearningFlashCards.Api.Tests.TestUtilities;
 using LearningFlashCards.Infrastructure.Persistence.Repositories;
+using LearningFlashCards.Core.Application.Abstractions.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -14,7 +15,7 @@ public class DecksControllerTests
     [Fact]
     public async Task GetDecks_ReturnsBadRequest_WhenHeaderMissing()
     {
-        var handler = Mock.Of<DeckHandler>();
+        var handler = new DeckHandler(Mock.Of<IDeckRepository>());
         var controller = new DecksController(handler)
         {
             ControllerContext = new ControllerContext
@@ -31,11 +32,12 @@ public class DecksControllerTests
     [Fact]
     public async Task GetDeck_ReturnsNotFound_WhenHandlerNotFound()
     {
-        var handlerMock = new Mock<DeckHandler>(MockBehavior.Strict, null!);
-        handlerMock.Setup(h => h.GetDeckAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(HandlerResult<Deck>.NotFound());
+        var repoMock = new Mock<IDeckRepository>();
+        repoMock.Setup(r => r.GetAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Deck?)null);
+        var handler = new DeckHandler(repoMock.Object);
 
-        var controller = new DecksController(handlerMock.Object)
+        var controller = new DecksController(handler)
         {
             ControllerContext = new ControllerContext
             {
@@ -86,11 +88,12 @@ public class DecksControllerTests
     [Fact]
     public async Task SoftDeleteDeck_ReturnsNotFound_WhenHandlerNotFound()
     {
-        var handlerMock = new Mock<DeckHandler>(MockBehavior.Strict, null!);
-        handlerMock.Setup(h => h.SoftDeleteDeckAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(HandlerResult<string?>.NotFound());
+        var repoMock = new Mock<IDeckRepository>();
+        repoMock.Setup(r => r.GetAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Deck?)null);
+        var handler = new DeckHandler(repoMock.Object);
 
-        var controller = new DecksController(handlerMock.Object)
+        var controller = new DecksController(handler)
         {
             ControllerContext = ControllerContextFactory.WithOwner(Guid.NewGuid())
         };

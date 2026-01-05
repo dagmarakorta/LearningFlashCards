@@ -114,7 +114,15 @@ public class CardRepository : ICardRepository
             }
             else
             {
-                _db.Cards.Update(card);
+                var exists = await _db.Cards.AsNoTracking().AnyAsync(c => c.Id == card.Id, cancellationToken);
+                if (exists)
+                {
+                    _db.Cards.Update(card);
+                }
+                else
+                {
+                    _db.Cards.Add(card);
+                }
             }
         }
 

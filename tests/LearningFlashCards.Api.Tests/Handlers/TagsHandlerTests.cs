@@ -3,6 +3,7 @@ using LearningFlashCards.Core.Domain.Entities;
 using LearningFlashCards.Infrastructure.Persistence.Repositories;
 using LearningFlashCards.Api.Tests.TestUtilities;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 
 namespace LearningFlashCards.Api.Tests.Handlers;
 
@@ -75,7 +76,7 @@ public class TagsHandlerTests
         Assert.True(result.IsSuccess);
         Assert.Equal(StatusCodes.Status204NoContent, result.StatusCode);
 
-        var stored = await repository.GetAsync(tagId, CancellationToken.None);
+        var stored = await dbContext.Tags.AsNoTracking().FirstOrDefaultAsync(t => t.Id == tagId, CancellationToken.None);
         Assert.NotNull(stored);
         Assert.NotNull(stored!.DeletedAt);
     }
