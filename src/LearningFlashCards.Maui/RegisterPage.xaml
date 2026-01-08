@@ -22,10 +22,11 @@
 
             <VerticalStackLayout Spacing="6">
                 <Label Text="Email" />
-                <Entry
-                    x:Name="EmailEntry"
-                    Keyboard="Email"
-                    Placeholder="you@example.com" />
+            <Entry
+                x:Name="EmailEntry"
+                Keyboard="Email"
+                Style="{StaticResource EmailEntryStyle}"
+                Placeholder="you@example.com" />
             </VerticalStackLayout>
 
             <Button

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="LearningFlashCards.Maui.DeckDetailPage"
+             Title="Deck">
+
+    <Grid
+        Padding="{StaticResource PagePadding}"
+        RowDefinitions="Auto,Auto,*"
+        RowSpacing="{StaticResource PageRowSpacing}">
+        <Label
+            Text="{Binding DeckName}"
+            Style="{StaticResource PageTitle}"
+            SemanticProperties.HeadingLevel="Level1" />
+
+        <Label
+            Grid.Row="1"
+            Text="{Binding DeckDescription}"
+            TextColor="{StaticResource Gray500}" />
+
+        <CollectionView
+            Grid.Row="2"
+            ItemsSource="{Binding Cards}"
+            SelectionMode="None">
+            <CollectionView.EmptyView>
+                <Label
+                    Text="No cards yet."
+                    Style="{StaticResource EmptyStateText}" />
+            </CollectionView.EmptyView>
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Vertical" ItemSpacing="{StaticResource CardSpacing}" />
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Border Style="{StaticResource DeckCard}">
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="{Binding Front}" Style="{StaticResource DeckTitle}" />
+                            <Label Text="{Binding Back}" Style="{StaticResource DeckMeta}" />
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+
+</ContentPage>

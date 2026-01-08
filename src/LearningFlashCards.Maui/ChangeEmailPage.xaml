@@ -17,6 +17,7 @@
             <Entry
                 x:Name="EmailEntry"
                 Keyboard="Email"
+                Style="{StaticResource EmailEntryStyle}"
                 Placeholder="you@example.com" />
         </VerticalStackLayout>
 

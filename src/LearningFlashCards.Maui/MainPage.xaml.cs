@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Linq;
 using LearningFlashCards.Core.Application.Abstractions.Repositories;
 using LearningFlashCards.Core.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,7 +37,23 @@ namespace LearningFlashCards.Maui
             await Shell.Current.GoToAsync(nameof(ProfilePage));
         }
 
-        public record DeckListItem(string Name, string Summary);
+        private async void OnDeckSelectionChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            if (sender is not CollectionView collection)
+            {
+                return;
+            }
+
+            if (e.CurrentSelection.FirstOrDefault() is not DeckListItem deck)
+            {
+                return;
+            }
+
+            collection.SelectedItem = null;
+            await Shell.Current.GoToAsync($"{nameof(DeckDetailPage)}?deckId={deck.Id}");
+        }
+
+        public record DeckListItem(Guid Id, string Name, string Summary);
 
         private async Task LoadDecksAsync()
         {
@@ -51,7 +68,7 @@ namespace LearningFlashCards.Maui
 
             foreach (var deck in decks.OrderBy(d => d.Name))
             {
-                Decks.Add(new DeckListItem(deck.Name, BuildSummary(deck)));
+                Decks.Add(new DeckListItem(deck.Id, deck.Name, BuildSummary(deck)));
             }
         }
 

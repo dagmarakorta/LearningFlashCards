@@ -30,7 +30,8 @@
         <CollectionView
             Grid.Row="1"
             ItemsSource="{Binding Decks}"
-            SelectionMode="None">
+            SelectionMode="Single"
+            SelectionChanged="OnDeckSelectionChanged">
             <CollectionView.EmptyView>
                 <Label
                     Text="No decks yet. Create your first one."
