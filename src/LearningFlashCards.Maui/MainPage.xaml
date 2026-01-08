@@ -17,7 +17,8 @@
                 Grid.Column="1"
                 Text="New"
                 Style="{StaticResource PrimaryButton}"
-                SemanticProperties.Hint="Create a new deck" />
+                SemanticProperties.Hint="Create a new deck"
+                Clicked="OnNewDeckClicked" />
         </Grid>
 
         <CollectionView
