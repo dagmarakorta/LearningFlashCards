@@ -8,7 +8,8 @@
         Padding="{StaticResource PagePadding}"
         RowDefinitions="Auto,*"
         RowSpacing="{StaticResource PageRowSpacing}">
-        <Grid ColumnDefinitions="*,Auto">
+        <Grid ColumnDefinitions="*,Auto,Auto"
+              ColumnSpacing="8">
             <Label
                 Text="Decks"
                 Style="{StaticResource PageTitle}"
@@ -19,6 +20,11 @@
                 Style="{StaticResource PrimaryButton}"
                 SemanticProperties.Hint="Create a new deck"
                 Clicked="OnNewDeckClicked" />
+            <Button
+                Grid.Column="2"
+                Text="Profile"
+                SemanticProperties.Hint="Manage your profile"
+                Clicked="OnProfileClicked" />
         </Grid>
 
         <CollectionView

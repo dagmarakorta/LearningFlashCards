@@ -31,11 +31,22 @@ namespace LearningFlashCards.Maui
             await Shell.Current.GoToAsync(nameof(CreateDeckPage));
         }
 
+        private async void OnProfileClicked(object? sender, EventArgs e)
+        {
+            await Shell.Current.GoToAsync(nameof(ProfilePage));
+        }
+
         public record DeckListItem(string Name, string Summary);
 
         private async Task LoadDecksAsync()
         {
-            var decks = await _deckRepository.GetByOwnerAsync(_currentUser.UserId, CancellationToken.None);
+            if (!_currentUser.IsAuthenticated || _currentUser.UserId is null)
+            {
+                await Shell.Current.GoToAsync("//LoginPage");
+                return;
+            }
+
+            var decks = await _deckRepository.GetByOwnerAsync(_currentUser.UserId.Value, CancellationToken.None);
             Decks.Clear();
 
             foreach (var deck in decks.OrderBy(d => d.Name))

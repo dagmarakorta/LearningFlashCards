@@ -22,13 +22,20 @@ namespace LearningFlashCards.Maui
             var name = NameEntry.Text?.Trim();
             if (string.IsNullOrWhiteSpace(name))
             {
-                await DisplayAlert("Missing name", "Please enter a deck name.", "OK");
+                await DisplayAlertAsync("Missing name", "Please enter a deck name.", "OK");
+                return;
+            }
+
+            if (!_currentUser.IsAuthenticated || _currentUser.UserId is null)
+            {
+                await DisplayAlertAsync("Not signed in", "Please login to create a deck.", "OK");
+                await Shell.Current.GoToAsync("//LoginPage");
                 return;
             }
 
             var deck = new Deck
             {
-                OwnerId = _currentUser.UserId,
+                OwnerId = _currentUser.UserId.Value,
                 Name = name,
                 Description = DescriptionEditor.Text?.Trim()
             };

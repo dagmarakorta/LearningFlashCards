@@ -4,10 +4,16 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:LearningFlashCards.Maui"
-    Title="LearningFlashCards.Maui">
+    Title="LearningFlashCards.Maui"
+    FlyoutBehavior="Disabled">
 
     <ShellContent
-        Title="Home"
+        Title="Login"
+        ContentTemplate="{DataTemplate local:LoginPage}"
+        Route="LoginPage" />
+
+    <ShellContent
+        Title="Decks"
         ContentTemplate="{DataTemplate local:MainPage}"
         Route="MainPage" />
 

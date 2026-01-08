@@ -16,7 +16,30 @@ public class UserProfileRepository : IUserProfileRepository
 
     public async Task<bool> ExistsByEmailAsync(string email, CancellationToken cancellationToken)
     {
-        return await _db.Users.AnyAsync(u => u.Email == email, cancellationToken);
+        var normalized = email.ToLower();
+        return await _db.Users.AnyAsync(u => u.Email.ToLower() == normalized, cancellationToken);
+    }
+
+    public async Task<bool> ExistsByDisplayNameAsync(string displayName, CancellationToken cancellationToken)
+    {
+        var normalized = displayName.ToLower();
+        return await _db.Users.AnyAsync(u => u.DisplayName.ToLower() == normalized, cancellationToken);
+    }
+
+    public async Task<UserProfile?> GetByEmailAsync(string email, CancellationToken cancellationToken)
+    {
+        var normalized = email.ToLower();
+        return await _db.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Email.ToLower() == normalized && u.DeletedAt == null, cancellationToken);
+    }
+
+    public async Task<UserProfile?> GetByDisplayNameAsync(string displayName, CancellationToken cancellationToken)
+    {
+        var normalized = displayName.ToLower();
+        return await _db.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.DisplayName.ToLower() == normalized && u.DeletedAt == null, cancellationToken);
     }
 
     public async Task<UserProfile?> GetAsync(Guid userId, CancellationToken cancellationToken)
