@@ -61,4 +61,9 @@
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<ProjectReference Include="..\\LearningFlashCards.Core\\LearningFlashCards.Core.csproj" />
+		<ProjectReference Include="..\\LearningFlashCards.Infrastructure\\LearningFlashCards.Infrastructure.csproj" />
+	</ItemGroup>
+
 </Project>
