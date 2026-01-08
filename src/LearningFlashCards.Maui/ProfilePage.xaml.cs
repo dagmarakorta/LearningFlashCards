@@ -38,7 +38,7 @@ namespace LearningFlashCards.Maui
             }
 
             NameEntry.Text = _profile.DisplayName;
-            EmailEntry.Text = _profile.Email;
+            EmailLabel.Text = _profile.Email;
         }
 
         private async void OnSaveClicked(object? sender, EventArgs e)
@@ -51,8 +51,6 @@ namespace LearningFlashCards.Maui
             }
 
             var name = NameEntry.Text?.Trim();
-            var email = EmailEntry.Text?.Trim();
-
             if (string.IsNullOrWhiteSpace(name))
             {
                 await DisplayAlertAsync("Missing name", "Please enter your name.", "OK");
@@ -71,26 +69,6 @@ namespace LearningFlashCards.Maui
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(email))
-            {
-                await DisplayAlertAsync("Missing email", "Please enter your email.", "OK");
-                return;
-            }
-
-            if (!EmailPattern.IsMatch(email))
-            {
-                await DisplayAlertAsync("Invalid email", "Please enter a valid email address.", "OK");
-                return;
-            }
-
-            var normalizedEmail = email.ToLowerInvariant();
-            var emailOwner = await _userRepository.GetByEmailAsync(normalizedEmail, CancellationToken.None);
-            if (emailOwner is not null && emailOwner.Id != _profile.Id)
-            {
-                await DisplayAlertAsync("Email already used", "Please use a different email.", "OK");
-                return;
-            }
-
             var nameOwner = await _userRepository.GetByDisplayNameAsync(name, CancellationToken.None);
             if (nameOwner is not null && nameOwner.Id != _profile.Id)
             {
@@ -99,10 +77,14 @@ namespace LearningFlashCards.Maui
             }
 
             _profile.DisplayName = name;
-            _profile.Email = normalizedEmail;
 
             await _userRepository.UpsertAsync(_profile, CancellationToken.None);
             await DisplayAlertAsync("Saved", "Profile updated.", "OK");
+        }
+
+        private async void OnChangeEmailClicked(object? sender, EventArgs e)
+        {
+            await Shell.Current.GoToAsync(nameof(ChangeEmailPage));
         }
 
         private async void OnLogoutClicked(object? sender, EventArgs e)
@@ -122,7 +104,6 @@ namespace LearningFlashCards.Maui
             return services.GetRequiredService<T>();
         }
 
-        private static readonly Regex EmailPattern = new(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.Compiled);
         private static readonly Regex NamePattern = new(@"^[A-Za-z][A-Za-z' -]*$", RegexOptions.Compiled);
     }
 }

@@ -22,10 +22,9 @@
 
             <VerticalStackLayout Spacing="6">
                 <Label Text="Email" />
-                <Entry
-                    x:Name="EmailEntry"
-                    Keyboard="Email"
-                    Placeholder="you@example.com" />
+                <Label
+                    x:Name="EmailLabel"
+                    TextColor="{StaticResource Gray500}" />
             </VerticalStackLayout>
 
             <VerticalStackLayout Spacing="8">
@@ -33,6 +32,9 @@
                     Text="Save changes"
                     Style="{StaticResource PrimaryButton}"
                     Clicked="OnSaveClicked" />
+                <Button
+                    Text="Change email"
+                    Clicked="OnChangeEmailClicked" />
                 <Button
                     Text="Logout"
                     Clicked="OnLogoutClicked" />

@@ -10,6 +10,7 @@ namespace LearningFlashCards.Maui
             Routing.RegisterRoute(nameof(CreateDeckPage), typeof(CreateDeckPage));
             Routing.RegisterRoute(nameof(RegisterPage), typeof(RegisterPage));
             Routing.RegisterRoute(nameof(ProfilePage), typeof(ProfilePage));
+            Routing.RegisterRoute(nameof(ChangeEmailPage), typeof(ChangeEmailPage));
         }
 
         protected override async void OnAppearing()
