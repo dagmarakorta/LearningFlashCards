@@ -78,7 +78,7 @@ namespace LearningFlashCards.Maui
             Cards.Clear();
             foreach (var card in cards)
             {
-                Cards.Add(new CardListItem(card.Front, card.Back));
+                Cards.Add(new CardListItem(card.Id, card.Front, card.Back));
             }
         }
 
@@ -104,7 +104,24 @@ namespace LearningFlashCards.Maui
             await Shell.Current.GoToAsync($"{nameof(StudyDeckPage)}?deckId={_deckId}");
         }
 
-        public record CardListItem(string Front, string Back);
+        private async void OnDeleteCardClicked(object? sender, EventArgs e)
+        {
+            if (sender is not Button button || button.BindingContext is not CardListItem card)
+            {
+                return;
+            }
+
+            var confirm = await DisplayAlertAsync("Delete card", "Delete this card from the deck?", "Delete", "Cancel");
+            if (!confirm)
+            {
+                return;
+            }
+
+            await _cardRepository.SoftDeleteAsync(card.Id, DateTimeOffset.UtcNow, CancellationToken.None);
+            Cards.Remove(card);
+        }
+
+        public record CardListItem(Guid Id, string Front, string Back);
 
         private static T GetRequiredService<T>() where T : notnull
         {
