@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using LearningFlashCards.Core.Application.Abstractions.Repositories;
 using LearningFlashCards.Core.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
@@ -6,17 +5,13 @@ using Microsoft.Extensions.DependencyInjection;
 namespace LearningFlashCards.Maui
 {
     [QueryProperty(nameof(DeckId), "deckId")]
-    public partial class DeckDetailPage : ContentPage
+    public partial class CreateCardPage : ContentPage
     {
         private readonly IDeckRepository _deckRepository;
         private readonly ICardRepository _cardRepository;
         private readonly ICurrentUserService _currentUser;
 
         private Guid? _deckId;
-
-        public ObservableCollection<CardListItem> Cards { get; } = new();
-        public string DeckName { get; private set; } = "Deck";
-        public string DeckDescription { get; private set; } = string.Empty;
 
         public string? DeckId
         {
@@ -30,33 +25,36 @@ namespace LearningFlashCards.Maui
             }
         }
 
-        public DeckDetailPage()
+        public CreateCardPage()
         {
             InitializeComponent();
-            BindingContext = this;
 
             _deckRepository = GetRequiredService<IDeckRepository>();
             _cardRepository = GetRequiredService<ICardRepository>();
             _currentUser = GetRequiredService<ICurrentUserService>();
         }
 
-        protected override async void OnAppearing()
+        private async void OnSaveClicked(object? sender, EventArgs e)
         {
-            base.OnAppearing();
-            await LoadDeckAsync();
-        }
+            var front = FrontEditor.Text?.Trim();
+            var back = BackEditor.Text?.Trim();
 
-        private async Task LoadDeckAsync()
-        {
+            if (string.IsNullOrWhiteSpace(front) || string.IsNullOrWhiteSpace(back))
+            {
+                await DisplayAlertAsync("Missing text", "Please enter front and back text.", "OK");
+                return;
+            }
+
             if (!_currentUser.IsAuthenticated || _currentUser.UserId is null)
             {
+                await DisplayAlertAsync("Not signed in", "Please login to add cards.", "OK");
                 await Shell.Current.GoToAsync("//LoginPage");
                 return;
             }
 
             if (_deckId is null)
             {
-                await DisplayAlertAsync("Missing deck", "Unable to load deck.", "OK");
+                await DisplayAlertAsync("Missing deck", "Unable to add a card without a deck.", "OK");
                 await Shell.Current.GoToAsync("..");
                 return;
             }
@@ -69,31 +67,21 @@ namespace LearningFlashCards.Maui
                 return;
             }
 
-            DeckName = deck.Name;
-            DeckDescription = string.IsNullOrWhiteSpace(deck.Description) ? "No description" : deck.Description;
-            OnPropertyChanged(nameof(DeckName));
-            OnPropertyChanged(nameof(DeckDescription));
-
-            var cards = await _cardRepository.GetByDeckAsync(deck.Id, CancellationToken.None);
-            Cards.Clear();
-            foreach (var card in cards)
+            var card = new Card
             {
-                Cards.Add(new CardListItem(card.Front, card.Back));
-            }
+                DeckId = deck.Id,
+                Front = front,
+                Back = back
+            };
+
+            await _cardRepository.UpsertAsync(card, CancellationToken.None);
+            await Shell.Current.GoToAsync("..");
         }
 
-        private async void OnAddCardClicked(object? sender, EventArgs e)
+        private async void OnCancelClicked(object? sender, EventArgs e)
         {
-            if (_deckId is null)
-            {
-                await DisplayAlertAsync("Missing deck", "Select a deck before adding a card.", "OK");
-                return;
-            }
-
-            await Shell.Current.GoToAsync($"{nameof(CreateCardPage)}?deckId={_deckId}");
+            await Shell.Current.GoToAsync("..");
         }
-
-        public record CardListItem(string Front, string Back);
 
         private static T GetRequiredService<T>() where T : notnull
         {
