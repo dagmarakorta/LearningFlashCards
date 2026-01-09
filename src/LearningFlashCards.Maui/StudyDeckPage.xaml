@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="LearningFlashCards.Maui.StudyDeckPage"
+             Title="Study">
+
+    <Grid
+        Padding="{StaticResource PagePadding}"
+        RowDefinitions="Auto,*,Auto"
+        RowSpacing="{StaticResource PageRowSpacing}">
+        <Label
+            Text="{Binding DeckName}"
+            Style="{StaticResource PageTitle}"
+            SemanticProperties.HeadingLevel="Level1" />
+
+        <Border Grid.Row="1" Style="{StaticResource DeckCard}">
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnFlipTapped" />
+            </Border.GestureRecognizers>
+            <Grid RowDefinitions="*,Auto">
+                <Label
+                    Text="{Binding CurrentSideText}"
+                    Style="{StaticResource DeckTitle}"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center"
+                    HorizontalTextAlignment="Center"
+                    VerticalTextAlignment="Center"
+                    LineBreakMode="WordWrap" />
+                <Label
+                    Grid.Row="1"
+                    Text="Tap to flip"
+                    TextColor="{StaticResource Gray500}"
+                    HorizontalOptions="Center" />
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="12">
+            <Label
+                Text="{Binding ProgressText}"
+                VerticalOptions="Center" />
+            <Button
+                Grid.Column="1"
+                Text="Next"
+                Style="{StaticResource PrimaryButton}"
+                Clicked="OnNextClicked" />
+        </Grid>
+    </Grid>
+
+</ContentPage>

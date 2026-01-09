@@ -6,7 +6,7 @@
 
     <Grid
         Padding="{StaticResource PagePadding}"
-        RowDefinitions="Auto,Auto,Auto,*"
+        RowDefinitions="Auto,Auto,Auto,Auto,*"
         RowSpacing="{StaticResource PageRowSpacing}">
         <Label
             Text="{Binding DeckName}"
@@ -18,14 +18,20 @@
             Text="{Binding DeckDescription}"
             TextColor="{StaticResource Gray500}" />
 
-        <Button
-            Grid.Row="2"
-            Text="Add card"
-            Style="{StaticResource PrimaryButton}"
-            Clicked="OnAddCardClicked" />
+        <Grid Grid.Row="2" ColumnDefinitions="*,*" ColumnSpacing="12">
+            <Button
+                Text="Study"
+                Style="{StaticResource PrimaryButton}"
+                Clicked="OnStudyClicked" />
+            <Button
+                Grid.Column="1"
+                Text="Add card"
+                Style="{StaticResource PrimaryButton}"
+                Clicked="OnAddCardClicked" />
+        </Grid>
 
         <CollectionView
-            Grid.Row="3"
+            Grid.Row="4"
             ItemsSource="{Binding Cards}"
             SelectionMode="None">
             <CollectionView.EmptyView>

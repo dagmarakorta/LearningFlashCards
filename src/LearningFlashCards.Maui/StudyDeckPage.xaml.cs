@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using LearningFlashCards.Core.Application.Abstractions.Repositories;
 using LearningFlashCards.Core.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
@@ -6,17 +5,20 @@ using Microsoft.Extensions.DependencyInjection;
 namespace LearningFlashCards.Maui
 {
     [QueryProperty(nameof(DeckId), "deckId")]
-    public partial class DeckDetailPage : ContentPage
+    public partial class StudyDeckPage : ContentPage
     {
         private readonly IDeckRepository _deckRepository;
         private readonly ICardRepository _cardRepository;
         private readonly ICurrentUserService _currentUser;
 
         private Guid? _deckId;
+        private readonly List<Card> _cards = new();
+        private int _currentIndex;
+        private bool _showBack;
 
-        public ObservableCollection<CardListItem> Cards { get; } = new();
-        public string DeckName { get; private set; } = "Deck";
-        public string DeckDescription { get; private set; } = string.Empty;
+        public string DeckName { get; private set; } = "Study";
+        public string CurrentSideText { get; private set; } = string.Empty;
+        public string ProgressText { get; private set; } = string.Empty;
 
         public string? DeckId
         {
@@ -30,7 +32,7 @@ namespace LearningFlashCards.Maui
             }
         }
 
-        public DeckDetailPage()
+        public StudyDeckPage()
         {
             InitializeComponent();
             BindingContext = this;
@@ -43,10 +45,10 @@ namespace LearningFlashCards.Maui
         protected override async void OnAppearing()
         {
             base.OnAppearing();
-            await LoadDeckAsync();
+            await LoadStudyDeckAsync();
         }
 
-        private async Task LoadDeckAsync()
+        private async Task LoadStudyDeckAsync()
         {
             if (!_currentUser.IsAuthenticated || _currentUser.UserId is null)
             {
@@ -56,7 +58,7 @@ namespace LearningFlashCards.Maui
 
             if (_deckId is null)
             {
-                await DisplayAlertAsync("Missing deck", "Unable to load deck.", "OK");
+                await DisplayAlertAsync("Missing deck", "Unable to study without a deck.", "OK");
                 await Shell.Current.GoToAsync("..");
                 return;
             }
@@ -70,41 +72,64 @@ namespace LearningFlashCards.Maui
             }
 
             DeckName = deck.Name;
-            DeckDescription = string.IsNullOrWhiteSpace(deck.Description) ? "No description" : deck.Description;
             OnPropertyChanged(nameof(DeckName));
-            OnPropertyChanged(nameof(DeckDescription));
 
             var cards = await _cardRepository.GetByDeckAsync(deck.Id, CancellationToken.None);
-            Cards.Clear();
-            foreach (var card in cards)
-            {
-                Cards.Add(new CardListItem(card.Front, card.Back));
-            }
+            _cards.Clear();
+            _cards.AddRange(cards);
+            _currentIndex = 0;
+            _showBack = false;
+
+            UpdateCardDisplay();
         }
 
-        private async void OnAddCardClicked(object? sender, EventArgs e)
+        private void UpdateCardDisplay()
         {
-            if (_deckId is null)
+            if (_cards.Count == 0)
             {
-                await DisplayAlertAsync("Missing deck", "Select a deck before adding a card.", "OK");
+                CurrentSideText = "No cards yet.";
+                ProgressText = string.Empty;
+            }
+            else
+            {
+                var card = _cards[_currentIndex];
+                CurrentSideText = _showBack ? card.Back : card.Front;
+                ProgressText = $"{_currentIndex + 1} / {_cards.Count}";
+            }
+
+            OnPropertyChanged(nameof(CurrentSideText));
+            OnPropertyChanged(nameof(ProgressText));
+        }
+
+        private void OnFlipTapped(object? sender, TappedEventArgs e)
+        {
+            if (_cards.Count == 0)
+            {
                 return;
             }
 
-            await Shell.Current.GoToAsync($"{nameof(CreateCardPage)}?deckId={_deckId}");
+            _showBack = !_showBack;
+            UpdateCardDisplay();
         }
 
-        private async void OnStudyClicked(object? sender, EventArgs e)
+        private async void OnNextClicked(object? sender, EventArgs e)
         {
-            if (_deckId is null)
+            if (_cards.Count == 0)
             {
-                await DisplayAlertAsync("Missing deck", "Select a deck before studying.", "OK");
+                await Shell.Current.GoToAsync("..");
                 return;
             }
 
-            await Shell.Current.GoToAsync($"{nameof(StudyDeckPage)}?deckId={_deckId}");
-        }
+            _currentIndex++;
+            if (_currentIndex >= _cards.Count)
+            {
+                await DisplayAlertAsync("Done", "You've reached the end of this deck.", "OK");
+                _currentIndex = 0;
+            }
 
-        public record CardListItem(string Front, string Back);
+            _showBack = false;
+            UpdateCardDisplay();
+        }
 
         private static T GetRequiredService<T>() where T : notnull
         {
