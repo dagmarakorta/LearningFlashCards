@@ -104,4 +104,130 @@ public class DecksControllerTests
         var notFound = Assert.IsType<ObjectResult>(result);
         Assert.Equal(StatusCodes.Status404NotFound, notFound.StatusCode);
     }
+
+    [Fact]
+    public async Task GetDeck_ReturnsBadRequest_WhenHeaderMissing()
+    {
+        var handler = new DeckHandler(Mock.Of<IDeckRepository>(), Mock.Of<ICardRepository>());
+        var controller = new DecksController(handler)
+        {
+            ControllerContext = ControllerContextFactory.WithoutOwner()
+        };
+
+        var result = await controller.GetDeck(Guid.NewGuid(), CancellationToken.None);
+
+        Assert.IsType<BadRequestObjectResult>(result.Result);
+    }
+
+    [Fact]
+    public async Task GetDeck_ReturnsDeck_WhenFound()
+    {
+        using var dbContext = TestDbContextFactory.CreateContext();
+        var repository = new DeckRepository(dbContext);
+        var cardRepository = new CardRepository(dbContext);
+        var handler = new DeckHandler(repository, cardRepository);
+        var ownerId = Guid.NewGuid();
+        var deckId = Guid.NewGuid();
+        var controller = new DecksController(handler)
+        {
+            ControllerContext = ControllerContextFactory.WithOwner(ownerId)
+        };
+
+        await repository.UpsertAsync(new Deck
+        {
+            Id = deckId,
+            OwnerId = ownerId,
+            Name = "Test Deck"
+        }, CancellationToken.None);
+
+        var result = await controller.GetDeck(deckId, CancellationToken.None);
+
+        var ok = Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(StatusCodes.Status200OK, ok.StatusCode);
+        var deck = Assert.IsType<Deck>(ok.Value);
+        Assert.Equal("Test Deck", deck.Name);
+    }
+
+    [Fact]
+    public async Task UpsertDeck_ReturnsBadRequest_WhenHeaderMissing()
+    {
+        var handler = new DeckHandler(Mock.Of<IDeckRepository>(), Mock.Of<ICardRepository>());
+        var controller = new DecksController(handler)
+        {
+            ControllerContext = ControllerContextFactory.WithoutOwner()
+        };
+
+        var result = await controller.UpsertDeck(new Deck(), CancellationToken.None);
+
+        Assert.IsType<BadRequestObjectResult>(result.Result);
+    }
+
+    [Fact]
+    public async Task UpsertDeck_CreatesDeck_WhenNew()
+    {
+        using var dbContext = TestDbContextFactory.CreateContext();
+        var repository = new DeckRepository(dbContext);
+        var cardRepository = new CardRepository(dbContext);
+        var handler = new DeckHandler(repository, cardRepository);
+        var ownerId = Guid.NewGuid();
+        var controller = new DecksController(handler)
+        {
+            ControllerContext = ControllerContextFactory.WithOwner(ownerId)
+        };
+
+        var deck = new Deck
+        {
+            Id = Guid.NewGuid(),
+            OwnerId = ownerId,
+            Name = "New Deck"
+        };
+
+        var result = await controller.UpsertDeck(deck, CancellationToken.None);
+
+        var ok = Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(StatusCodes.Status200OK, ok.StatusCode);
+        var returnedDeck = Assert.IsType<Deck>(ok.Value);
+        Assert.Equal("New Deck", returnedDeck.Name);
+    }
+
+    [Fact]
+    public async Task SoftDeleteDeck_ReturnsBadRequest_WhenHeaderMissing()
+    {
+        var handler = new DeckHandler(Mock.Of<IDeckRepository>(), Mock.Of<ICardRepository>());
+        var controller = new DecksController(handler)
+        {
+            ControllerContext = ControllerContextFactory.WithoutOwner()
+        };
+
+        var result = await controller.SoftDeleteDeck(Guid.NewGuid(), CancellationToken.None);
+
+        Assert.IsType<BadRequestObjectResult>(result);
+    }
+
+    [Fact]
+    public async Task SoftDeleteDeck_ReturnsNoContent_WhenSuccessful()
+    {
+        using var dbContext = TestDbContextFactory.CreateContext();
+        var repository = new DeckRepository(dbContext);
+        var cardRepository = new CardRepository(dbContext);
+        var handler = new DeckHandler(repository, cardRepository);
+        var ownerId = Guid.NewGuid();
+        var deckId = Guid.NewGuid();
+        var controller = new DecksController(handler)
+        {
+            ControllerContext = ControllerContextFactory.WithOwner(ownerId)
+        };
+
+        await repository.UpsertAsync(new Deck
+        {
+            Id = deckId,
+            OwnerId = ownerId,
+            Name = "To Delete"
+        }, CancellationToken.None);
+
+        var result = await controller.SoftDeleteDeck(deckId, CancellationToken.None);
+
+        var statusResult = Assert.IsType<StatusCodeResult>(result);
+        Assert.Equal(StatusCodes.Status204NoContent, statusResult.StatusCode);
+    }
 }
