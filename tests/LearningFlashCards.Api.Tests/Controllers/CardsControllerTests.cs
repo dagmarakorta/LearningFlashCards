@@ -1,4 +1,5 @@
 using LearningFlashCards.Api.Controllers;
+using LearningFlashCards.Api.Controllers.Requests;
 using LearningFlashCards.Api.Services;
 using LearningFlashCards.Core.Domain.Entities;
 using LearningFlashCards.Api.Tests.TestUtilities;
@@ -73,11 +74,11 @@ public class CardsControllerTests
             ControllerContext = ControllerContextFactory.WithOwner(ownerId)
         };
 
-        var card = new Card
+        var request = new UpsertCardRequest
         {
             Front = "F",
             Back = "B",
-            State = new CardState
+            State = new CardStateRequest
             {
                 DueAt = DateTimeOffset.UtcNow,
                 IntervalDays = 1,
@@ -87,7 +88,7 @@ public class CardsControllerTests
             }
         };
 
-        var result = await controller.UpsertCard(deckId, card, CancellationToken.None);
+        var result = await controller.UpsertCard(deckId, request, CancellationToken.None);
 
         var ok = Assert.IsType<ObjectResult>(result.Result);
         var saved = Assert.IsType<Card>(ok.Value);

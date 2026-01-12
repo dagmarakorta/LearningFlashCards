@@ -1,4 +1,5 @@
 using LearningFlashCards.Api.Controllers;
+using LearningFlashCards.Api.Controllers.Requests;
 using LearningFlashCards.Api.Services;
 using LearningFlashCards.Core.Domain.Entities;
 using LearningFlashCards.Api.Tests.TestUtilities;
@@ -157,7 +158,7 @@ public class DecksControllerTests
             ControllerContext = ControllerContextFactory.WithoutOwner()
         };
 
-        var result = await controller.UpsertDeck(new Deck(), CancellationToken.None);
+        var result = await controller.UpsertDeck(new UpsertDeckRequest { Name = "Test" }, CancellationToken.None);
 
         Assert.IsType<BadRequestObjectResult>(result.Result);
     }
@@ -175,14 +176,13 @@ public class DecksControllerTests
             ControllerContext = ControllerContextFactory.WithOwner(ownerId)
         };
 
-        var deck = new Deck
+        var request = new UpsertDeckRequest
         {
             Id = Guid.NewGuid(),
-            OwnerId = ownerId,
             Name = "New Deck"
         };
 
-        var result = await controller.UpsertDeck(deck, CancellationToken.None);
+        var result = await controller.UpsertDeck(request, CancellationToken.None);
 
         var ok = Assert.IsType<ObjectResult>(result.Result);
         Assert.Equal(StatusCodes.Status200OK, ok.StatusCode);

@@ -1,3 +1,4 @@
+using LearningFlashCards.Api.Controllers.Requests;
 using LearningFlashCards.Api.Services;
 using LearningFlashCards.Core.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
@@ -39,15 +40,26 @@ public class DecksController : ApiControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<Deck>> UpsertDeck([FromBody] Deck deck, CancellationToken cancellationToken)
+    public async Task<ActionResult<Deck>> UpsertDeck([FromBody] UpsertDeckRequest request, CancellationToken cancellationToken)
     {
         if (!TryGetOwnerId(out var ownerId))
         {
             return BadRequest("Missing X-Owner-Id header.");
         }
 
+        var deck = MapToDeck(request);
         var result = await _deckHandler.UpsertDeckAsync(deck, ownerId, cancellationToken);
         return ToActionResult(result);
+    }
+
+    private static Deck MapToDeck(UpsertDeckRequest request)
+    {
+        return new Deck
+        {
+            Id = request.Id ?? Guid.NewGuid(),
+            Name = request.Name.Trim(),
+            Description = request.Description?.Trim()
+        };
     }
 
     [HttpDelete("{deckId:guid}")]

@@ -1,3 +1,4 @@
+using LearningFlashCards.Api.Controllers.Requests;
 using LearningFlashCards.Api.Services;
 using LearningFlashCards.Core.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
@@ -27,15 +28,25 @@ public class TagsController : ApiControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<Tag>> UpsertTag([FromBody] Tag tag, CancellationToken cancellationToken)
+    public async Task<ActionResult<Tag>> UpsertTag([FromBody] UpsertTagRequest request, CancellationToken cancellationToken)
     {
         if (!TryGetOwnerId(out var ownerId))
         {
             return BadRequest("Missing X-Owner-Id header.");
         }
 
+        var tag = MapToTag(request);
         var result = await _tagsHandler.UpsertTagAsync(tag, ownerId, cancellationToken);
         return ToActionResult(result);
+    }
+
+    private static Tag MapToTag(UpsertTagRequest request)
+    {
+        return new Tag
+        {
+            Id = request.Id ?? Guid.NewGuid(),
+            Name = request.Name.Trim()
+        };
     }
 
     [HttpDelete("{tagId:guid}")]

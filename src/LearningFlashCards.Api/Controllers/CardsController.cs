@@ -1,3 +1,4 @@
+using LearningFlashCards.Api.Controllers.Requests;
 using LearningFlashCards.Api.Services;
 using LearningFlashCards.Core.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
@@ -39,15 +40,41 @@ public class CardsController : ApiControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<Card>> UpsertCard(Guid deckId, [FromBody] Card card, CancellationToken cancellationToken)
+    public async Task<ActionResult<Card>> UpsertCard(Guid deckId, [FromBody] UpsertCardRequest request, CancellationToken cancellationToken)
     {
         if (!TryGetOwnerId(out var ownerId))
         {
             return BadRequest("Missing X-Owner-Id header.");
         }
 
+        var card = MapToCard(request);
         var result = await _cardsHandler.UpsertCardAsync(deckId, card, ownerId, cancellationToken);
         return ToActionResult(result);
+    }
+
+    private static Card MapToCard(UpsertCardRequest request)
+    {
+        var card = new Card
+        {
+            Id = request.Id ?? Guid.NewGuid(),
+            Front = request.Front.Trim(),
+            Back = request.Back.Trim(),
+            Notes = request.Notes?.Trim()
+        };
+
+        if (request.State is not null)
+        {
+            card.State = new CardState
+            {
+                DueAt = request.State.DueAt ?? DateTimeOffset.UtcNow,
+                IntervalDays = request.State.IntervalDays ?? 0,
+                EaseFactor = request.State.EaseFactor ?? 2.5,
+                Streak = request.State.Streak ?? 0,
+                Lapses = request.State.Lapses ?? 0
+            };
+        }
+
+        return card;
     }
 
     [HttpDelete("{cardId:guid}")]

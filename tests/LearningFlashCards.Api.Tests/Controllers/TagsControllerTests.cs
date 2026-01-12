@@ -1,4 +1,5 @@
 using LearningFlashCards.Api.Controllers;
+using LearningFlashCards.Api.Controllers.Requests;
 using LearningFlashCards.Api.Services;
 using LearningFlashCards.Core.Domain.Entities;
 using LearningFlashCards.Api.Tests.TestUtilities;
@@ -30,24 +31,18 @@ public class TagsControllerTests
     }
 
     [Fact]
-    public async Task UpsertTag_ReturnsForbidden_FromHandler()
+    public async Task UpsertTag_ReturnsBadRequest_WhenHeaderMissing()
     {
         var handler = new TagsHandler(Mock.Of<ITagRepository>());
-
         var controller = new TagsController(handler)
         {
-            ControllerContext = new ControllerContext
-            {
-                HttpContext = new DefaultHttpContext()
-            }
+            ControllerContext = ControllerContextFactory.WithoutOwner()
         };
-        var ownerId = Guid.NewGuid();
-        controller.HttpContext.Request.Headers["X-Owner-Id"] = ownerId.ToString();
 
-        var result = await controller.UpsertTag(new Tag { OwnerId = Guid.NewGuid() }, CancellationToken.None);
+        var request = new UpsertTagRequest { Name = "Tag" };
+        var result = await controller.UpsertTag(request, CancellationToken.None);
 
-        var forbidden = Assert.IsType<ObjectResult>(result.Result);
-        Assert.Equal(StatusCodes.Status403Forbidden, forbidden.StatusCode);
+        Assert.IsType<BadRequestObjectResult>(result.Result);
     }
 
     [Fact]
@@ -63,12 +58,12 @@ public class TagsControllerTests
             ControllerContext = ControllerContextFactory.WithOwner(ownerId)
         };
 
-        var tag = new Tag
+        var request = new UpsertTagRequest
         {
             Name = "Tag"
         };
 
-        var result = await controller.UpsertTag(tag, CancellationToken.None);
+        var result = await controller.UpsertTag(request, CancellationToken.None);
 
         var ok = Assert.IsType<ObjectResult>(result.Result);
         var saved = Assert.IsType<Tag>(ok.Value);
