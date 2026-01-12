@@ -42,3 +42,4 @@ packages/
 *.xcworkspace
 *.xcuserdata
 *.crash
+.claude/settings.local.json
