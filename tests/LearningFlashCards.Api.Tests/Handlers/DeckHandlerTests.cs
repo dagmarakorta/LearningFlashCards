@@ -4,6 +4,7 @@ using LearningFlashCards.Infrastructure.Persistence.Repositories;
 using LearningFlashCards.Api.Tests.TestUtilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace LearningFlashCards.Api.Tests.Handlers;
 
@@ -14,7 +15,8 @@ public class DeckHandlerTests
     {
         using var dbContext = TestDbContextFactory.CreateContext();
         var repository = new DeckRepository(dbContext);
-        var handler = new DeckHandler(repository);
+        var cardRepository = new CardRepository(dbContext);
+        var handler = new DeckHandler(repository, cardRepository);
         var ownerId = Guid.NewGuid();
 
         var deck = new Deck
@@ -36,7 +38,8 @@ public class DeckHandlerTests
     {
         using var dbContext = TestDbContextFactory.CreateContext();
         var repository = new DeckRepository(dbContext);
-        var handler = new DeckHandler(repository);
+        var cardRepository = new CardRepository(dbContext);
+        var handler = new DeckHandler(repository, cardRepository);
         var ownerId = Guid.NewGuid();
         var otherOwnerId = Guid.NewGuid();
 
@@ -60,7 +63,8 @@ public class DeckHandlerTests
     {
         using var dbContext = TestDbContextFactory.CreateContext();
         var repository = new DeckRepository(dbContext);
-        var handler = new DeckHandler(repository);
+        var cardRepository = new CardRepository(dbContext);
+        var handler = new DeckHandler(repository, cardRepository);
         var ownerId = Guid.NewGuid();
 
         var result = await handler.GetDeckAsync(Guid.NewGuid(), ownerId, CancellationToken.None);
@@ -74,7 +78,8 @@ public class DeckHandlerTests
     {
         using var dbContext = TestDbContextFactory.CreateContext();
         var repository = new DeckRepository(dbContext);
-        var handler = new DeckHandler(repository);
+        var cardRepository = new CardRepository(dbContext);
+        var handler = new DeckHandler(repository, cardRepository);
         var ownerId = Guid.NewGuid();
 
         var deck = new Deck
@@ -85,6 +90,10 @@ public class DeckHandlerTests
             RowVersion = Guid.NewGuid().ToByteArray()
         };
         dbContext.Decks.Add(deck);
+        dbContext.Cards.AddRange(
+            new Card { Id = Guid.NewGuid(), DeckId = deck.Id, Front = "Front", Back = "Back", RowVersion = Guid.NewGuid().ToByteArray() },
+            new Card { Id = Guid.NewGuid(), DeckId = deck.Id, Front = "Front 2", Back = "Back 2", RowVersion = Guid.NewGuid().ToByteArray() }
+        );
         await dbContext.SaveChangesAsync();
 
         var result = await handler.SoftDeleteDeckAsync(deck.Id, ownerId, CancellationToken.None);
@@ -95,6 +104,11 @@ public class DeckHandlerTests
         var stored = await dbContext.Decks.AsNoTracking().FirstOrDefaultAsync(d => d.Id == deck.Id, CancellationToken.None);
         Assert.NotNull(stored);
         Assert.NotNull(stored!.DeletedAt);
+
+        var storedCards = await dbContext.Cards.AsNoTracking()
+            .Where(c => c.DeckId == deck.Id)
+            .ToListAsync(CancellationToken.None);
+        Assert.All(storedCards, card => Assert.NotNull(card.DeletedAt));
     }
 
     [Fact]
@@ -102,7 +116,8 @@ public class DeckHandlerTests
     {
         using var dbContext = TestDbContextFactory.CreateContext();
         var repository = new DeckRepository(dbContext);
-        var handler = new DeckHandler(repository);
+        var cardRepository = new CardRepository(dbContext);
+        var handler = new DeckHandler(repository, cardRepository);
         var ownerId = Guid.NewGuid();
         var otherOwnerId = Guid.NewGuid();
         var deckId = Guid.NewGuid();
@@ -127,7 +142,8 @@ public class DeckHandlerTests
     {
         using var dbContext = TestDbContextFactory.CreateContext();
         var repository = new DeckRepository(dbContext);
-        var handler = new DeckHandler(repository);
+        var cardRepository = new CardRepository(dbContext);
+        var handler = new DeckHandler(repository, cardRepository);
         var ownerId = Guid.NewGuid();
         var otherOwnerId = Guid.NewGuid();
 

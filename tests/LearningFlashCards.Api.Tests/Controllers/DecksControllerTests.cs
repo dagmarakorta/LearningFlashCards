@@ -15,7 +15,7 @@ public class DecksControllerTests
     [Fact]
     public async Task GetDecks_ReturnsBadRequest_WhenHeaderMissing()
     {
-        var handler = new DeckHandler(Mock.Of<IDeckRepository>());
+        var handler = new DeckHandler(Mock.Of<IDeckRepository>(), Mock.Of<ICardRepository>());
         var controller = new DecksController(handler)
         {
             ControllerContext = new ControllerContext
@@ -35,7 +35,7 @@ public class DecksControllerTests
         var repoMock = new Mock<IDeckRepository>();
         repoMock.Setup(r => r.GetAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Deck?)null);
-        var handler = new DeckHandler(repoMock.Object);
+        var handler = new DeckHandler(repoMock.Object, Mock.Of<ICardRepository>());
 
         var controller = new DecksController(handler)
         {
@@ -57,7 +57,8 @@ public class DecksControllerTests
     {
         using var dbContext = Api.Tests.TestUtilities.TestDbContextFactory.CreateContext();
         var repository = new DeckRepository(dbContext);
-        var handler = new DeckHandler(repository);
+        var cardRepository = new CardRepository(dbContext);
+        var handler = new DeckHandler(repository, cardRepository);
         var ownerId = Guid.NewGuid();
         var controller = new DecksController(handler)
         {
@@ -91,7 +92,7 @@ public class DecksControllerTests
         var repoMock = new Mock<IDeckRepository>();
         repoMock.Setup(r => r.GetAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Deck?)null);
-        var handler = new DeckHandler(repoMock.Object);
+        var handler = new DeckHandler(repoMock.Object, Mock.Of<ICardRepository>());
 
         var controller = new DecksController(handler)
         {
