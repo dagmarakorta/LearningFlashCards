@@ -7,10 +7,12 @@ namespace LearningFlashCards.Api.Services;
 public class DeckHandler
 {
     private readonly IDeckRepository _deckRepository;
+    private readonly ICardRepository _cardRepository;
 
-    public DeckHandler(IDeckRepository deckRepository)
+    public DeckHandler(IDeckRepository deckRepository, ICardRepository cardRepository)
     {
         _deckRepository = deckRepository;
+        _cardRepository = cardRepository;
     }
 
     public async Task<HandlerResult<IReadOnlyList<Deck>>> GetDecksAsync(Guid ownerId, CancellationToken cancellationToken)
@@ -55,6 +57,7 @@ public class DeckHandler
         }
 
         var deletedAt = DateTimeOffset.UtcNow;
+        await _cardRepository.SoftDeleteByDeckAsync(deckId, deletedAt, cancellationToken);
         await _deckRepository.SoftDeleteAsync(deckId, deletedAt, cancellationToken);
         return HandlerResult<string?>.Success(null, StatusCodes.Status204NoContent);
     }

@@ -43,10 +43,23 @@
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <Border Style="{StaticResource DeckCard}">
-                        <VerticalStackLayout Spacing="4">
-                            <Label Text="{Binding Name}" Style="{StaticResource DeckTitle}" />
-                            <Label Text="{Binding Summary}" Style="{StaticResource DeckMeta}" />
-                        </VerticalStackLayout>
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="{Binding Name}" Style="{StaticResource DeckTitle}" />
+                                <Label Text="{Binding Summary}" Style="{StaticResource DeckMeta}" />
+                            </VerticalStackLayout>
+                            <Button
+                                Grid.Column="1"
+                                Text="🗑️"
+                                FontSize="18"
+                                BackgroundColor="Transparent"
+                                TextColor="{AppThemeBinding Light={StaticResource Gray500}, Dark={StaticResource Gray300}}"
+                                Padding="6"
+                                MinimumHeightRequest="32"
+                                MinimumWidthRequest="32"
+                                SemanticProperties.Hint="Delete deck"
+                                Clicked="OnDeleteDeckClicked" />
+                        </Grid>
                     </Border>
                 </DataTemplate>
             </CollectionView.ItemTemplate>

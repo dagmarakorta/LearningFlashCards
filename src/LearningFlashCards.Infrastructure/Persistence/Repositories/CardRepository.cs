@@ -58,6 +58,26 @@ public class CardRepository : ICardRepository
         await _db.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task SoftDeleteByDeckAsync(Guid deckId, DateTimeOffset deletedAt, CancellationToken cancellationToken)
+    {
+        var cards = await _db.Cards
+            .Where(c => c.DeckId == deckId && c.DeletedAt == null)
+            .ToListAsync(cancellationToken);
+
+        if (cards.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var card in cards)
+        {
+            card.DeletedAt = deletedAt;
+            card.ModifiedAt = deletedAt;
+        }
+
+        await _db.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task<IReadOnlyList<SyncChange<Card>>> GetChangesSinceAsync(string? syncToken, Guid ownerId, CancellationToken cancellationToken)
     {
         var since = SyncTokenHelper.Parse(syncToken);

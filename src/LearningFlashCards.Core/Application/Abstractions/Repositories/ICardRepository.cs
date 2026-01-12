@@ -9,6 +9,7 @@ public interface ICardRepository
     Task<Card?> GetAsync(Guid cardId, CancellationToken cancellationToken);
     Task UpsertAsync(Card card, CancellationToken cancellationToken);
     Task SoftDeleteAsync(Guid cardId, DateTimeOffset deletedAt, CancellationToken cancellationToken);
+    Task SoftDeleteByDeckAsync(Guid deckId, DateTimeOffset deletedAt, CancellationToken cancellationToken);
     Task<IReadOnlyList<SyncChange<Card>>> GetChangesSinceAsync(string? syncToken, Guid ownerId, CancellationToken cancellationToken);
     Task<string?> SaveChangesAsync(IEnumerable<SyncChange<Card>> changes, Guid ownerId, CancellationToken cancellationToken);
 }

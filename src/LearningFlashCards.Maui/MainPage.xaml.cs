@@ -10,7 +10,9 @@ namespace LearningFlashCards.Maui
     {
         public ObservableCollection<DeckListItem> Decks { get; } = new();
         private readonly IDeckRepository _deckRepository;
+        private readonly ICardRepository _cardRepository;
         private readonly ICurrentUserService _currentUser;
+        private bool _suppressSelection;
 
         public MainPage()
         {
@@ -18,6 +20,7 @@ namespace LearningFlashCards.Maui
             BindingContext = this;
 
             _deckRepository = GetRequiredService<IDeckRepository>();
+            _cardRepository = GetRequiredService<ICardRepository>();
             _currentUser = GetRequiredService<ICurrentUserService>();
         }
 
@@ -44,6 +47,13 @@ namespace LearningFlashCards.Maui
                 return;
             }
 
+            if (_suppressSelection)
+            {
+                _suppressSelection = false;
+                collection.SelectedItem = null;
+                return;
+            }
+
             if (e.CurrentSelection.FirstOrDefault() is not DeckListItem deck)
             {
                 return;
@@ -51,6 +61,40 @@ namespace LearningFlashCards.Maui
 
             collection.SelectedItem = null;
             await Shell.Current.GoToAsync($"{nameof(DeckDetailPage)}?deckId={deck.Id}");
+        }
+
+        private async void OnDeleteDeckClicked(object? sender, EventArgs e)
+        {
+            if (sender is not Button button || button.BindingContext is not DeckListItem deck)
+            {
+                return;
+            }
+
+            _suppressSelection = true;
+
+            var confirm = await DisplayAlertAsync("Delete deck", "Delete this deck and all its cards?", "Delete", "Cancel");
+            if (!confirm)
+            {
+                return;
+            }
+
+            if (!_currentUser.IsAuthenticated || _currentUser.UserId is null)
+            {
+                await Shell.Current.GoToAsync("//LoginPage");
+                return;
+            }
+
+            var existing = await _deckRepository.GetAsync(deck.Id, CancellationToken.None);
+            if (existing is null || existing.OwnerId != _currentUser.UserId.Value)
+            {
+                await DisplayAlertAsync("Not found", "Deck not found.", "OK");
+                return;
+            }
+
+            var deletedAt = DateTimeOffset.UtcNow;
+            await _cardRepository.SoftDeleteByDeckAsync(deck.Id, deletedAt, CancellationToken.None);
+            await _deckRepository.SoftDeleteAsync(deck.Id, deletedAt, CancellationToken.None);
+            Decks.Remove(deck);
         }
 
         public record DeckListItem(Guid Id, string Name, string Summary);
