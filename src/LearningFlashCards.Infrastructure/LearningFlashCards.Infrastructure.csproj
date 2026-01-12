@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="LearningFlashCards.Infrastructure.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\\LearningFlashCards.Core\\LearningFlashCards.Core.csproj" />
   </ItemGroup>
 

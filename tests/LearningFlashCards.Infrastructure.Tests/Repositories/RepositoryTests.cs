@@ -1357,4 +1357,227 @@ public class RepositoryTests
         Assert.Equal(ownerId, changes[0].Entity.Id);
         Assert.Equal(SyncOperation.Upsert, changes[0].Operation);
     }
+
+    [Fact]
+    public async Task CardRepository_GetAsync_IncludesTags()
+    {
+        using var dbContext = TestDbContextFactory.CreateContext();
+        var deckRepository = new DeckRepository(dbContext);
+        var tagRepository = new TagRepository(dbContext);
+        var cardRepository = new CardRepository(dbContext);
+        var ownerId = Guid.NewGuid();
+        var deckId = Guid.NewGuid();
+        var cardId = Guid.NewGuid();
+        var tagId1 = Guid.NewGuid();
+        var tagId2 = Guid.NewGuid();
+
+        await deckRepository.UpsertAsync(new Deck
+        {
+            Id = deckId,
+            OwnerId = ownerId,
+            Name = "Deck"
+        }, CancellationToken.None);
+
+        await tagRepository.UpsertAsync(new Tag
+        {
+            Id = tagId1,
+            OwnerId = ownerId,
+            Name = "Tag1"
+        }, CancellationToken.None);
+
+        await tagRepository.UpsertAsync(new Tag
+        {
+            Id = tagId2,
+            OwnerId = ownerId,
+            Name = "Tag2"
+        }, CancellationToken.None);
+
+        var card = new Card
+        {
+            Id = cardId,
+            DeckId = deckId,
+            Front = "Front",
+            Back = "Back",
+            State = new CardState
+            {
+                DueAt = DateTimeOffset.UtcNow,
+                IntervalDays = 1,
+                EaseFactor = 2.5,
+                Streak = 0,
+                Lapses = 0
+            }
+        };
+
+        dbContext.Cards.Add(card);
+        await dbContext.SaveChangesAsync();
+
+        var tag1 = await dbContext.Tags.FindAsync(tagId1);
+        var tag2 = await dbContext.Tags.FindAsync(tagId2);
+        card.Tags.Add(tag1!);
+        card.Tags.Add(tag2!);
+        await dbContext.SaveChangesAsync();
+
+        dbContext.ChangeTracker.Clear();
+
+        var retrieved = await cardRepository.GetAsync(cardId, CancellationToken.None);
+
+        Assert.NotNull(retrieved);
+        Assert.Equal(2, retrieved!.Tags.Count);
+        Assert.Contains(retrieved.Tags, t => t.Name == "Tag1");
+        Assert.Contains(retrieved.Tags, t => t.Name == "Tag2");
+    }
+
+    [Fact]
+    public async Task CardRepository_SoftDeleteAsync_ReturnsEarly_WhenCardNotFound()
+    {
+        using var dbContext = TestDbContextFactory.CreateContext();
+        var repository = new CardRepository(dbContext);
+        var nonExistentCardId = Guid.NewGuid();
+
+        await repository.SoftDeleteAsync(nonExistentCardId, DateTimeOffset.UtcNow, CancellationToken.None);
+
+        var card = await dbContext.Cards.FirstOrDefaultAsync(c => c.Id == nonExistentCardId, CancellationToken.None);
+        Assert.Null(card);
+    }
+
+    [Fact]
+    public async Task CardRepository_SoftDeleteByDeckAsync_ReturnsEarly_WhenNoCards()
+    {
+        using var dbContext = TestDbContextFactory.CreateContext();
+        var repository = new CardRepository(dbContext);
+        var emptyDeckId = Guid.NewGuid();
+
+        await repository.SoftDeleteByDeckAsync(emptyDeckId, DateTimeOffset.UtcNow, CancellationToken.None);
+
+        var cards = await dbContext.Cards.Where(c => c.DeckId == emptyDeckId).ToListAsync(CancellationToken.None);
+        Assert.Empty(cards);
+    }
+
+    [Fact]
+    public async Task CardRepository_SaveChanges_InsertsDeletedWhenMissing()
+    {
+        using var dbContext = TestDbContextFactory.CreateContext();
+        var deckRepository = new DeckRepository(dbContext);
+        var cardRepository = new CardRepository(dbContext);
+        var ownerId = Guid.NewGuid();
+        var deckId = Guid.NewGuid();
+        var cardId = Guid.NewGuid();
+
+        await deckRepository.UpsertAsync(new Deck
+        {
+            Id = deckId,
+            OwnerId = ownerId,
+            Name = "Deck"
+        }, CancellationToken.None);
+
+        var deletedAt = DateTimeOffset.UtcNow;
+        var changes = new[]
+        {
+            new SyncChange<Card>(SyncOperation.Delete, new Card
+            {
+                Id = cardId,
+                DeckId = deckId,
+                Front = "Deleted",
+                Back = "Back",
+                State = new CardState
+                {
+                    DueAt = DateTimeOffset.UtcNow,
+                    IntervalDays = 1,
+                    EaseFactor = 2.5,
+                    Streak = 0,
+                    Lapses = 0
+                },
+                DeletedAt = deletedAt,
+                RowVersion = Guid.NewGuid().ToByteArray()
+            }, null)
+        };
+
+        await cardRepository.SaveChangesAsync(changes, ownerId, CancellationToken.None);
+
+        var stored = await dbContext.Cards.AsNoTracking().FirstOrDefaultAsync(c => c.Id == cardId, CancellationToken.None);
+        Assert.NotNull(stored);
+        Assert.NotNull(stored!.DeletedAt);
+    }
+
+    [Fact]
+    public async Task UserProfileRepository_ExistsByEmailAsync_ReturnsFalse_WhenNotFound()
+    {
+        using var dbContext = TestDbContextFactory.CreateContext();
+        var repository = new UserProfileRepository(dbContext);
+
+        var exists = await repository.ExistsByEmailAsync("nonexistent@example.com", CancellationToken.None);
+
+        Assert.False(exists);
+    }
+
+    [Fact]
+    public async Task UserProfileRepository_ExistsByDisplayNameAsync_ReturnsFalse_WhenNotFound()
+    {
+        using var dbContext = TestDbContextFactory.CreateContext();
+        var repository = new UserProfileRepository(dbContext);
+
+        var exists = await repository.ExistsByDisplayNameAsync("NonExistentUser", CancellationToken.None);
+
+        Assert.False(exists);
+    }
+
+    [Fact]
+    public async Task UserProfileRepository_CreateAsync_InsertsNewProfile()
+    {
+        using var dbContext = TestDbContextFactory.CreateContext();
+        var repository = new UserProfileRepository(dbContext);
+        var profileId = Guid.NewGuid();
+
+        var profile = await repository.CreateAsync(new UserProfile
+        {
+            Id = profileId,
+            Email = "new@example.com",
+            DisplayName = "NewUser",
+            AvatarUrl = "https://example.com/avatar.png"
+        }, CancellationToken.None);
+
+        Assert.NotNull(profile);
+        Assert.Equal(profileId, profile.Id);
+        Assert.Equal("new@example.com", profile.Email);
+        Assert.Equal("NewUser", profile.DisplayName);
+        Assert.Equal("https://example.com/avatar.png", profile.AvatarUrl);
+
+        var stored = await dbContext.Users.FindAsync(profileId);
+        Assert.NotNull(stored);
+        Assert.Equal("new@example.com", stored!.Email);
+    }
+
+    [Fact]
+    public async Task UserProfileRepository_GetByEmailAsync_ReturnsNull_WhenNotFound()
+    {
+        using var dbContext = TestDbContextFactory.CreateContext();
+        var repository = new UserProfileRepository(dbContext);
+
+        var profile = await repository.GetByEmailAsync("missing@example.com", CancellationToken.None);
+
+        Assert.Null(profile);
+    }
+
+    [Fact]
+    public async Task UserProfileRepository_GetByDisplayNameAsync_ReturnsNull_WhenNotFound()
+    {
+        using var dbContext = TestDbContextFactory.CreateContext();
+        var repository = new UserProfileRepository(dbContext);
+
+        var profile = await repository.GetByDisplayNameAsync("MissingUser", CancellationToken.None);
+
+        Assert.Null(profile);
+    }
+
+    [Fact]
+    public async Task UserProfileRepository_GetAsync_ReturnsNull_WhenNotFound()
+    {
+        using var dbContext = TestDbContextFactory.CreateContext();
+        var repository = new UserProfileRepository(dbContext);
+        var nonExistentId = Guid.NewGuid();
+
+        var profile = await repository.GetAsync(nonExistentId, CancellationToken.None);
+
+        Assert.Null(profile);
+    }
 }
