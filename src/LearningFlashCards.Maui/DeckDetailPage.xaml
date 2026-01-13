@@ -45,7 +45,7 @@
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <Border Style="{StaticResource DeckCard}">
-                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12">
                             <VerticalStackLayout Spacing="6">
                                 <Label Text="{Binding Front}" Style="{StaticResource DeckTitle}" />
                                 <Label Text="{Binding Back}" Style="{StaticResource DeckMeta}" />
@@ -53,6 +53,13 @@
                             <!-- TODO: Replace emoji with image asset when available (e.g., trash.png). -->
                             <Button
                                 Grid.Column="1"
+                                Text="✏️"
+                                BackgroundColor="Transparent"
+                                TextColor="{StaticResource Gray500}"
+                                FontSize="18"
+                                Clicked="OnEditCardClicked" />
+                            <Button
+                                Grid.Column="2"
                                 Text="🗑"
                                 BackgroundColor="Transparent"
                                 TextColor="{StaticResource Gray500}"

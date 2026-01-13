@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="LearningFlashCards.Maui.EditCardPage"
+             Title="Edit Card">
+
+    <ScrollView>
+        <VerticalStackLayout
+            Padding="{StaticResource PagePadding}"
+            Spacing="{StaticResource PageRowSpacing}">
+            <Label
+                Text="Edit Card"
+                Style="{StaticResource PageTitle}"
+                SemanticProperties.HeadingLevel="Level1" />
+
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Front" />
+                <Editor
+                    x:Name="FrontEditor"
+                    Placeholder="Front text"
+                    AutoSize="TextChanges"
+                    MinimumHeightRequest="120" />
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Back" />
+                <Editor
+                    x:Name="BackEditor"
+                    Placeholder="Back text"
+                    AutoSize="TextChanges"
+                    MinimumHeightRequest="120" />
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Spacing="8">
+                <Button
+                    Text="Save"
+                    Style="{StaticResource PrimaryButton}"
+                    Clicked="OnSaveClicked" />
+                <Button
+                    Text="Cancel"
+                    Clicked="OnCancelClicked" />
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

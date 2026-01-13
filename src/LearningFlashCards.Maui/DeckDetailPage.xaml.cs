@@ -121,6 +121,21 @@ namespace LearningFlashCards.Maui
             Cards.Remove(card);
         }
 
+        private async void OnEditCardClicked(object? sender, EventArgs e)
+        {
+            if (sender is not Button button || button.BindingContext is not CardListItem card)
+            {
+                return;
+            }
+
+            if (_deckId is null)
+            {
+                return;
+            }
+
+            await Shell.Current.GoToAsync($"{nameof(EditCardPage)}?deckId={_deckId}&cardId={card.Id}");
+        }
+
         public record CardListItem(Guid Id, string Front, string Back);
 
         private static T GetRequiredService<T>() where T : notnull
