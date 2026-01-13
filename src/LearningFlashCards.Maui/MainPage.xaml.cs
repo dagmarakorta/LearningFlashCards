@@ -97,6 +97,17 @@ namespace LearningFlashCards.Maui
             Decks.Remove(deck);
         }
 
+        private async void OnEditDeckClicked(object? sender, EventArgs e)
+        {
+            if (sender is not Button button || button.BindingContext is not DeckListItem deck)
+            {
+                return;
+            }
+
+            _suppressSelection = true;
+            await Shell.Current.GoToAsync($"{nameof(EditDeckPage)}?deckId={deck.Id}");
+        }
+
         public record DeckListItem(Guid Id, string Name, string Summary);
 
         private async Task LoadDecksAsync()

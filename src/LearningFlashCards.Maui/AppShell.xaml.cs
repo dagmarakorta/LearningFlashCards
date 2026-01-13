@@ -8,6 +8,7 @@ namespace LearningFlashCards.Maui
         {
             InitializeComponent();
             Routing.RegisterRoute(nameof(CreateDeckPage), typeof(CreateDeckPage));
+            Routing.RegisterRoute(nameof(EditDeckPage), typeof(EditDeckPage));
             Routing.RegisterRoute(nameof(CreateCardPage), typeof(CreateCardPage));
             Routing.RegisterRoute(nameof(EditCardPage), typeof(EditCardPage));
             Routing.RegisterRoute(nameof(StudyDeckPage), typeof(StudyDeckPage));
