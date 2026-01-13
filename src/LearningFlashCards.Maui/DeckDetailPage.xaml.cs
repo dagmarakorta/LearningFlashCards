@@ -106,8 +106,33 @@ namespace LearningFlashCards.Maui
 
         private async void OnDeleteCardClicked(object? sender, EventArgs e)
         {
-            if (sender is not Button button || button.BindingContext is not CardListItem card)
+            if (sender is not Button button || button.BindingContext is not CardListItem cardItem)
             {
+                return;
+            }
+
+            if (!_currentUser.IsAuthenticated || _currentUser.UserId is null)
+            {
+                await Shell.Current.GoToAsync("//LoginPage");
+                return;
+            }
+
+            if (_deckId is null)
+            {
+                return;
+            }
+
+            var card = await _cardRepository.GetAsync(cardItem.Id, CancellationToken.None);
+            if (card is null || card.DeckId != _deckId)
+            {
+                await DisplayAlertAsync("Error", "Card not found in this deck.", "OK");
+                return;
+            }
+
+            var deck = await _deckRepository.GetAsync(_deckId.Value, CancellationToken.None);
+            if (deck is null || deck.OwnerId != _currentUser.UserId.Value)
+            {
+                await DisplayAlertAsync("Not authorized", "You do not have permission to delete this card.", "OK");
                 return;
             }
 
@@ -118,7 +143,7 @@ namespace LearningFlashCards.Maui
             }
 
             await _cardRepository.SoftDeleteAsync(card.Id, DateTimeOffset.UtcNow, CancellationToken.None);
-            Cards.Remove(card);
+            Cards.Remove(cardItem);
         }
 
         private async void OnEditCardClicked(object? sender, EventArgs e)

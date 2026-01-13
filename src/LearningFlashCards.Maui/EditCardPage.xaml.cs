@@ -63,17 +63,25 @@ namespace LearningFlashCards.Maui
                 return;
             }
 
-            if (_cardId is null)
+            if (_cardId is null || _deckId is null)
             {
-                await DisplayAlertAsync("Missing card", "Unable to load card.", "OK");
+                await DisplayAlertAsync("Missing data", "Unable to load card.", "OK");
+                await Shell.Current.GoToAsync("..");
+                return;
+            }
+
+            var deck = await _deckRepository.GetAsync(_deckId.Value, CancellationToken.None);
+            if (deck is null || deck.OwnerId != _currentUser.UserId.Value)
+            {
+                await DisplayAlertAsync("Not authorized", "You do not have permission to edit this card.", "OK");
                 await Shell.Current.GoToAsync("..");
                 return;
             }
 
             _card = await _cardRepository.GetAsync(_cardId.Value, CancellationToken.None);
-            if (_card is null)
+            if (_card is null || _card.DeckId != _deckId)
             {
-                await DisplayAlertAsync("Not found", "Card not found.", "OK");
+                await DisplayAlertAsync("Not found", "Card not found in this deck.", "OK");
                 await Shell.Current.GoToAsync("..");
                 return;
             }
