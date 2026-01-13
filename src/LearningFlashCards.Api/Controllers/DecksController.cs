@@ -1,4 +1,3 @@
-using System.Linq;
 using LearningFlashCards.Api.Controllers.Requests;
 using LearningFlashCards.Api.Services;
 using LearningFlashCards.Core.Domain.Entities;
@@ -48,13 +47,6 @@ public class DecksController : ApiControllerBase
             return BadRequest("Missing X-Owner-Id header.");
         }
 
-        var invalidChars = TextSanitizer.GetInvalidStrictChars(request.Name);
-        if (invalidChars.Length > 0)
-        {
-            var charList = string.Join(", ", invalidChars.Select(c => $"'{c}'"));
-            return BadRequest($"Deck name contains invalid characters: {charList}. These characters are not allowed: < > \\ / `");
-        }
-
         var deck = MapToDeck(request);
         var result = await _deckHandler.UpsertDeckAsync(deck, ownerId, cancellationToken);
         return ToActionResult(result);
@@ -65,7 +57,7 @@ public class DecksController : ApiControllerBase
         return new Deck
         {
             Id = request.Id ?? Guid.NewGuid(),
-            Name = TextSanitizer.SanitizeStrict(request.Name),
+            Name = TextSanitizer.SanitizePermissive(request.Name),
             Description = request.Description is not null ? TextSanitizer.SanitizePermissive(request.Description) : null
         };
     }

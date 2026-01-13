@@ -16,13 +16,13 @@ public class CreateUserProfileHandler
 
     public async Task<CreateUserProfileResult> HandleAsync(CreateUserRequest request, CancellationToken cancellationToken)
     {
-        var displayName = TextSanitizer.SanitizeStrict(request.DisplayName);
+        var displayName = TextSanitizer.SanitizePermissive(request.DisplayName);
         var normalizedEmail = TextSanitizer.SanitizeStrict(request.Email).ToLowerInvariant();
         var avatarUrl = string.IsNullOrWhiteSpace(request.AvatarUrl) ? null : request.AvatarUrl.Trim();
 
-        if (!TextSanitizer.IsValidStrict(request.DisplayName) || !TextSanitizer.IsValidStrict(request.Email))
+        if (!TextSanitizer.IsValidStrict(request.Email))
         {
-            return CreateUserProfileResult.Failure(StatusCodes.Status400BadRequest, "Input contains unsupported characters.");
+            return CreateUserProfileResult.Failure(StatusCodes.Status400BadRequest, "Email contains unsupported characters.");
         }
 
         if (avatarUrl is not null && !Uri.IsWellFormedUriString(avatarUrl, UriKind.Absolute))
