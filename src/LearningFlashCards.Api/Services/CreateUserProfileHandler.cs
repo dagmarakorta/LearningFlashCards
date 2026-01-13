@@ -1,4 +1,3 @@
-using System.Linq;
 using LearningFlashCards.Api.Controllers;
 using LearningFlashCards.Core.Application.Abstractions.Repositories;
 using LearningFlashCards.Core.Domain.Entities;
@@ -17,11 +16,11 @@ public class CreateUserProfileHandler
 
     public async Task<CreateUserProfileResult> HandleAsync(CreateUserRequest request, CancellationToken cancellationToken)
     {
-        var displayName = SanitizeText(request.DisplayName);
-        var normalizedEmail = SanitizeText(request.Email).ToLowerInvariant();
+        var displayName = TextSanitizer.SanitizeStrict(request.DisplayName);
+        var normalizedEmail = TextSanitizer.SanitizeStrict(request.Email).ToLowerInvariant();
         var avatarUrl = string.IsNullOrWhiteSpace(request.AvatarUrl) ? null : request.AvatarUrl.Trim();
 
-        if (HasUnsafeCharacters(displayName) || HasUnsafeCharacters(normalizedEmail))
+        if (!TextSanitizer.IsValidStrict(request.DisplayName) || !TextSanitizer.IsValidStrict(request.Email))
         {
             return CreateUserProfileResult.Failure(StatusCodes.Status400BadRequest, "Input contains unsupported characters.");
         }
@@ -47,11 +46,6 @@ public class CreateUserProfileHandler
 
         return CreateUserProfileResult.Success(createdProfile);
     }
-
-    private static string SanitizeText(string value) => string.Concat(value.Where(c => !char.IsControl(c))).Trim();
-
-    private static bool HasUnsafeCharacters(string value) =>
-        value.IndexOfAny(new[] { '<', '>', '\\', '/', '`' }) >= 0;
 }
 
 public record CreateUserProfileResult(bool IsSuccess, UserProfile? Profile, int StatusCode, string? Error)

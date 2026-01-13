@@ -1,3 +1,4 @@
+using System.Linq;
 using LearningFlashCards.Api.Controllers.Requests;
 using LearningFlashCards.Api.Services;
 using LearningFlashCards.Core.Domain.Entities;
@@ -35,6 +36,13 @@ public class TagsController : ApiControllerBase
             return BadRequest("Missing X-Owner-Id header.");
         }
 
+        var invalidChars = TextSanitizer.GetInvalidStrictChars(request.Name);
+        if (invalidChars.Length > 0)
+        {
+            var charList = string.Join(", ", invalidChars.Select(c => $"'{c}'"));
+            return BadRequest($"Tag name contains invalid characters: {charList}. These characters are not allowed: < > \\ / `");
+        }
+
         var tag = MapToTag(request);
         var result = await _tagsHandler.UpsertTagAsync(tag, ownerId, cancellationToken);
         return ToActionResult(result);
@@ -45,7 +53,7 @@ public class TagsController : ApiControllerBase
         return new Tag
         {
             Id = request.Id ?? Guid.NewGuid(),
-            Name = request.Name.Trim()
+            Name = TextSanitizer.SanitizeStrict(request.Name)
         };
     }
 

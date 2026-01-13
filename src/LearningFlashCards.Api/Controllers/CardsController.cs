@@ -57,9 +57,9 @@ public class CardsController : ApiControllerBase
         var card = new Card
         {
             Id = request.Id ?? Guid.NewGuid(),
-            Front = request.Front.Trim(),
-            Back = request.Back.Trim(),
-            Notes = request.Notes?.Trim()
+            Front = TextSanitizer.SanitizePermissive(request.Front),
+            Back = TextSanitizer.SanitizePermissive(request.Back),
+            Notes = request.Notes is not null ? TextSanitizer.SanitizePermissive(request.Notes) : null
         };
 
         if (request.State is not null)
