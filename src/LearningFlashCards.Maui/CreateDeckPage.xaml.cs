@@ -1,5 +1,6 @@
 using LearningFlashCards.Core.Application.Abstractions.Repositories;
 using LearningFlashCards.Core.Domain.Entities;
+using LearningFlashCards.Core.Domain.Study;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace LearningFlashCards.Maui
@@ -99,16 +100,16 @@ namespace LearningFlashCards.Maui
                 return null;
             }
 
-            if (maxInterval < easyMin)
-            {
-                await DisplayAlertAsync("Invalid settings", "Max interval must be greater than or equal to the easy minimum interval.", "OK");
-                return null;
-            }
-
             settings.DailyReviewLimit = dailyLimit;
             settings.EasyMinIntervalDays = easyMin;
             settings.MaxIntervalDays = maxInterval;
             settings.RepeatInSession = RepeatInSessionSwitch.IsToggled;
+
+            if (!StudySettingsValidator.TryValidate(settings, out var error))
+            {
+                await DisplayAlertAsync("Invalid settings", error ?? "Study settings are invalid.", "OK");
+                return null;
+            }
 
             return settings;
         }

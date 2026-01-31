@@ -83,16 +83,8 @@ namespace LearningFlashCards.Maui
 
             var cards = await _cardRepository.GetByDeckAsync(deck.Id, CancellationToken.None);
             var now = DateTimeOffset.UtcNow;
-            var dueCards = cards
-                .Where(card => card.State.DueAt <= now)
-                .OrderBy(card => card.State.DueAt)
-                .ToList();
-
             var dailyLimit = Math.Max(0, _studySettings.DailyReviewLimit);
-            if (dailyLimit > 0 && dueCards.Count > dailyLimit)
-            {
-                dueCards = dueCards.Take(dailyLimit).ToList();
-            }
+            var dueCards = StudyQueueBuilder.SelectDue(cards, now, dailyLimit);
 
             _cards.Clear();
             _cards.AddRange(dueCards);
@@ -183,8 +175,7 @@ namespace LearningFlashCards.Maui
             card.ModifiedAt = now;
             await _cardRepository.UpsertAsync(card, CancellationToken.None);
 
-            var repeatInSession = _studySettings.RepeatInSession &&
-                (rating == CardReviewRating.Again || rating == CardReviewRating.Hard);
+            var repeatInSession = StudySessionRules.ShouldRepeatInSession(rating, _studySettings);
 
             _cards.RemoveAt(_currentIndex);
             if (repeatInSession)

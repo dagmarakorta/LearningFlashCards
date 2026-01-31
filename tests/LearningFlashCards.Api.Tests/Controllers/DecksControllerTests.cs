@@ -191,6 +191,40 @@ public class DecksControllerTests
     }
 
     [Fact]
+    public async Task UpsertDeck_MapsStudySettings()
+    {
+        using var dbContext = TestDbContextFactory.CreateContext();
+        var repository = new DeckRepository(dbContext);
+        var cardRepository = new CardRepository(dbContext);
+        var handler = new DeckHandler(repository, cardRepository);
+        var ownerId = Guid.NewGuid();
+        var controller = new DecksController(handler)
+        {
+            ControllerContext = ControllerContextFactory.WithOwner(ownerId)
+        };
+
+        var request = new UpsertDeckRequest
+        {
+            Id = Guid.NewGuid(),
+            Name = "Study Deck",
+            DailyReviewLimit = 25,
+            EasyMinIntervalDays = 4,
+            MaxIntervalDays = 90,
+            RepeatInSession = false
+        };
+
+        var result = await controller.UpsertDeck(request, CancellationToken.None);
+
+        var ok = Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(StatusCodes.Status200OK, ok.StatusCode);
+        var returnedDeck = Assert.IsType<Deck>(ok.Value);
+        Assert.Equal(25, returnedDeck.StudySettings.DailyReviewLimit);
+        Assert.Equal(4, returnedDeck.StudySettings.EasyMinIntervalDays);
+        Assert.Equal(90, returnedDeck.StudySettings.MaxIntervalDays);
+        Assert.False(returnedDeck.StudySettings.RepeatInSession);
+    }
+
+    [Fact]
     public async Task SoftDeleteDeck_ReturnsBadRequest_WhenHeaderMissing()
     {
         var handler = new DeckHandler(Mock.Of<IDeckRepository>(), Mock.Of<ICardRepository>());
