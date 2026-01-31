@@ -31,6 +31,12 @@ public class CardRepository : ICardRepository
 
     public async Task UpsertAsync(Card card, CancellationToken cancellationToken)
     {
+        var tracked = _db.Cards.Local.FirstOrDefault(c => c.Id == card.Id);
+        if (tracked != null && !ReferenceEquals(tracked, card))
+        {
+            _db.Entry(tracked).State = EntityState.Detached;
+        }
+
         var exists = await _db.Cards.AsNoTracking().AnyAsync(c => c.Id == card.Id, cancellationToken);
         if (exists)
         {

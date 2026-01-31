@@ -1,5 +1,6 @@
 using LearningFlashCards.Core.Application.Abstractions.Repositories;
 using LearningFlashCards.Core.Domain.Entities;
+using LearningFlashCards.Core.Domain.Study;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace LearningFlashCards.Maui
@@ -19,6 +20,9 @@ namespace LearningFlashCards.Maui
         public string DeckName { get; private set; } = "Study";
         public string CurrentSideText { get; private set; } = string.Empty;
         public string ProgressText { get; private set; } = string.Empty;
+        public bool HasCards { get; private set; }
+        public bool CanShowAnswer { get; private set; }
+        public bool CanRate { get; private set; }
 
         public string? DeckId
         {
@@ -75,8 +79,14 @@ namespace LearningFlashCards.Maui
             OnPropertyChanged(nameof(DeckName));
 
             var cards = await _cardRepository.GetByDeckAsync(deck.Id, CancellationToken.None);
+            var now = DateTimeOffset.UtcNow;
+            var dueCards = cards
+                .Where(card => card.State.DueAt <= now)
+                .OrderBy(card => card.State.DueAt)
+                .ToList();
+
             _cards.Clear();
-            _cards.AddRange(cards);
+            _cards.AddRange(dueCards);
             _currentIndex = 0;
             _showBack = false;
 
@@ -85,9 +95,13 @@ namespace LearningFlashCards.Maui
 
         private void UpdateCardDisplay()
         {
-            if (_cards.Count == 0)
+            HasCards = _cards.Count > 0;
+            CanShowAnswer = HasCards && !_showBack;
+            CanRate = HasCards && _showBack;
+
+            if (!HasCards)
             {
-                CurrentSideText = "No cards yet.";
+                CurrentSideText = "No cards due yet.";
                 ProgressText = string.Empty;
             }
             else
@@ -99,6 +113,9 @@ namespace LearningFlashCards.Maui
 
             OnPropertyChanged(nameof(CurrentSideText));
             OnPropertyChanged(nameof(ProgressText));
+            OnPropertyChanged(nameof(HasCards));
+            OnPropertyChanged(nameof(CanShowAnswer));
+            OnPropertyChanged(nameof(CanRate));
         }
 
         private void OnFlipTapped(object? sender, TappedEventArgs e)
@@ -112,18 +129,70 @@ namespace LearningFlashCards.Maui
             UpdateCardDisplay();
         }
 
-        private async void OnNextClicked(object? sender, EventArgs e)
+        private void OnShowAnswerClicked(object? sender, EventArgs e)
         {
             if (_cards.Count == 0)
             {
-                await Shell.Current.GoToAsync("..");
                 return;
             }
 
-            _currentIndex++;
+            _showBack = true;
+            UpdateCardDisplay();
+        }
+
+        private async void OnRateAgainClicked(object? sender, EventArgs e)
+        {
+            await RateCurrentCardAsync(CardReviewRating.Again);
+        }
+
+        private async void OnRateHardClicked(object? sender, EventArgs e)
+        {
+            await RateCurrentCardAsync(CardReviewRating.Hard);
+        }
+
+        private async void OnRateMediumClicked(object? sender, EventArgs e)
+        {
+            await RateCurrentCardAsync(CardReviewRating.Medium);
+        }
+
+        private async void OnRateEasyClicked(object? sender, EventArgs e)
+        {
+            await RateCurrentCardAsync(CardReviewRating.Easy);
+        }
+
+        private async Task RateCurrentCardAsync(CardReviewRating rating)
+        {
+            if (_cards.Count == 0)
+            {
+                return;
+            }
+
+            var card = _cards[_currentIndex];
+            var now = DateTimeOffset.UtcNow;
+
+            SpacedRepetitionScheduler.ApplyRating(card.State, rating, now);
+            card.ModifiedAt = now;
+            await _cardRepository.UpsertAsync(card, CancellationToken.None);
+
+            var repeatInSession = rating == CardReviewRating.Again || rating == CardReviewRating.Hard;
+
+            _cards.RemoveAt(_currentIndex);
+            if (repeatInSession)
+            {
+                _cards.Add(card);
+            }
+
+            if (_cards.Count == 0)
+            {
+                await DisplayAlertAsync("Done", "You've completed all due cards for now.", "OK");
+                _currentIndex = 0;
+                _showBack = false;
+                UpdateCardDisplay();
+                return;
+            }
+
             if (_currentIndex >= _cards.Count)
             {
-                await DisplayAlertAsync("Done", "You've reached the end of this deck.", "OK");
                 _currentIndex = 0;
             }
 

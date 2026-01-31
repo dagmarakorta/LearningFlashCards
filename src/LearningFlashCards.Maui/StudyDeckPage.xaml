@@ -30,19 +30,42 @@
                     Grid.Row="1"
                     Text="Tap to flip"
                     TextColor="{StaticResource Gray500}"
-                    HorizontalOptions="Center" />
+                    HorizontalOptions="Center"
+                    IsVisible="{Binding HasCards}" />
             </Grid>
         </Border>
 
-        <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="12">
+        <Grid Grid.Row="2" RowDefinitions="Auto,Auto,Auto" RowSpacing="12">
             <Label
                 Text="{Binding ProgressText}"
                 VerticalOptions="Center" />
             <Button
-                Grid.Column="1"
-                Text="Next"
+                Grid.Row="1"
+                Text="Show answer"
                 Style="{StaticResource PrimaryButton}"
-                Clicked="OnNextClicked" />
+                IsVisible="{Binding CanShowAnswer}"
+                Clicked="OnShowAnswerClicked" />
+            <Grid
+                Grid.Row="2"
+                ColumnDefinitions="*,*,*,*"
+                ColumnSpacing="8"
+                IsVisible="{Binding CanRate}">
+                <Button
+                    Text="Again"
+                    Clicked="OnRateAgainClicked" />
+                <Button
+                    Grid.Column="1"
+                    Text="Hard"
+                    Clicked="OnRateHardClicked" />
+                <Button
+                    Grid.Column="2"
+                    Text="Medium"
+                    Clicked="OnRateMediumClicked" />
+                <Button
+                    Grid.Column="3"
+                    Text="Easy"
+                    Clicked="OnRateEasyClicked" />
+            </Grid>
         </Grid>
     </Grid>
 
