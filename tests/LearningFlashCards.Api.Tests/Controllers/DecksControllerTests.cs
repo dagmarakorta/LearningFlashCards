@@ -191,6 +191,35 @@ public class DecksControllerTests
     }
 
     [Fact]
+    public async Task UpsertDeck_UsesDefaultStudySettings_WhenNotProvided()
+    {
+        using var dbContext = TestDbContextFactory.CreateContext();
+        var repository = new DeckRepository(dbContext);
+        var cardRepository = new CardRepository(dbContext);
+        var handler = new DeckHandler(repository, cardRepository);
+        var ownerId = Guid.NewGuid();
+        var controller = new DecksController(handler)
+        {
+            ControllerContext = ControllerContextFactory.WithOwner(ownerId)
+        };
+
+        var request = new UpsertDeckRequest
+        {
+            Id = Guid.NewGuid(),
+            Name = "Defaults Deck"
+        };
+
+        var result = await controller.UpsertDeck(request, CancellationToken.None);
+
+        var ok = Assert.IsType<ObjectResult>(result.Result);
+        var returnedDeck = Assert.IsType<Deck>(ok.Value);
+        Assert.Equal(50, returnedDeck.StudySettings.DailyReviewLimit);
+        Assert.Equal(3, returnedDeck.StudySettings.EasyMinIntervalDays);
+        Assert.Equal(180, returnedDeck.StudySettings.MaxIntervalDays);
+        Assert.True(returnedDeck.StudySettings.RepeatInSession);
+    }
+
+    [Fact]
     public async Task UpsertDeck_MapsStudySettings()
     {
         using var dbContext = TestDbContextFactory.CreateContext();

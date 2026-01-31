@@ -41,6 +41,84 @@ public class RepositoryTests
     }
 
     [Fact]
+    public async Task DeckRepository_Upsert_PersistsStudySettings()
+    {
+        using var dbContext = TestDbContextFactory.CreateContext();
+        var repository = new DeckRepository(dbContext);
+        var deckId = Guid.NewGuid();
+        var ownerId = Guid.NewGuid();
+
+        var deck = new Deck
+        {
+            Id = deckId,
+            OwnerId = ownerId,
+            Name = "Study Deck",
+            StudySettings = new DeckStudySettings
+            {
+                DailyReviewLimit = 25,
+                EasyMinIntervalDays = 4,
+                MaxIntervalDays = 90,
+                RepeatInSession = false
+            }
+        };
+
+        await repository.UpsertAsync(deck, CancellationToken.None);
+
+        var stored = await repository.GetAsync(deckId, CancellationToken.None);
+        Assert.NotNull(stored);
+        Assert.Equal(25, stored!.StudySettings.DailyReviewLimit);
+        Assert.Equal(4, stored.StudySettings.EasyMinIntervalDays);
+        Assert.Equal(90, stored.StudySettings.MaxIntervalDays);
+        Assert.False(stored.StudySettings.RepeatInSession);
+    }
+
+    [Fact]
+    public async Task DeckRepository_Upsert_UpdatesStudySettings()
+    {
+        using var dbContext = TestDbContextFactory.CreateContext();
+        var repository = new DeckRepository(dbContext);
+        var deckId = Guid.NewGuid();
+        var ownerId = Guid.NewGuid();
+
+        await repository.UpsertAsync(new Deck
+        {
+            Id = deckId,
+            OwnerId = ownerId,
+            Name = "Study Deck",
+            StudySettings = new DeckStudySettings
+            {
+                DailyReviewLimit = 10,
+                EasyMinIntervalDays = 2,
+                MaxIntervalDays = 30,
+                RepeatInSession = true
+            }
+        }, CancellationToken.None);
+
+        var updated = new Deck
+        {
+            Id = deckId,
+            OwnerId = ownerId,
+            Name = "Study Deck",
+            StudySettings = new DeckStudySettings
+            {
+                DailyReviewLimit = 40,
+                EasyMinIntervalDays = 5,
+                MaxIntervalDays = 120,
+                RepeatInSession = false
+            }
+        };
+
+        await repository.UpsertAsync(updated, CancellationToken.None);
+
+        var stored = await repository.GetAsync(deckId, CancellationToken.None);
+        Assert.NotNull(stored);
+        Assert.Equal(40, stored!.StudySettings.DailyReviewLimit);
+        Assert.Equal(5, stored.StudySettings.EasyMinIntervalDays);
+        Assert.Equal(120, stored.StudySettings.MaxIntervalDays);
+        Assert.False(stored.StudySettings.RepeatInSession);
+    }
+
+    [Fact]
     public async Task TagRepository_Upsert_InsertsAndUpdates()
     {
         using var dbContext = TestDbContextFactory.CreateContext();
