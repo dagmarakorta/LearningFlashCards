@@ -29,6 +29,26 @@
                     MinimumHeightRequest="90" />
             </VerticalStackLayout>
 
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Study settings" Style="{StaticResource SubHeadline}" />
+                <Label Text="Daily review limit" />
+                <Entry
+                    x:Name="DailyLimitEntry"
+                    Keyboard="Numeric" />
+                <Label Text="Easy minimum interval (days)" />
+                <Entry
+                    x:Name="EasyMinIntervalEntry"
+                    Keyboard="Numeric" />
+                <Label Text="Max interval (days)" />
+                <Entry
+                    x:Name="MaxIntervalEntry"
+                    Keyboard="Numeric" />
+                <HorizontalStackLayout Spacing="12">
+                    <Label Text="Repeat Again/Hard in session" VerticalOptions="Center" />
+                    <Switch x:Name="RepeatInSessionSwitch" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+
             <VerticalStackLayout Spacing="8">
                 <Button
                     Text="Save"

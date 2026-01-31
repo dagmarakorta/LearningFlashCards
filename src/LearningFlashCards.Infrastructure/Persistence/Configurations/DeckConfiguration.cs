@@ -52,5 +52,24 @@ public class DeckConfiguration : IEntityTypeConfiguration<Deck>
                     je.ToTable("DeckTags");
                     je.HasKey("DeckId", "TagId");
                 });
+
+        builder.OwnsOne(d => d.StudySettings, owned =>
+        {
+            owned.Property(s => s.DailyReviewLimit)
+                .IsRequired()
+                .HasDefaultValue(50);
+
+            owned.Property(s => s.EasyMinIntervalDays)
+                .IsRequired()
+                .HasDefaultValue(3);
+
+            owned.Property(s => s.MaxIntervalDays)
+                .IsRequired()
+                .HasDefaultValue(180);
+
+            owned.Property(s => s.RepeatInSession)
+                .IsRequired()
+                .HasDefaultValue(true);
+        });
     }
 }

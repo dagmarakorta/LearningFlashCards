@@ -7,4 +7,5 @@ public class Deck : BaseEntity
     public string? Description { get; set; }
     public IList<Card> Cards { get; set; } = new List<Card>();
     public IList<Tag> Tags { get; set; } = new List<Tag>();
+    public DeckStudySettings StudySettings { get; set; } = new();
 }

@@ -16,6 +16,7 @@ namespace LearningFlashCards.Maui
         private readonly List<Card> _cards = new();
         private int _currentIndex;
         private bool _showBack;
+        private DeckStudySettings _studySettings = new();
 
         public string DeckName { get; private set; } = "Study";
         public string CurrentSideText { get; private set; } = string.Empty;
@@ -78,12 +79,20 @@ namespace LearningFlashCards.Maui
             DeckName = deck.Name;
             OnPropertyChanged(nameof(DeckName));
 
+            _studySettings = deck.StudySettings ?? new DeckStudySettings();
+
             var cards = await _cardRepository.GetByDeckAsync(deck.Id, CancellationToken.None);
             var now = DateTimeOffset.UtcNow;
             var dueCards = cards
                 .Where(card => card.State.DueAt <= now)
                 .OrderBy(card => card.State.DueAt)
                 .ToList();
+
+            var dailyLimit = Math.Max(0, _studySettings.DailyReviewLimit);
+            if (dailyLimit > 0 && dueCards.Count > dailyLimit)
+            {
+                dueCards = dueCards.Take(dailyLimit).ToList();
+            }
 
             _cards.Clear();
             _cards.AddRange(dueCards);
@@ -170,11 +179,12 @@ namespace LearningFlashCards.Maui
             var card = _cards[_currentIndex];
             var now = DateTimeOffset.UtcNow;
 
-            SpacedRepetitionScheduler.ApplyRating(card.State, rating, now);
+            SpacedRepetitionScheduler.ApplyRating(card.State, rating, now, _studySettings);
             card.ModifiedAt = now;
             await _cardRepository.UpsertAsync(card, CancellationToken.None);
 
-            var repeatInSession = rating == CardReviewRating.Again || rating == CardReviewRating.Hard;
+            var repeatInSession = _studySettings.RepeatInSession &&
+                (rating == CardReviewRating.Again || rating == CardReviewRating.Hard);
 
             _cards.RemoveAt(_currentIndex);
             if (repeatInSession)

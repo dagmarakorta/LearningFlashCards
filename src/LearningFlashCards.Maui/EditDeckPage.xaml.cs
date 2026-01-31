@@ -64,6 +64,7 @@ namespace LearningFlashCards.Maui
 
             NameEntry.Text = _deck.Name;
             DescriptionEditor.Text = _deck.Description;
+            ApplyDefaults(_deck.StudySettings ?? new DeckStudySettings());
         }
 
         private async void OnSaveClicked(object? sender, EventArgs e)
@@ -82,6 +83,12 @@ namespace LearningFlashCards.Maui
                 return;
             }
 
+            var settings = await ReadStudySettingsAsync();
+            if (settings is null)
+            {
+                return;
+            }
+
             if (_deck is null)
             {
                 await DisplayAlertAsync("Missing data", "Unable to save changes.", "OK");
@@ -91,6 +98,7 @@ namespace LearningFlashCards.Maui
 
             _deck.Name = name;
             _deck.Description = DescriptionEditor.Text?.Trim();
+            _deck.StudySettings = settings;
             _deck.ModifiedAt = DateTimeOffset.UtcNow;
 
             await _deckRepository.UpsertAsync(_deck, CancellationToken.None);
@@ -111,6 +119,61 @@ namespace LearningFlashCards.Maui
             }
 
             return services.GetRequiredService<T>();
+        }
+
+        private void ApplyDefaults(DeckStudySettings settings)
+        {
+            DailyLimitEntry.Text = settings.DailyReviewLimit.ToString();
+            EasyMinIntervalEntry.Text = settings.EasyMinIntervalDays.ToString();
+            MaxIntervalEntry.Text = settings.MaxIntervalDays.ToString();
+            RepeatInSessionSwitch.IsToggled = settings.RepeatInSession;
+        }
+
+        private async Task<DeckStudySettings?> ReadStudySettingsAsync()
+        {
+            var settings = new DeckStudySettings();
+
+            if (!TryReadPositiveInt(DailyLimitEntry.Text, out var dailyLimit))
+            {
+                await DisplayAlertAsync("Invalid settings", "Daily review limit must be a positive number.", "OK");
+                return null;
+            }
+
+            if (!TryReadPositiveInt(EasyMinIntervalEntry.Text, out var easyMin))
+            {
+                await DisplayAlertAsync("Invalid settings", "Easy minimum interval must be a positive number.", "OK");
+                return null;
+            }
+
+            if (!TryReadPositiveInt(MaxIntervalEntry.Text, out var maxInterval))
+            {
+                await DisplayAlertAsync("Invalid settings", "Max interval must be a positive number.", "OK");
+                return null;
+            }
+
+            if (maxInterval < easyMin)
+            {
+                await DisplayAlertAsync("Invalid settings", "Max interval must be greater than or equal to the easy minimum interval.", "OK");
+                return null;
+            }
+
+            settings.DailyReviewLimit = dailyLimit;
+            settings.EasyMinIntervalDays = easyMin;
+            settings.MaxIntervalDays = maxInterval;
+            settings.RepeatInSession = RepeatInSessionSwitch.IsToggled;
+
+            return settings;
+        }
+
+        private static bool TryReadPositiveInt(string? text, out int value)
+        {
+            if (!int.TryParse(text, out value) || value <= 0)
+            {
+                value = 0;
+                return false;
+            }
+
+            return true;
         }
     }
 }

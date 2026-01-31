@@ -54,11 +54,33 @@ public class DecksController : ApiControllerBase
 
     private static Deck MapToDeck(UpsertDeckRequest request)
     {
+        var settings = new DeckStudySettings();
+        if (request.DailyReviewLimit.HasValue)
+        {
+            settings.DailyReviewLimit = Math.Max(1, request.DailyReviewLimit.Value);
+        }
+
+        if (request.EasyMinIntervalDays.HasValue)
+        {
+            settings.EasyMinIntervalDays = Math.Max(1, request.EasyMinIntervalDays.Value);
+        }
+
+        if (request.MaxIntervalDays.HasValue)
+        {
+            settings.MaxIntervalDays = Math.Max(1, request.MaxIntervalDays.Value);
+        }
+
+        if (request.RepeatInSession.HasValue)
+        {
+            settings.RepeatInSession = request.RepeatInSession.Value;
+        }
+
         return new Deck
         {
             Id = request.Id ?? Guid.NewGuid(),
             Name = TextSanitizer.SanitizePermissive(request.Name),
-            Description = request.Description is not null ? TextSanitizer.SanitizePermissive(request.Description) : null
+            Description = request.Description is not null ? TextSanitizer.SanitizePermissive(request.Description) : null,
+            StudySettings = settings
         };
     }
 
