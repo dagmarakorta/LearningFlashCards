@@ -40,6 +40,11 @@ namespace LearningFlashCards.Maui
             await Shell.Current.GoToAsync(nameof(ProfilePage));
         }
 
+        private async void OnImportClicked(object? sender, EventArgs e)
+        {
+            await Shell.Current.GoToAsync(nameof(ImportCardsPage));
+        }
+
         private async void OnDeckSelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
             if (sender is not CollectionView collection)

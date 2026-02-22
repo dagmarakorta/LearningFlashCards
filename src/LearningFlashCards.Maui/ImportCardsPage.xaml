@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="LearningFlashCards.Maui.ImportCardsPage"
+             Title="Import Cards">
+
+    <ScrollView>
+        <VerticalStackLayout
+            Padding="{StaticResource PagePadding}"
+            Spacing="{StaticResource PageRowSpacing}">
+            <Label
+                Text="Import Cards"
+                Style="{StaticResource PageTitle}"
+                SemanticProperties.HeadingLevel="Level1" />
+
+            <Label
+                Text="CSV format: front, back (header optional)."
+                Style="{StaticResource DeckMeta}" />
+
+            <VerticalStackLayout Spacing="6">
+                <Button
+                    Text="Choose CSV"
+                    Style="{StaticResource PrimaryButton}"
+                    Clicked="OnChooseFileClicked" />
+                <Label
+                    x:Name="FileNameLabel"
+                    Text="No file selected."
+                    Style="{StaticResource DeckMeta}" />
+                <Label
+                    x:Name="SummaryLabel"
+                    Text="Select a CSV file to preview."
+                    Style="{StaticResource DeckMeta}" />
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Destination deck" Style="{StaticResource SubHeadline}" />
+                <Picker
+                    x:Name="DeckPicker"
+                    Title="Select a deck"
+                    ItemsSource="{Binding Decks}"
+                    ItemDisplayBinding="{Binding Name}" />
+                <HorizontalStackLayout Spacing="12">
+                    <Label Text="Create new deck instead" VerticalOptions="Center" />
+                    <Switch x:Name="NewDeckSwitch" Toggled="OnNewDeckToggled" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+
+            <VerticalStackLayout x:Name="NewDeckFields" Spacing="6" IsVisible="False">
+                <Label Text="New deck name" />
+                <Entry
+                    x:Name="NewDeckNameEntry"
+                    Placeholder="Example: Imported Spanish" />
+                <Label Text="Description (optional)" />
+                <Editor
+                    x:Name="NewDeckDescriptionEditor"
+                    Placeholder="Short description for this deck"
+                    AutoSize="TextChanges"
+                    MinimumHeightRequest="90" />
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Spacing="8">
+                <Button
+                    x:Name="ImportButton"
+                    Text="Import Cards"
+                    Style="{StaticResource PrimaryButton}"
+                    IsEnabled="False"
+                    Clicked="OnImportClicked" />
+                <Button
+                    Text="Cancel"
+                    Clicked="OnCancelClicked" />
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

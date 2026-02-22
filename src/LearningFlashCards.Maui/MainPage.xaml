@@ -8,7 +8,7 @@
         Padding="{StaticResource PagePadding}"
         RowDefinitions="Auto,*"
         RowSpacing="{StaticResource PageRowSpacing}">
-        <Grid ColumnDefinitions="*,Auto,Auto"
+        <Grid ColumnDefinitions="*,Auto,Auto,Auto"
               ColumnSpacing="8">
             <Label
                 Text="Decks"
@@ -22,6 +22,11 @@
                 Clicked="OnNewDeckClicked" />
             <Button
                 Grid.Column="2"
+                Text="Import"
+                SemanticProperties.Hint="Import cards from a CSV file"
+                Clicked="OnImportClicked" />
+            <Button
+                Grid.Column="3"
                 Text="Profile"
                 SemanticProperties.Hint="Manage your profile"
                 Clicked="OnProfileClicked" />
