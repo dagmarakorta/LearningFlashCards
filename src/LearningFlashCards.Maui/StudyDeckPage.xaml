@@ -18,14 +18,14 @@
                 <TapGestureRecognizer Tapped="OnFlipTapped" />
             </Border.GestureRecognizers>
             <Grid RowDefinitions="*,Auto">
-                <Label
-                    Text="{Binding CurrentSideText}"
-                    Style="{StaticResource DeckTitle}"
-                    HorizontalOptions="Center"
-                    VerticalOptions="Center"
-                    HorizontalTextAlignment="Center"
-                    VerticalTextAlignment="Center"
-                    LineBreakMode="WordWrap" />
+                <WebView
+                    InputTransparent="True"
+                    HorizontalOptions="Fill"
+                    VerticalOptions="Fill">
+                    <WebView.Source>
+                        <HtmlWebViewSource Html="{Binding CurrentSideText}" />
+                    </WebView.Source>
+                </WebView>
                 <Label
                     Grid.Row="1"
                     Text="Tap to flip"

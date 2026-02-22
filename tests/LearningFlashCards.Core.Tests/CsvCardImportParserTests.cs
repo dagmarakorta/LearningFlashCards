@@ -28,10 +28,7 @@ Back line 2</p>"
     [Fact]
     public void Parse_HandlesCommasAndEscapedQuotes()
     {
-        var content = """
-Front,Back
-"Hello, ""world""","Back, with comma"
-""";
+        var content = "Front,Back\n\"Hello, \"\"world\"\"\",\"Back, with comma\"";
 
         var result = _parser.Parse(content);
 
@@ -44,12 +41,7 @@ Front,Back
     [Fact]
     public void Parse_ReportsRowsMissingFrontOrBack()
     {
-        var content = """
-Front,Back
-"Front only",
-,Back only
-"Valid","Row"
-""";
+        var content = "Front,Back\n\"Front only\",\n,Back only\n\"Valid\",\"Row\"";
 
         var result = _parser.Parse(content);
 

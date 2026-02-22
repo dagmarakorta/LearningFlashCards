@@ -177,9 +177,9 @@ namespace LearningFlashCards.Maui
             using var reader = new StreamReader(stream, detectEncodingFromByteOrderMarks: true);
             var content = await reader.ReadToEndAsync();
 
-            var result = _csvParser.Parse(content);
-            _cards.AddRange(result.Cards);
-            _invalidRows.AddRange(result.InvalidRowNumbers);
+            var parseResult = _csvParser.Parse(content);
+            _cards.AddRange(parseResult.Cards);
+            _invalidRows.AddRange(parseResult.InvalidRowNumbers);
         }
 
         private void UpdateSummary()
