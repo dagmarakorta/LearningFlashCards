@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+          include-prerelease: true
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Test With Coverage
+        run: dotnet test tests --configuration Release --collect:"XPlat Code Coverage" --settings tests/coverlet.runsettings
+
+      - name: Install ReportGenerator
+        run: dotnet tool install -g dotnet-reportgenerator-globaltool
+
+      - name: Generate Coverage Report
+        run: reportgenerator -reports:**/coverage.cobertura.xml -targetdir:coveragereport -reporttypes:"TextSummary;Cobertura"
+
+      - name: Show Coverage Summary
+        run: cat coveragereport/Summary.txt
+
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coveragereport
