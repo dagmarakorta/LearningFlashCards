@@ -226,6 +226,118 @@
         <Setter Property="HorizontalTextAlignment" Value="Center" />
     </Style>
 
+    <Style TargetType="Border" x:Key="DashboardSurfaceCard">
+        <Setter Property="Background">
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#3A4150" Offset="0" />
+                <GradientStop Color="{StaticResource DashboardPanel}" Offset="0.45" />
+                <GradientStop Color="#2C3340" Offset="1" />
+            </LinearGradientBrush>
+        </Setter>
+        <Setter Property="Stroke" Value="{StaticResource DashboardBorder}" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 24" />
+        <Setter Property="Padding" Value="20" />
+        <Setter Property="Shadow">
+            <Shadow Brush="#C8000000" Offset="0,16" Radius="30" Opacity="0.5" />
+        </Setter>
+    </Style>
+
+    <Style TargetType="Border" x:Key="DashboardInnerCard">
+        <Setter Property="Background">
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#404756" Offset="0" />
+                <GradientStop Color="{StaticResource DashboardPanel}" Offset="0.5" />
+                <GradientStop Color="#303742" Offset="1" />
+            </LinearGradientBrush>
+        </Setter>
+        <Setter Property="Stroke" Value="{StaticResource DashboardBorder}" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 20" />
+        <Setter Property="Padding" Value="18" />
+        <Setter Property="Shadow">
+            <Shadow Brush="#B0000000" Offset="0,12" Radius="24" Opacity="0.38" />
+        </Setter>
+    </Style>
+
+    <Style TargetType="Label" x:Key="DashboardTitle">
+        <Setter Property="TextColor" Value="{StaticResource DashboardInk}" />
+        <Setter Property="FontSize" Value="18" />
+        <Setter Property="FontAttributes" Value="Bold" />
+    </Style>
+
+    <Style TargetType="Label" x:Key="DashboardSectionTitle">
+        <Setter Property="TextColor" Value="{StaticResource DashboardInk}" />
+        <Setter Property="FontSize" Value="17" />
+        <Setter Property="FontAttributes" Value="Bold" />
+    </Style>
+
+    <Style TargetType="Label" x:Key="DashboardHeroTitle">
+        <Setter Property="TextColor" Value="{StaticResource DashboardInk}" />
+        <Setter Property="FontSize" Value="24" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="LineBreakMode" Value="WordWrap" />
+    </Style>
+
+    <Style TargetType="Label" x:Key="DashboardBody">
+        <Setter Property="TextColor" Value="{StaticResource DashboardMuted}" />
+        <Setter Property="FontSize" Value="14" />
+    </Style>
+
+    <Style TargetType="Label" x:Key="DashboardValue">
+        <Setter Property="TextColor" Value="{StaticResource DashboardInk}" />
+        <Setter Property="FontSize" Value="20" />
+        <Setter Property="FontAttributes" Value="Bold" />
+    </Style>
+
+    <Style TargetType="Button" x:Key="DashboardPrimaryButton">
+        <Setter Property="TextColor" Value="{StaticResource White}" />
+        <Setter Property="Padding" Value="24,14" />
+        <Setter Property="CornerRadius" Value="18" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="Background">
+            <LinearGradientBrush EndPoint="1,1">
+                <GradientStop Color="#565E6F" Offset="0" />
+                <GradientStop Color="#434B5A" Offset="0.55" />
+                <GradientStop Color="#353C49" Offset="1" />
+            </LinearGradientBrush>
+        </Setter>
+        <Setter Property="Shadow">
+            <Shadow Brush="#BE000000" Offset="0,10" Radius="20" Opacity="0.48" />
+        </Setter>
+    </Style>
+
+    <Style TargetType="Button" x:Key="DashboardSecondaryButton">
+        <Setter Property="TextColor" Value="{StaticResource DashboardInk}" />
+        <Setter Property="Background">
+            <LinearGradientBrush EndPoint="1,1">
+                <GradientStop Color="#4A5262" Offset="0" />
+                <GradientStop Color="#39404E" Offset="1" />
+            </LinearGradientBrush>
+        </Setter>
+        <Setter Property="Padding" Value="16,10" />
+        <Setter Property="CornerRadius" Value="14" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontAttributes" Value="Bold" />
+    </Style>
+
+    <Style TargetType="Button" x:Key="DashboardGhostIconButton">
+        <Setter Property="TextColor" Value="{StaticResource DashboardMuted}" />
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="Padding" Value="8" />
+        <Setter Property="CornerRadius" Value="14" />
+        <Setter Property="FontSize" Value="18" />
+        <Setter Property="MinimumHeightRequest" Value="36" />
+        <Setter Property="MinimumWidthRequest" Value="36" />
+    </Style>
+
+    <Style TargetType="ProgressBar" x:Key="DashboardProgressBar">
+        <Setter Property="HeightRequest" Value="12" />
+        <Setter Property="BackgroundColor" Value="#4A5161" />
+        <Setter Property="ProgressColor" Value="{StaticResource DashboardPrimary}" />
+    </Style>
+
     <Style TargetType="Entry" x:Key="EmailEntryStyle">
         <Setter Property="IsSpellCheckEnabled" Value="False" />
         <Setter Property="IsTextPredictionEnabled" Value="False" />

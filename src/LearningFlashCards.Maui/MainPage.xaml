@@ -1,85 +1,451 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="LearningFlashCards.Maui.MainPage"
-             Title="Decks">
+             Title="Dashboard">
 
-    <Grid
-        Padding="{StaticResource PagePadding}"
-        RowDefinitions="Auto,*"
-        RowSpacing="{StaticResource PageRowSpacing}">
-        <Grid ColumnDefinitions="*,Auto,Auto,Auto"
-              ColumnSpacing="8">
-            <Label
-                Text="Decks"
-                Style="{StaticResource PageTitle}"
-                SemanticProperties.HeadingLevel="Level1" />
-            <Button
-                Grid.Column="1"
-                Text="New"
-                Style="{StaticResource PrimaryButton}"
-                SemanticProperties.Hint="Create a new deck"
-                Clicked="OnNewDeckClicked" />
-            <Button
-                Grid.Column="2"
-                Text="Import"
-                SemanticProperties.Hint="Import cards from a CSV file"
-                Clicked="OnImportClicked" />
-            <Button
-                Grid.Column="3"
-                Text="Profile"
-                SemanticProperties.Hint="Manage your profile"
-                Clicked="OnProfileClicked" />
-        </Grid>
+    <ScrollView>
+        <Grid Padding="20">
+            <Border StrokeThickness="0"
+                    StrokeShape="RoundRectangle 26"
+                    Background="{StaticResource DashboardMist}">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#4A5160" Offset="0" />
+                        <GradientStop Color="#343B48" Offset="0.36" />
+                        <GradientStop Color="#2B313D" Offset="1" />
+                    </LinearGradientBrush>
+                </Border.Background>
 
-        <CollectionView
-            Grid.Row="1"
-            ItemsSource="{Binding Decks}"
-            SelectionMode="Single"
-            SelectionChanged="OnDeckSelectionChanged">
-            <CollectionView.EmptyView>
-                <Label
-                    Text="No decks yet. Create your first one."
-                    Style="{StaticResource EmptyStateText}" />
-            </CollectionView.EmptyView>
-            <CollectionView.ItemsLayout>
-                <LinearItemsLayout Orientation="Vertical" ItemSpacing="{StaticResource CardSpacing}" />
-            </CollectionView.ItemsLayout>
-            <CollectionView.ItemTemplate>
-                <DataTemplate>
-                    <Border Style="{StaticResource DeckCard}">
-                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12">
-                            <VerticalStackLayout Spacing="4">
-                                <Label Text="{Binding Name}" Style="{StaticResource DeckTitle}" />
-                                <Label Text="{Binding Summary}" Style="{StaticResource DeckMeta}" />
-                            </VerticalStackLayout>
-                            <Button
-                                Grid.Column="1"
-                                Text="✏️"
-                                FontSize="18"
-                                BackgroundColor="Transparent"
-                                TextColor="{AppThemeBinding Light={StaticResource Gray500}, Dark={StaticResource Gray300}}"
-                                Padding="6"
-                                MinimumHeightRequest="32"
-                                MinimumWidthRequest="32"
-                                SemanticProperties.Hint="Edit deck"
-                                Clicked="OnEditDeckClicked" />
-                            <Button
-                                Grid.Column="2"
-                                Text="🗑️"
-                                FontSize="18"
-                                BackgroundColor="Transparent"
-                                TextColor="{AppThemeBinding Light={StaticResource Gray500}, Dark={StaticResource Gray300}}"
-                                Padding="6"
-                                MinimumHeightRequest="32"
-                                MinimumWidthRequest="32"
-                                SemanticProperties.Hint="Delete deck"
-                                Clicked="OnDeleteDeckClicked" />
+                <VerticalStackLayout Spacing="20">
+                    <Border Stroke="{StaticResource DashboardBorder}"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 26,26,0,0"
+                            Padding="24,14">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Color="#3C4352" Offset="0" />
+                                <GradientStop Color="#333A47" Offset="1" />
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <Grid ColumnDefinitions="*,Auto"
+                              ColumnSpacing="16">
+                            <HorizontalStackLayout Spacing="14"
+                                                   VerticalOptions="Center">
+                                <Border StrokeThickness="0"
+                                        StrokeShape="RoundRectangle 12"
+                                        BackgroundColor="#40495A"
+                                        Padding="10,8">
+                                    <Label Text="LF"
+                                           FontSize="14"
+                                           FontAttributes="Bold"
+                                           TextColor="{StaticResource DashboardInk}" />
+                                </Border>
+                                <Label Text="Learning Flashcards"
+                                       Style="{StaticResource DashboardTitle}"
+                                       FontSize="18"
+                                       VerticalTextAlignment="Center" />
+                            </HorizontalStackLayout>
+
+                            <HorizontalStackLayout Grid.Column="1"
+                                                   Spacing="8"
+                                                   VerticalOptions="Center">
+                                <Button Text="Import"
+                                        Style="{StaticResource DashboardSecondaryButton}"
+                                        Padding="14,8"
+                                        Clicked="OnImportClicked" />
+                                <Button Text="New"
+                                        Style="{StaticResource DashboardSecondaryButton}"
+                                        Padding="14,8"
+                                        Clicked="OnNewDeckClicked" />
+                                <Button Text="Profile"
+                                        Style="{StaticResource DashboardSecondaryButton}"
+                                        Padding="14,8"
+                                        Clicked="OnProfileClicked" />
+                            </HorizontalStackLayout>
                         </Grid>
                     </Border>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
-    </Grid>
+
+                    <VerticalStackLayout Padding="26,6,26,30"
+                                         Spacing="20">
+                        <FlexLayout Direction="Row"
+                                    Wrap="Wrap"
+                                    JustifyContent="SpaceBetween"
+                                    AlignItems="Center">
+                            <VerticalStackLayout FlexLayout.Basis="420"
+                                                 FlexLayout.Grow="1"
+                                                 Spacing="8">
+                                <Label Text="{Binding HeroMessage}"
+                                       Style="{StaticResource DashboardHeroTitle}" />
+                                <Label Text="Pick up where you left off and work through your next review block."
+                                       Style="{StaticResource DashboardBody}" />
+                            </VerticalStackLayout>
+
+                            <Button Text="Start Studying >"
+                                    Style="{StaticResource DashboardPrimaryButton}"
+                                    Margin="0,12,0,0"
+                                    Clicked="OnStartStudyingClicked" />
+                        </FlexLayout>
+
+                        <FlexLayout Direction="Row"
+                                    Wrap="Wrap"
+                                    JustifyContent="Start"
+                                    AlignItems="Start">
+                            <Border Style="{StaticResource DashboardInnerCard}"
+                                    WidthRequest="210"
+                                    Margin="0,0,16,16">
+                                <Grid RowDefinitions="Auto,Auto"
+                                      ColumnDefinitions="Auto,*"
+                                      ColumnSpacing="12"
+                                      RowSpacing="8">
+                                    <Border StrokeThickness="0"
+                                            BackgroundColor="#454D5D"
+                                            StrokeShape="RoundRectangle 10"
+                                            Padding="10,7">
+                                        <Label Text="DK"
+                                               FontSize="12"
+                                               FontAttributes="Bold"
+                                               TextColor="{StaticResource DashboardInk}" />
+                                    </Border>
+                                    <Label Grid.Column="1"
+                                           Text="My Decks"
+                                           Style="{StaticResource DashboardSectionTitle}"
+                                           VerticalTextAlignment="Center" />
+                                    <Label Grid.Row="1"
+                                           Grid.ColumnSpan="2"
+                                           Text="{Binding DeckCountLabel}"
+                                           Style="{StaticResource DashboardValue}" />
+                                </Grid>
+                            </Border>
+
+                            <Border Style="{StaticResource DashboardInnerCard}"
+                                    WidthRequest="210"
+                                    Margin="0,0,16,16">
+                                <Grid RowDefinitions="Auto,Auto"
+                                      ColumnDefinitions="Auto,*"
+                                      ColumnSpacing="12"
+                                      RowSpacing="8">
+                                    <Border StrokeThickness="0"
+                                            BackgroundColor="#5A5257"
+                                            StrokeShape="RoundRectangle 10"
+                                            Padding="10,7">
+                                        <Label Text="DY"
+                                               FontSize="12"
+                                               FontAttributes="Bold"
+                                               TextColor="{StaticResource DashboardInk}" />
+                                    </Border>
+                                    <Label Grid.Column="1"
+                                           Text="Due Today"
+                                           Style="{StaticResource DashboardSectionTitle}"
+                                           VerticalTextAlignment="Center" />
+                                    <Label Grid.Row="1"
+                                           Grid.ColumnSpan="2"
+                                           Text="{Binding DueTodayCount, StringFormat='{}{0} cards'}"
+                                           Style="{StaticResource DashboardValue}" />
+                                </Grid>
+                            </Border>
+
+                            <Border Style="{StaticResource DashboardInnerCard}"
+                                    WidthRequest="210"
+                                    Margin="0,0,16,16">
+                                <Grid RowDefinitions="Auto,Auto"
+                                      ColumnDefinitions="Auto,*"
+                                      ColumnSpacing="12"
+                                      RowSpacing="8">
+                                    <Border StrokeThickness="0"
+                                            BackgroundColor="#5B4942"
+                                            StrokeShape="RoundRectangle 10"
+                                            Padding="10,7">
+                                        <Label Text="ST"
+                                               FontSize="12"
+                                               FontAttributes="Bold"
+                                               TextColor="{StaticResource DashboardInk}" />
+                                    </Border>
+                                    <Label Grid.Column="1"
+                                           Text="Review Streak"
+                                           Style="{StaticResource DashboardSectionTitle}"
+                                           VerticalTextAlignment="Center" />
+                                    <Label Grid.Row="1"
+                                           Grid.ColumnSpan="2"
+                                           Text="{Binding ReviewStreakDays, StringFormat='{}{0} days'}"
+                                           Style="{StaticResource DashboardValue}" />
+                                </Grid>
+                            </Border>
+
+                            <Border Style="{StaticResource DashboardInnerCard}"
+                                    WidthRequest="210"
+                                    Margin="0,0,0,16">
+                                <Grid RowDefinitions="Auto,Auto"
+                                      ColumnDefinitions="Auto,*"
+                                      ColumnSpacing="12"
+                                      RowSpacing="8">
+                                    <Border StrokeThickness="0"
+                                            BackgroundColor="#495462"
+                                            StrokeShape="RoundRectangle 10"
+                                            Padding="10,7">
+                                        <Label Text="MS"
+                                               FontSize="12"
+                                               FontAttributes="Bold"
+                                               TextColor="{StaticResource DashboardInk}" />
+                                    </Border>
+                                    <Label Grid.Column="1"
+                                           Text="Mastered"
+                                           Style="{StaticResource DashboardSectionTitle}"
+                                           VerticalTextAlignment="Center" />
+                                    <Label Grid.Row="1"
+                                           Grid.ColumnSpan="2"
+                                           Text="{Binding MasteredCardsCount, StringFormat='{}{0} cards'}"
+                                           Style="{StaticResource DashboardValue}" />
+                                </Grid>
+                            </Border>
+                        </FlexLayout>
+
+                        <FlexLayout Direction="Row"
+                                    Wrap="Wrap"
+                                    AlignItems="Start"
+                                    JustifyContent="SpaceBetween">
+                            <Border Style="{StaticResource DashboardSurfaceCard}"
+                                    FlexLayout.Basis="780"
+                                    FlexLayout.Grow="1"
+                                    Margin="0,0,20,20">
+                                <VerticalStackLayout Spacing="18">
+                                    <Grid ColumnDefinitions="*,Auto"
+                                          ColumnSpacing="16">
+                                        <VerticalStackLayout Spacing="4">
+                                            <Label Text="Choose a deck"
+                                                   Style="{StaticResource DashboardTitle}" />
+                                            <Label Text="{Binding DeckPanelFooter}"
+                                                   Style="{StaticResource DashboardBody}" />
+                                        </VerticalStackLayout>
+                                        <Button Text="Browse"
+                                                Style="{StaticResource DashboardSecondaryButton}"
+                                                Clicked="OnBrowseAllDecksClicked" />
+                                    </Grid>
+
+                                    <BoxView HeightRequest="1"
+                                             Opacity="0.55"
+                                             BackgroundColor="{StaticResource DashboardBorder}" />
+
+                                    <FlexLayout BindableLayout.ItemsSource="{Binding Decks}"
+                                                Direction="Row"
+                                                Wrap="Wrap"
+                                                AlignItems="Start"
+                                                JustifyContent="Start">
+                                        <BindableLayout.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Style="{StaticResource DashboardInnerCard}"
+                                                        WidthRequest="270"
+                                                        Margin="0,0,18,18"
+                                                        Stroke="#4E5665"
+                                                        BackgroundColor="{Binding BackgroundColor}">
+                                                    <Border.GestureRecognizers>
+                                                        <TapGestureRecognizer Tapped="OnFeaturedDeckTapped" />
+                                                    </Border.GestureRecognizers>
+
+                                                    <Grid RowDefinitions="Auto,Auto,Auto"
+                                                          ColumnDefinitions="Auto,*,Auto,Auto"
+                                                          ColumnSpacing="10"
+                                                          RowSpacing="8">
+                                                        <Border StrokeThickness="0"
+                                                                BackgroundColor="#525B6C"
+                                                                StrokeShape="RoundRectangle 10"
+                                                                Padding="10,8">
+                                                            <Label Text="{Binding Icon}"
+                                                                   FontSize="12"
+                                                                   FontAttributes="Bold"
+                                                                   TextColor="{StaticResource DashboardInk}" />
+                                                        </Border>
+                                                        <VerticalStackLayout Grid.Column="1"
+                                                                             Grid.ColumnSpan="3"
+                                                                             Spacing="3">
+                                                            <Label Text="{Binding Name}"
+                                                                   Style="{StaticResource DashboardSectionTitle}" />
+                                                            <Label Text="{Binding Summary}"
+                                                                   Style="{StaticResource DashboardBody}"
+                                                                   MaxLines="2"
+                                                                   LineBreakMode="TailTruncation" />
+                                                        </VerticalStackLayout>
+
+                                                        <Label Grid.Row="1"
+                                                               Grid.ColumnSpan="2"
+                                                               Text="{Binding CardCount, StringFormat='{}{0} cards'}"
+                                                               Style="{StaticResource DashboardValue}" />
+                                                        <Label Grid.Row="1"
+                                                               Grid.Column="2"
+                                                               Grid.ColumnSpan="2"
+                                                               Text="{Binding DueCount, StringFormat='Due {0}'}"
+                                                               Style="{StaticResource DashboardBody}"
+                                                               HorizontalTextAlignment="End"
+                                                               VerticalTextAlignment="End" />
+
+                                                        <Button Grid.Row="2"
+                                                                Text="Edit"
+                                                                Style="{StaticResource DashboardSecondaryButton}"
+                                                                Padding="12,8"
+                                                                FontSize="13"
+                                                                Clicked="OnEditDeckClicked" />
+                                                        <Button Grid.Row="2"
+                                                                Grid.Column="1"
+                                                                Text="Delete"
+                                                                Style="{StaticResource DashboardSecondaryButton}"
+                                                                Padding="12,8"
+                                                                FontSize="13"
+                                                                Clicked="OnDeleteDeckClicked" />
+                                                        <Label Grid.Row="2"
+                                                               Grid.Column="3"
+                                                               Text=">"
+                                                               FontSize="22"
+                                                               TextColor="{StaticResource DashboardMuted}"
+                                                               VerticalTextAlignment="Center"
+                                                               HorizontalTextAlignment="End" />
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </BindableLayout.ItemTemplate>
+                                    </FlexLayout>
+
+                                    <Label Text="No decks yet. Create your first one to start studying."
+                                           Style="{StaticResource DashboardBody}"
+                                           IsVisible="{Binding HasNoDecks}" />
+                                </VerticalStackLayout>
+                            </Border>
+
+                            <VerticalStackLayout FlexLayout.Basis="300"
+                                                 FlexLayout.Grow="1"
+                                                 Spacing="20">
+                                <Border Style="{StaticResource DashboardSurfaceCard}">
+                                    <VerticalStackLayout Spacing="18">
+                                        <Label Text="Quick practice"
+                                               Style="{StaticResource DashboardTitle}" />
+                                        <BoxView HeightRequest="1"
+                                                 Opacity="0.55"
+                                                 BackgroundColor="{StaticResource DashboardBorder}" />
+                                        <Grid ColumnDefinitions="Auto,*"
+                                              ColumnSpacing="12">
+                                            <Border StrokeThickness="0"
+                                                    BackgroundColor="#565F70"
+                                                    StrokeShape="RoundRectangle 10"
+                                                    Padding="10,8">
+                                                <Label Text="QZ"
+                                                       FontSize="12"
+                                                       FontAttributes="Bold"
+                                                       TextColor="{StaticResource DashboardInk}" />
+                                            </Border>
+                                            <VerticalStackLayout Spacing="4">
+                                                <Label Text="{Binding QuickPracticeDeckName}"
+                                                       Style="{StaticResource DashboardSectionTitle}" />
+                                                <Label Text="{Binding QuickPracticeQuestionCount, StringFormat='{}{0} questions'}"
+                                                       Style="{StaticResource DashboardBody}" />
+                                            </VerticalStackLayout>
+                                        </Grid>
+                                        <Button Text="Start Quiz >"
+                                                Style="{StaticResource DashboardPrimaryButton}"
+                                                Clicked="OnQuickPracticeClicked" />
+                                    </VerticalStackLayout>
+                                </Border>
+
+                                <Border Style="{StaticResource DashboardSurfaceCard}">
+                                    <VerticalStackLayout Spacing="18">
+                                        <Label Text="Progress overview"
+                                               Style="{StaticResource DashboardTitle}" />
+                                        <BoxView HeightRequest="1"
+                                                 Opacity="0.55"
+                                                 BackgroundColor="{StaticResource DashboardBorder}" />
+
+                                        <VerticalStackLayout Spacing="8">
+                                            <Grid ColumnDefinitions="*,Auto"
+                                                  ColumnSpacing="10">
+                                                <Label Text="Cards to review"
+                                                       Style="{StaticResource DashboardBody}" />
+                                                <Label Grid.Column="1"
+                                                       Text="{Binding ReviewProgressLabel}"
+                                                       Style="{StaticResource DashboardSectionTitle}" />
+                                            </Grid>
+                                            <ProgressBar Progress="{Binding ReviewProgress}"
+                                                         Style="{StaticResource DashboardProgressBar}" />
+                                        </VerticalStackLayout>
+
+                                        <VerticalStackLayout Spacing="8">
+                                            <Grid ColumnDefinitions="*,Auto"
+                                                  ColumnSpacing="10">
+                                                <Label Text="Cards mastered"
+                                                       Style="{StaticResource DashboardBody}" />
+                                                <Label Grid.Column="1"
+                                                       Text="{Binding MasteredProgressLabel}"
+                                                       Style="{StaticResource DashboardSectionTitle}" />
+                                            </Grid>
+                                            <ProgressBar Progress="{Binding MasteredProgress}"
+                                                         Style="{StaticResource DashboardProgressBar}"
+                                                         ProgressColor="{StaticResource DashboardSuccess}" />
+                                        </VerticalStackLayout>
+
+                                        <Border StrokeThickness="0"
+                                                StrokeShape="RoundRectangle 18"
+                                                BackgroundColor="#3E4553"
+                                                Padding="16,14">
+                                            <HorizontalStackLayout Spacing="12">
+                                                <Border StrokeThickness="0"
+                                                        BackgroundColor="#596275"
+                                                        StrokeShape="RoundRectangle 12"
+                                                        Padding="10,8">
+                                                    <Label Text="UP"
+                                                           FontSize="12"
+                                                           FontAttributes="Bold"
+                                                           TextColor="{StaticResource DashboardInk}" />
+                                                </Border>
+                                                <VerticalStackLayout Spacing="2">
+                                                    <Label Text="{Binding KeepGoingMessage}"
+                                                           Style="{StaticResource DashboardSectionTitle}" />
+                                                    <Label Text="Consistent short sessions work best."
+                                                           Style="{StaticResource DashboardBody}" />
+                                                </VerticalStackLayout>
+                                            </HorizontalStackLayout>
+                                        </Border>
+                                    </VerticalStackLayout>
+                                </Border>
+
+                                <Border Style="{StaticResource DashboardSurfaceCard}">
+                                    <VerticalStackLayout Spacing="18">
+                                        <Label Text="Daily goal"
+                                               Style="{StaticResource DashboardTitle}" />
+                                        <BoxView HeightRequest="1"
+                                                 Opacity="0.55"
+                                                 BackgroundColor="{StaticResource DashboardBorder}" />
+                                        <Label Text="Daily study goal: 30 min"
+                                               Style="{StaticResource DashboardSectionTitle}" />
+                                        <Label Text="{Binding DailyGoalStatus}"
+                                               Style="{StaticResource DashboardBody}" />
+                                        <Border StrokeThickness="0"
+                                                StrokeShape="RoundRectangle 18"
+                                                BackgroundColor="#3E4553"
+                                                Padding="18,14">
+                                            <Grid ColumnDefinitions="Auto,*"
+                                                  ColumnSpacing="12">
+                                                <Border StrokeThickness="0"
+                                                        BackgroundColor="#596275"
+                                                        StrokeShape="RoundRectangle 12"
+                                                        Padding="10,8">
+                                                    <Label Text="TM"
+                                                           FontSize="12"
+                                                           FontAttributes="Bold"
+                                                           TextColor="{StaticResource DashboardInk}" />
+                                                </Border>
+                                                <VerticalStackLayout Spacing="2">
+                                                    <Label Text="{Binding DailyGoalSummary}"
+                                                           Style="{StaticResource DashboardSectionTitle}" />
+                                                    <Label Text="Steady progress beats long catch-up sessions."
+                                                           Style="{StaticResource DashboardBody}" />
+                                                </VerticalStackLayout>
+                                            </Grid>
+                                        </Border>
+                                    </VerticalStackLayout>
+                                </Border>
+                            </VerticalStackLayout>
+                        </FlexLayout>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+    </ScrollView>
 
 </ContentPage>
