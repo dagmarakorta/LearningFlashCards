@@ -9,7 +9,7 @@ namespace LearningFlashCards.Maui
     public partial class MainPage : ContentPage
     {
         private const int DailyGoalMinutesTarget = 30;
-        private readonly string[] _deckIcons = ["DS", "SD", "CD", "AI", "UX", "DB"];
+        private readonly string[] _deckIcons = ["📁", "🧠", "💻", "🌍", "🔬", "📝"];
         private readonly string[] _deckBackgrounds =
         [
             "#EAF2FF",
@@ -21,6 +21,7 @@ namespace LearningFlashCards.Maui
         ];
 
         public ObservableCollection<DeckDashboardItem> Decks { get; } = new();
+        public ObservableCollection<DeckDashboardItem> FeaturedDecks { get; } = new();
 
         private readonly IDeckRepository _deckRepository;
         private readonly ICardRepository _cardRepository;
@@ -58,7 +59,7 @@ namespace LearningFlashCards.Maui
         public string DailyGoalStatus => DailyGoalCompletedMinutes >= DailyGoalMinutesTarget ? "Daily goal reached." : "You're on track.";
         public string DailyGoalSummary => $"{DailyGoalCompletedMinutes} min completed";
         public string KeepGoingMessage => DueTodayCount > 0 ? "Keep the streak alive" : "Add a new deck";
-        public string DeckPanelFooter => HasDecks ? "Tap a deck to open it" : "Create or import your first deck";
+        public string DeckPanelFooter => HasDecks ? "Choose your next deck" : "Create or import your first deck";
         public string ReviewProgressLabel => $"{DueTodayCount} / {ReviewTarget}";
         public string MasteredProgressLabel => $"{MasteredCardsCount} / {MasteredTarget}";
 
@@ -93,7 +94,7 @@ namespace LearningFlashCards.Maui
                 return;
             }
 
-            await Shell.Current.GoToAsync($"{nameof(DeckDetailPage)}?deckId={Decks[0].Id}");
+            await Shell.Current.GoToAsync(nameof(BrowseDecksPage));
         }
 
         private async void OnStartStudyingClicked(object? sender, EventArgs e)
@@ -194,11 +195,17 @@ namespace LearningFlashCards.Maui
             GreetingName = string.IsNullOrWhiteSpace(profile?.DisplayName) ? "learner" : profile.DisplayName.Trim();
 
             Decks.Clear();
+            FeaturedDecks.Clear();
 
             foreach (var (deck, cards) in loadedDecks)
             {
                 var dashboardDeck = BuildDeckItem(deck, cards, Decks.Count);
                 Decks.Add(dashboardDeck);
+            }
+
+            foreach (var deck in Decks.Take(3))
+            {
+                FeaturedDecks.Add(deck);
             }
 
             var allCards = loadedDecks.SelectMany(result => result.Cards).ToList();
