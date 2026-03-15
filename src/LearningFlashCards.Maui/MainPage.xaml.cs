@@ -40,7 +40,7 @@ namespace LearningFlashCards.Maui
         }
 
         public string GreetingName { get; private set; } = "learner";
-        public string HeroMessage => $"Welcome back, {GreetingName}! Ready to study?";
+        public string HeroMessage => $"Welcome back, {GreetingName}. 👋 Ready to study?";
         public string DeckCountLabel => $"{Decks.Count} {(Decks.Count == 1 ? "set" : "sets")}";
         public int TotalDecks { get; private set; }
         public int DueTodayCount { get; private set; }

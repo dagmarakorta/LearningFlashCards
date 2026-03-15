@@ -43,3 +43,4 @@ packages/
 *.xcuserdata
 *.crash
 .claude/settings.local.json
+.vscode/settings.json
