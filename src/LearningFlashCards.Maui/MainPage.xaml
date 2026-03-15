@@ -313,6 +313,7 @@
                                         JustifyContent="Start">
                                 <Border Style="{StaticResource DashboardSurfaceCard}"
                                         WidthRequest="420"
+                                        HeightRequest="300"
                                         Margin="0,0,20,20">
                                     <VerticalStackLayout Spacing="18">
                                         <Label Text="Progress overview"
@@ -375,6 +376,7 @@
 
                                 <Border Style="{StaticResource DashboardSurfaceCard}"
                                         WidthRequest="420"
+                                        HeightRequest="300"
                                         Margin="0,0,20,20">
                                     <VerticalStackLayout Spacing="18">
                                         <Label Text="Daily goal"
@@ -390,24 +392,13 @@
                                                 StrokeShape="RoundRectangle 18"
                                                 BackgroundColor="#3E4553"
                                                 Padding="18,14">
-                                            <Grid ColumnDefinitions="Auto,*"
-                                                  ColumnSpacing="12">
-                                                <Border StrokeThickness="0"
-                                                        BackgroundColor="#596275"
-                                                        StrokeShape="RoundRectangle 12"
-                                                        Padding="10,8">
-                                                    <Label Text="TM"
-                                                           FontSize="12"
-                                                           FontAttributes="Bold"
-                                                           TextColor="{StaticResource DashboardInk}" />
-                                                </Border>
-                                                <VerticalStackLayout Spacing="2">
-                                                    <Label Text="{Binding DailyGoalSummary}"
-                                                           Style="{StaticResource DashboardSectionTitle}" />
-                                                    <Label Text="Steady progress beats long catch-up sessions."
-                                                           Style="{StaticResource DashboardBody}" />
-                                                </VerticalStackLayout>
-                                            </Grid>
+                                            <VerticalStackLayout Spacing="6">
+                                                <Label Text="{Binding DailyGoalSummary}"
+                                                       Style="{StaticResource DashboardSectionTitle}" />
+                                                <Label Text="Steady progress beats long catch-up sessions."
+                                                       Style="{StaticResource DashboardBody}"
+                                                       LineBreakMode="WordWrap" />
+                                            </VerticalStackLayout>
                                         </Border>
                                     </VerticalStackLayout>
                                 </Border>
