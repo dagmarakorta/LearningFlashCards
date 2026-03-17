@@ -25,7 +25,7 @@ namespace LearningFlashCards.Maui
             var name = NameEntry.Text?.Trim();
             if (string.IsNullOrWhiteSpace(name))
             {
-                await DisplayAlertAsync("Missing name", "Please enter a deck name.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Missing name", "Please enter a deck name.");
                 return;
             }
 
@@ -37,7 +37,7 @@ namespace LearningFlashCards.Maui
 
             if (!_currentUser.IsAuthenticated || _currentUser.UserId is null)
             {
-                await DisplayAlertAsync("Not signed in", "Please login to create a deck.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Not signed in", "Please login to create a deck.");
                 await Shell.Current.GoToAsync("//LoginPage");
                 return;
             }
@@ -84,19 +84,19 @@ namespace LearningFlashCards.Maui
 
             if (!TryReadPositiveInt(DailyLimitEntry.Text, out var dailyLimit))
             {
-                await DisplayAlertAsync("Invalid settings", "Daily review limit must be a positive number.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Invalid settings", "Daily review limit must be a positive number.");
                 return null;
             }
 
             if (!TryReadPositiveInt(EasyMinIntervalEntry.Text, out var easyMin))
             {
-                await DisplayAlertAsync("Invalid settings", "Easy minimum interval must be a positive number.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Invalid settings", "Easy minimum interval must be a positive number.");
                 return null;
             }
 
             if (!TryReadPositiveInt(MaxIntervalEntry.Text, out var maxInterval))
             {
-                await DisplayAlertAsync("Invalid settings", "Max interval must be a positive number.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Invalid settings", "Max interval must be a positive number.");
                 return null;
             }
 
@@ -107,7 +107,7 @@ namespace LearningFlashCards.Maui
 
             if (!StudySettingsValidator.TryValidate(settings, out var error))
             {
-                await DisplayAlertAsync("Invalid settings", error ?? "Study settings are invalid.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Invalid settings", error ?? "Study settings are invalid.");
                 return null;
             }
 

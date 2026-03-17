@@ -21,7 +21,7 @@ namespace LearningFlashCards.Maui
             var email = EmailEntry.Text?.Trim();
             if (string.IsNullOrWhiteSpace(email))
             {
-                await DisplayAlertAsync("Missing email", "Please enter your email.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Missing email", "Please enter your email.");
                 return;
             }
 
@@ -29,7 +29,7 @@ namespace LearningFlashCards.Maui
             var user = await _userRepository.GetByEmailAsync(normalizedEmail, CancellationToken.None);
             if (user is null)
             {
-                await DisplayAlertAsync("Not found", "No account found for that email.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Not found", "No account found for that email.");
                 return;
             }
 

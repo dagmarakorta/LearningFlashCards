@@ -45,7 +45,7 @@ namespace LearningFlashCards.Maui
         {
             if (_profile is null)
             {
-                await DisplayAlertAsync("Missing profile", "Please login again.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Missing profile", "Please login again.");
                 await Shell.Current.GoToAsync("//LoginPage");
                 return;
             }
@@ -53,33 +53,33 @@ namespace LearningFlashCards.Maui
             var name = NameEntry.Text?.Trim();
             if (string.IsNullOrWhiteSpace(name))
             {
-                await DisplayAlertAsync("Missing name", "Please enter your name.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Missing name", "Please enter your name.");
                 return;
             }
 
             if (name.Length < 3)
             {
-                await DisplayAlertAsync("Name too short", "Name must be at least 3 characters.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Name too short", "Name must be at least 3 characters.");
                 return;
             }
 
             if (!NamePattern.IsMatch(name))
             {
-                await DisplayAlertAsync("Invalid name", "Use letters, spaces, apostrophes, or hyphens only.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Invalid name", "Use letters, spaces, apostrophes, or hyphens only.");
                 return;
             }
 
             var nameOwner = await _userRepository.GetByDisplayNameAsync(name, CancellationToken.None);
             if (nameOwner is not null && nameOwner.Id != _profile.Id)
             {
-                await DisplayAlertAsync("Name already used", "Please choose a different name.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Name already used", "Please choose a different name.");
                 return;
             }
 
             _profile.DisplayName = name;
 
             await _userRepository.UpsertAsync(_profile, CancellationToken.None);
-            await DisplayAlertAsync("Saved", "Profile updated.", "OK");
+            await AppDialogService.ShowAlertAsync(this, "Saved", "Profile updated.");
         }
 
         private async void OnChangeEmailClicked(object? sender, EventArgs e)

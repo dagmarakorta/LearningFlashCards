@@ -25,31 +25,31 @@ namespace LearningFlashCards.Maui
 
             if (string.IsNullOrWhiteSpace(name))
             {
-                await DisplayAlertAsync("Missing name", "Please enter your name.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Missing name", "Please enter your name.");
                 return;
             }
 
             if (name.Length < 3)
             {
-                await DisplayAlertAsync("Name too short", "Name must be at least 3 characters.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Name too short", "Name must be at least 3 characters.");
                 return;
             }
 
             if (!NamePattern.IsMatch(name))
             {
-                await DisplayAlertAsync("Invalid name", "Use letters, spaces, apostrophes, or hyphens only.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Invalid name", "Use letters, spaces, apostrophes, or hyphens only.");
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(email))
             {
-                await DisplayAlertAsync("Missing email", "Please enter your email.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Missing email", "Please enter your email.");
                 return;
             }
 
             if (!EmailPattern.IsMatch(email))
             {
-                await DisplayAlertAsync("Invalid email", "Please enter a valid email address.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Invalid email", "Please enter a valid email address.");
                 return;
             }
 
@@ -57,14 +57,14 @@ namespace LearningFlashCards.Maui
             var exists = await _userRepository.ExistsByEmailAsync(normalizedEmail, CancellationToken.None);
             if (exists)
             {
-                await DisplayAlertAsync("Email already used", "Please login or use a different email.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Email already used", "Please login or use a different email.");
                 return;
             }
 
             var nameExists = await _userRepository.ExistsByDisplayNameAsync(name, CancellationToken.None);
             if (nameExists)
             {
-                await DisplayAlertAsync("Name already used", "Please choose a different name.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Name already used", "Please choose a different name.");
                 return;
             }
 

@@ -6,7 +6,7 @@
     xmlns:local="clr-namespace:LearningFlashCards.Maui"
     Title="LearningFlashCards.Maui"
     FlyoutBehavior="Disabled"
-    BackgroundColor="#2B313D">
+    BackgroundColor="{StaticResource DashboardPanel}">
 
     <ShellContent
         Title="Login"

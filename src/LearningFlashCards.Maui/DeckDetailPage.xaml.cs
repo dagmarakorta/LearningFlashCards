@@ -56,7 +56,7 @@ namespace LearningFlashCards.Maui
 
             if (_deckId is null)
             {
-                await DisplayAlertAsync("Missing deck", "Unable to load deck.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Missing deck", "Unable to load deck.");
                 await Shell.Current.GoToAsync("..");
                 return;
             }
@@ -64,7 +64,7 @@ namespace LearningFlashCards.Maui
             var deck = await _deckRepository.GetAsync(_deckId.Value, CancellationToken.None);
             if (deck is null || deck.OwnerId != _currentUser.UserId.Value)
             {
-                await DisplayAlertAsync("Not found", "Deck not found.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Not found", "Deck not found.");
                 await Shell.Current.GoToAsync("..");
                 return;
             }
@@ -89,7 +89,7 @@ namespace LearningFlashCards.Maui
         {
             if (_deckId is null)
             {
-                await DisplayAlertAsync("Missing deck", "Select a deck before adding a card.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Missing deck", "Select a deck before adding a card.");
                 return;
             }
 
@@ -100,7 +100,7 @@ namespace LearningFlashCards.Maui
         {
             if (_deckId is null)
             {
-                await DisplayAlertAsync("Missing deck", "Select a deck before studying.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Missing deck", "Select a deck before studying.");
                 return;
             }
 
@@ -128,18 +128,18 @@ namespace LearningFlashCards.Maui
             var card = await _cardRepository.GetAsync(cardItem.Id, CancellationToken.None);
             if (card is null || card.DeckId != _deckId)
             {
-                await DisplayAlertAsync("Error", "Card not found in this deck.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Error", "Card not found in this deck.");
                 return;
             }
 
             var deck = await _deckRepository.GetAsync(_deckId.Value, CancellationToken.None);
             if (deck is null || deck.OwnerId != _currentUser.UserId.Value)
             {
-                await DisplayAlertAsync("Not authorized", "You do not have permission to delete this card.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Not authorized", "You do not have permission to delete this card.");
                 return;
             }
 
-            var confirm = await DisplayAlertAsync("Delete card", "Delete this card from the deck?", "Delete", "Cancel");
+            var confirm = await AppDialogService.ShowConfirmAsync(this, "Delete card", "Delete this card from the deck?", "Delete");
             if (!confirm)
             {
                 return;

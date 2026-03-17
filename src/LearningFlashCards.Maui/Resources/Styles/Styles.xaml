@@ -9,7 +9,7 @@
 
     <Style TargetType="ContentPage" ApplyToDerivedTypes="True">
         <Setter Property="Shell.NavBarIsVisible" Value="False" />
-        <Setter Property="BackgroundColor" Value="#2B313D" />
+        <Setter Property="BackgroundColor" Value="{StaticResource DashboardMist}" />
     </Style>
 
     <Style TargetType="ActivityIndicator">
@@ -232,55 +232,46 @@
     </Style>
 
     <Style TargetType="Border" x:Key="DashboardSurfaceCard">
-        <Setter Property="Background">
-            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                <GradientStop Color="#3A4150" Offset="0" />
-                <GradientStop Color="{StaticResource DashboardPanel}" Offset="0.45" />
-                <GradientStop Color="#2C3340" Offset="1" />
-            </LinearGradientBrush>
-        </Setter>
+        <Setter Property="BackgroundColor" Value="{StaticResource DashboardPanel}" />
         <Setter Property="Stroke" Value="{StaticResource DashboardBorder}" />
         <Setter Property="StrokeThickness" Value="1" />
-        <Setter Property="StrokeShape" Value="RoundRectangle 24" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 26" />
         <Setter Property="Padding" Value="20" />
         <Setter Property="Shadow">
-            <Shadow Brush="#C8000000" Offset="0,16" Radius="30" Opacity="0.5" />
+            <Shadow Brush="#225E6A91" Offset="0,10" Radius="24" Opacity="0.9" />
         </Setter>
     </Style>
 
     <Style TargetType="Border" x:Key="DashboardInnerCard">
-        <Setter Property="Background">
-            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                <GradientStop Color="#404756" Offset="0" />
-                <GradientStop Color="{StaticResource DashboardPanel}" Offset="0.5" />
-                <GradientStop Color="#303742" Offset="1" />
-            </LinearGradientBrush>
-        </Setter>
+        <Setter Property="BackgroundColor" Value="{StaticResource DashboardCardSurface}" />
         <Setter Property="Stroke" Value="{StaticResource DashboardBorder}" />
         <Setter Property="StrokeThickness" Value="1" />
         <Setter Property="StrokeShape" Value="RoundRectangle 20" />
         <Setter Property="Padding" Value="18" />
         <Setter Property="Shadow">
-            <Shadow Brush="#B0000000" Offset="0,12" Radius="24" Opacity="0.38" />
+            <Shadow Brush="#165E6A91" Offset="0,6" Radius="16" Opacity="0.9" />
         </Setter>
     </Style>
 
     <Style TargetType="Label" x:Key="DashboardTitle">
         <Setter Property="TextColor" Value="{StaticResource DashboardInk}" />
+        <Setter Property="FontFamily" Value="Georgia" />
         <Setter Property="FontSize" Value="18" />
-        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="FontAttributes" Value="Italic" />
     </Style>
 
     <Style TargetType="Label" x:Key="DashboardSectionTitle">
         <Setter Property="TextColor" Value="{StaticResource DashboardInk}" />
+        <Setter Property="FontFamily" Value="Georgia" />
         <Setter Property="FontSize" Value="17" />
-        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="FontAttributes" Value="Italic" />
     </Style>
 
     <Style TargetType="Label" x:Key="DashboardHeroTitle">
         <Setter Property="TextColor" Value="{StaticResource DashboardInk}" />
-        <Setter Property="FontSize" Value="26" />
-        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="FontFamily" Value="Georgia" />
+        <Setter Property="FontSize" Value="34" />
+        <Setter Property="FontAttributes" Value="Italic" />
         <Setter Property="LineBreakMode" Value="WordWrap" />
     </Style>
 
@@ -291,8 +282,9 @@
 
     <Style TargetType="Label" x:Key="DashboardValue">
         <Setter Property="TextColor" Value="{StaticResource DashboardInk}" />
+        <Setter Property="FontFamily" Value="Georgia" />
         <Setter Property="FontSize" Value="20" />
-        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="FontAttributes" Value="Italic" />
     </Style>
 
     <Style TargetType="Button" x:Key="DashboardPrimaryButton">
@@ -301,30 +293,20 @@
         <Setter Property="CornerRadius" Value="18" />
         <Setter Property="FontSize" Value="16" />
         <Setter Property="FontAttributes" Value="Bold" />
-        <Setter Property="Background">
-            <LinearGradientBrush EndPoint="1,1">
-                <GradientStop Color="#565E6F" Offset="0" />
-                <GradientStop Color="#434B5A" Offset="0.55" />
-                <GradientStop Color="#353C49" Offset="1" />
-            </LinearGradientBrush>
-        </Setter>
+        <Setter Property="BackgroundColor" Value="{StaticResource DashboardChipActive}" />
         <Setter Property="Shadow">
-            <Shadow Brush="#BE000000" Offset="0,10" Radius="20" Opacity="0.48" />
+            <Shadow Brush="#245E6A91" Offset="0,8" Radius="18" Opacity="0.9" />
         </Setter>
     </Style>
 
     <Style TargetType="Button" x:Key="DashboardSecondaryButton">
         <Setter Property="TextColor" Value="{StaticResource DashboardInk}" />
-        <Setter Property="Background">
-            <LinearGradientBrush EndPoint="1,1">
-                <GradientStop Color="#4A5262" Offset="0" />
-                <GradientStop Color="#39404E" Offset="1" />
-            </LinearGradientBrush>
-        </Setter>
+        <Setter Property="BackgroundColor" Value="{StaticResource DashboardChip}" />
         <Setter Property="Padding" Value="16,10" />
-        <Setter Property="CornerRadius" Value="14" />
+        <Setter Property="CornerRadius" Value="16" />
         <Setter Property="FontSize" Value="14" />
-        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="BorderColor" Value="{StaticResource DashboardBorder}" />
+        <Setter Property="BorderWidth" Value="1" />
     </Style>
 
     <Style TargetType="Button" x:Key="DashboardGhostIconButton">
@@ -338,8 +320,8 @@
     </Style>
 
     <Style TargetType="ProgressBar" x:Key="DashboardProgressBar">
-        <Setter Property="HeightRequest" Value="12" />
-        <Setter Property="BackgroundColor" Value="#4A5161" />
+        <Setter Property="HeightRequest" Value="10" />
+        <Setter Property="BackgroundColor" Value="#FFFFFF" />
         <Setter Property="ProgressColor" Value="{StaticResource DashboardPrimary}" />
     </Style>
 
@@ -583,9 +565,9 @@
     <Style TargetType="Border" x:Key="DashboardInputBorder">
         <Setter Property="Stroke" Value="{StaticResource DashboardBorder}" />
         <Setter Property="StrokeThickness" Value="1" />
-        <Setter Property="StrokeShape" Value="RoundRectangle 12" />
-        <Setter Property="BackgroundColor" Value="#333A47" />
-        <Setter Property="Padding" Value="8,4" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 16" />
+        <Setter Property="BackgroundColor" Value="{StaticResource DashboardChip}" />
+        <Setter Property="Padding" Value="10,6" />
     </Style>
 
     <Style TargetType="Label" x:Key="DashboardFieldLabel">
@@ -611,9 +593,9 @@
     <Style TargetType="Border" x:Key="DashboardStudyCard">
         <Setter Property="Background">
             <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                <GradientStop Color="#3A4150" Offset="0" />
-                <GradientStop Color="{StaticResource DashboardPanel}" Offset="0.45" />
-                <GradientStop Color="#2C3340" Offset="1" />
+                <GradientStop Color="#F8FAFF" Offset="0" />
+                <GradientStop Color="#EDF2FF" Offset="0.55" />
+                <GradientStop Color="#E4ECFF" Offset="1" />
             </LinearGradientBrush>
         </Setter>
         <Setter Property="Stroke" Value="{StaticResource DashboardBorder}" />
@@ -621,75 +603,55 @@
         <Setter Property="StrokeShape" Value="RoundRectangle 24" />
         <Setter Property="Padding" Value="28" />
         <Setter Property="Shadow">
-            <Shadow Brush="#C8000000" Offset="0,16" Radius="30" Opacity="0.5" />
+            <Shadow Brush="#225E6A91" Offset="0,12" Radius="24" Opacity="0.9" />
         </Setter>
     </Style>
 
     <Style TargetType="Button" x:Key="StudyAgainButton">
         <Setter Property="TextColor" Value="{StaticResource White}" />
-        <Setter Property="Background">
-            <LinearGradientBrush EndPoint="0,1">
-                <GradientStop Color="#6B3535" Offset="0" />
-                <GradientStop Color="#572B2B" Offset="1" />
-            </LinearGradientBrush>
-        </Setter>
+        <Setter Property="BackgroundColor" Value="#6C5AA8" />
         <Setter Property="Padding" Value="0,14" />
         <Setter Property="CornerRadius" Value="16" />
         <Setter Property="FontSize" Value="15" />
         <Setter Property="FontAttributes" Value="Bold" />
         <Setter Property="Shadow">
-            <Shadow Brush="#BE000000" Offset="0,8" Radius="16" Opacity="0.4" />
+            <Shadow Brush="#245E6A91" Offset="0,8" Radius="14" Opacity="0.9" />
         </Setter>
     </Style>
 
     <Style TargetType="Button" x:Key="StudyHardButton">
         <Setter Property="TextColor" Value="{StaticResource White}" />
-        <Setter Property="Background">
-            <LinearGradientBrush EndPoint="0,1">
-                <GradientStop Color="#664B2B" Offset="0" />
-                <GradientStop Color="#523C22" Offset="1" />
-            </LinearGradientBrush>
-        </Setter>
+        <Setter Property="BackgroundColor" Value="#8070BC" />
         <Setter Property="Padding" Value="0,14" />
         <Setter Property="CornerRadius" Value="16" />
         <Setter Property="FontSize" Value="15" />
         <Setter Property="FontAttributes" Value="Bold" />
         <Setter Property="Shadow">
-            <Shadow Brush="#BE000000" Offset="0,8" Radius="16" Opacity="0.4" />
+            <Shadow Brush="#245E6A91" Offset="0,8" Radius="14" Opacity="0.9" />
         </Setter>
     </Style>
 
     <Style TargetType="Button" x:Key="StudyMediumButton">
         <Setter Property="TextColor" Value="{StaticResource White}" />
-        <Setter Property="Background">
-            <LinearGradientBrush EndPoint="0,1">
-                <GradientStop Color="#2B4666" Offset="0" />
-                <GradientStop Color="#223552" Offset="1" />
-            </LinearGradientBrush>
-        </Setter>
+        <Setter Property="BackgroundColor" Value="#4D5F99" />
         <Setter Property="Padding" Value="0,14" />
         <Setter Property="CornerRadius" Value="16" />
         <Setter Property="FontSize" Value="15" />
         <Setter Property="FontAttributes" Value="Bold" />
         <Setter Property="Shadow">
-            <Shadow Brush="#BE000000" Offset="0,8" Radius="16" Opacity="0.4" />
+            <Shadow Brush="#245E6A91" Offset="0,8" Radius="14" Opacity="0.9" />
         </Setter>
     </Style>
 
     <Style TargetType="Button" x:Key="StudyEasyButton">
         <Setter Property="TextColor" Value="{StaticResource White}" />
-        <Setter Property="Background">
-            <LinearGradientBrush EndPoint="0,1">
-                <GradientStop Color="#2B5240" Offset="0" />
-                <GradientStop Color="#224134" Offset="1" />
-            </LinearGradientBrush>
-        </Setter>
+        <Setter Property="BackgroundColor" Value="#35354B" />
         <Setter Property="Padding" Value="0,14" />
         <Setter Property="CornerRadius" Value="16" />
         <Setter Property="FontSize" Value="15" />
         <Setter Property="FontAttributes" Value="Bold" />
         <Setter Property="Shadow">
-            <Shadow Brush="#BE000000" Offset="0,8" Radius="16" Opacity="0.4" />
+            <Shadow Brush="#245E6A91" Offset="0,8" Radius="14" Opacity="0.9" />
         </Setter>
     </Style>
 

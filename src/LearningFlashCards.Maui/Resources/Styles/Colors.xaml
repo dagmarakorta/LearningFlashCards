@@ -27,21 +27,26 @@
     <Color x:Key="Gray900">#212121</Color>
     <Color x:Key="Gray950">#141414</Color>
 
-    <Color x:Key="DashboardSky">#444B59</Color>
-    <Color x:Key="DashboardMist">#2D3441</Color>
-    <Color x:Key="DashboardPanel">#333A47</Color>
-    <Color x:Key="DashboardBorder">#4A5160</Color>
-    <Color x:Key="DashboardInk">#ECEFF5</Color>
-    <Color x:Key="DashboardMuted">#B8BFCC</Color>
-    <Color x:Key="DashboardPrimary">#84AFD7</Color>
-    <Color x:Key="DashboardPrimaryDark">#647D9E</Color>
-    <Color x:Key="DashboardSuccess">#90A988</Color>
-    <Color x:Key="DashboardWarm">#BFA577</Color>
-    <Color x:Key="DashboardDeckBlue">#39414E</Color>
-    <Color x:Key="DashboardDeckGreen">#373F49</Color>
-    <Color x:Key="DashboardDeckGold">#3C404A</Color>
-    <Color x:Key="DashboardHighlight">#5B6373</Color>
-    <Color x:Key="DashboardShadow">#242A35</Color>
+    <Color x:Key="DashboardSky">#DDE7FF</Color>
+    <Color x:Key="DashboardMist">#C9D9FF</Color>
+    <Color x:Key="DashboardPanel">#ECF2FF</Color>
+    <Color x:Key="DashboardBorder">#B5C7F0</Color>
+    <Color x:Key="DashboardInk">#2C3148</Color>
+    <Color x:Key="DashboardMuted">#66708A</Color>
+    <Color x:Key="DashboardPrimary">#5D4D99</Color>
+    <Color x:Key="DashboardPrimaryDark">#35354B</Color>
+    <Color x:Key="DashboardSuccess">#7663B0</Color>
+    <Color x:Key="DashboardWarm">#B9A0E6</Color>
+    <Color x:Key="DashboardDeckBlue">#D9E6FF</Color>
+    <Color x:Key="DashboardDeckGreen">#EAF1FF</Color>
+    <Color x:Key="DashboardDeckGold">#F7F9FF</Color>
+    <Color x:Key="DashboardHighlight">#FFFFFF</Color>
+    <Color x:Key="DashboardShadow">#5E6A91</Color>
+    <Color x:Key="DashboardChip">#F4F7FF</Color>
+    <Color x:Key="DashboardChipActive">#35354B</Color>
+    <Color x:Key="DashboardFeatureStart">#6E5AC8</Color>
+    <Color x:Key="DashboardFeatureEnd">#1E214B</Color>
+    <Color x:Key="DashboardCardSurface">#F8FAFF</Color>
 
     <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource Primary}"/>
     <SolidColorBrush x:Key="SecondaryBrush" Color="{StaticResource Secondary}"/>

@@ -50,7 +50,7 @@ namespace LearningFlashCards.Maui
 
             if (_deckId is null)
             {
-                await DisplayAlertAsync("Missing deck", "Unable to load deck.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Missing deck", "Unable to load deck.");
                 await Shell.Current.GoToAsync("..");
                 return;
             }
@@ -58,7 +58,7 @@ namespace LearningFlashCards.Maui
             _deck = await _deckRepository.GetAsync(_deckId.Value, CancellationToken.None);
             if (_deck is null || _deck.OwnerId != _currentUser.UserId.Value)
             {
-                await DisplayAlertAsync("Not found", "Deck not found.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Not found", "Deck not found.");
                 await Shell.Current.GoToAsync("..");
                 return;
             }
@@ -73,13 +73,13 @@ namespace LearningFlashCards.Maui
             var name = NameEntry.Text?.Trim();
             if (string.IsNullOrWhiteSpace(name))
             {
-                await DisplayAlertAsync("Missing name", "Please enter a deck name.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Missing name", "Please enter a deck name.");
                 return;
             }
 
             if (!_currentUser.IsAuthenticated || _currentUser.UserId is null)
             {
-                await DisplayAlertAsync("Not signed in", "Please login to edit decks.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Not signed in", "Please login to edit decks.");
                 await Shell.Current.GoToAsync("//LoginPage");
                 return;
             }
@@ -92,7 +92,7 @@ namespace LearningFlashCards.Maui
 
             if (_deck is null)
             {
-                await DisplayAlertAsync("Missing data", "Unable to save changes.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Missing data", "Unable to save changes.");
                 await Shell.Current.GoToAsync("..");
                 return;
             }
@@ -136,19 +136,19 @@ namespace LearningFlashCards.Maui
 
             if (!TryReadPositiveInt(DailyLimitEntry.Text, out var dailyLimit))
             {
-                await DisplayAlertAsync("Invalid settings", "Daily review limit must be a positive number.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Invalid settings", "Daily review limit must be a positive number.");
                 return null;
             }
 
             if (!TryReadPositiveInt(EasyMinIntervalEntry.Text, out var easyMin))
             {
-                await DisplayAlertAsync("Invalid settings", "Easy minimum interval must be a positive number.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Invalid settings", "Easy minimum interval must be a positive number.");
                 return null;
             }
 
             if (!TryReadPositiveInt(MaxIntervalEntry.Text, out var maxInterval))
             {
-                await DisplayAlertAsync("Invalid settings", "Max interval must be a positive number.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Invalid settings", "Max interval must be a positive number.");
                 return null;
             }
 
@@ -159,7 +159,7 @@ namespace LearningFlashCards.Maui
 
             if (!StudySettingsValidator.TryValidate(settings, out var error))
             {
-                await DisplayAlertAsync("Invalid settings", error ?? "Study settings are invalid.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Invalid settings", error ?? "Study settings are invalid.");
                 return null;
             }
 

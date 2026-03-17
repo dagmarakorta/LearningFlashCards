@@ -4,21 +4,25 @@
              x:Class="LearningFlashCards.Maui.StudyDeckPage"
              Title="Study">
 
-    <Grid Padding="20"
-          RowDefinitions="Auto,*,Auto"
-          RowSpacing="16">
+    <Grid Padding="20">
+        <VerticalStackLayout Spacing="16"
+                             HorizontalOptions="Fill"
+                             MaximumWidthRequest="1040">
 
-        <!-- Header -->
-        <Border StrokeThickness="0"
-                StrokeShape="RoundRectangle 20"
-                HorizontalOptions="Center"
-                WidthRequest="700">
+            <!-- Header -->
+            <Border StrokeThickness="0"
+                    StrokeShape="RoundRectangle 20"
+                    HorizontalOptions="Fill"
+                    MaximumWidthRequest="1040">
             <Border.Background>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                    <GradientStop Color="#3C4352" Offset="0" />
-                    <GradientStop Color="#333A47" Offset="1" />
+                    <GradientStop Color="#F8FAFF" Offset="0" />
+                    <GradientStop Color="#EAF1FF" Offset="1" />
                 </LinearGradientBrush>
             </Border.Background>
+            <Border.Shadow>
+                <Shadow Brush="#225E6A91" Offset="0,10" Radius="18" Opacity="0.9" />
+            </Border.Shadow>
             <Grid ColumnDefinitions="*,Auto"
                   ColumnSpacing="16"
                   Padding="20,14">
@@ -33,7 +37,7 @@
                 <Border Grid.Column="1"
                         StrokeThickness="0"
                         StrokeShape="RoundRectangle 10"
-                        BackgroundColor="#40495A"
+                        BackgroundColor="#FFFFFF"
                         Padding="10,6"
                         VerticalOptions="Center">
                     <Label Text="📚"
@@ -41,13 +45,15 @@
                            HorizontalTextAlignment="Center" />
                 </Border>
             </Grid>
-        </Border>
+            </Border>
 
-        <!-- Flash Card -->
-        <Border Grid.Row="1"
-                Style="{StaticResource DashboardStudyCard}"
-                HorizontalOptions="Center"
-                WidthRequest="700">
+            <!-- Flash Card -->
+            <Border
+                    Style="{StaticResource DashboardStudyCard}"
+                    HorizontalOptions="Fill"
+                    VerticalOptions="Fill"
+                    MaximumWidthRequest="1040"
+                    MinimumHeightRequest="320">
             <Border.GestureRecognizers>
                 <TapGestureRecognizer Tapped="OnFlipTapped" />
             </Border.GestureRecognizers>
@@ -70,38 +76,51 @@
                            FontSize="13" />
                 </HorizontalStackLayout>
             </Grid>
-        </Border>
+            </Border>
 
-        <!-- Action Buttons -->
-        <VerticalStackLayout Grid.Row="2"
-                             Spacing="12"
-                             HorizontalOptions="Center"
-                             WidthRequest="700">
-            <Button Text="Show Answer"
-                    Style="{StaticResource DashboardPrimaryButton}"
-                    IsVisible="{Binding CanShowAnswer}"
-                    Clicked="OnShowAnswerClicked" />
-            <Grid ColumnDefinitions="*,*,*,*"
-                  ColumnSpacing="10"
-                  IsVisible="{Binding CanRate}">
-                <Button Text="Again"
-                        Style="{StaticResource StudyAgainButton}"
-                        Clicked="OnRateAgainClicked" />
-                <Button Grid.Column="1"
-                        Text="Hard"
-                        Style="{StaticResource StudyHardButton}"
-                        Clicked="OnRateHardClicked" />
-                <Button Grid.Column="2"
-                        Text="Medium"
-                        Style="{StaticResource StudyMediumButton}"
-                        Clicked="OnRateMediumClicked" />
-                <Button Grid.Column="3"
-                        Text="Easy"
-                        Style="{StaticResource StudyEasyButton}"
-                        Clicked="OnRateEasyClicked" />
-            </Grid>
+            <!-- Action Buttons -->
+            <VerticalStackLayout
+                                 Spacing="12"
+                                 HorizontalOptions="Fill"
+                                 MaximumWidthRequest="1040">
+                <Button Text="Show Answer"
+                        Style="{StaticResource DashboardPrimaryButton}"
+                        IsVisible="{Binding CanShowAnswer}"
+                        Clicked="OnShowAnswerClicked" />
+                <FlexLayout Direction="Row"
+                            Wrap="Wrap"
+                            JustifyContent="SpaceBetween"
+                            AlignItems="Stretch"
+                            BindableLayout.ItemsSource="{x:Null}"
+                            IsVisible="{Binding CanRate}">
+                    <Button Text="Again"
+                            Style="{StaticResource StudyAgainButton}"
+                            FlexLayout.Basis="24%"
+                            FlexLayout.Grow="1"
+                            Margin="0,0,8,8"
+                            Clicked="OnRateAgainClicked" />
+                    <Button Text="Hard"
+                            Style="{StaticResource StudyHardButton}"
+                            FlexLayout.Basis="24%"
+                            FlexLayout.Grow="1"
+                            Margin="0,0,8,8"
+                            Clicked="OnRateHardClicked" />
+                    <Button Text="Medium"
+                            Style="{StaticResource StudyMediumButton}"
+                            FlexLayout.Basis="24%"
+                            FlexLayout.Grow="1"
+                            Margin="0,0,8,8"
+                            Clicked="OnRateMediumClicked" />
+                    <Button Text="Easy"
+                            Style="{StaticResource StudyEasyButton}"
+                            FlexLayout.Basis="24%"
+                            FlexLayout.Grow="1"
+                            Margin="0,0,0,8"
+                            Clicked="OnRateEasyClicked" />
+                </FlexLayout>
+            </VerticalStackLayout>
+
         </VerticalStackLayout>
-
     </Grid>
 
 </ContentPage>

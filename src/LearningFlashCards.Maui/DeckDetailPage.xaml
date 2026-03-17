@@ -12,9 +12,9 @@
                     MaximumWidthRequest="900">
                 <Border.Background>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                        <GradientStop Color="#4A5160" Offset="0" />
-                        <GradientStop Color="#343B48" Offset="0.36" />
-                        <GradientStop Color="#2B313D" Offset="1" />
+                        <GradientStop Color="#F8FAFF" Offset="0" />
+                        <GradientStop Color="#EDF3FF" Offset="0.36" />
+                        <GradientStop Color="#E1EAFE" Offset="1" />
                     </LinearGradientBrush>
                 </Border.Background>
 
@@ -23,7 +23,7 @@
                     <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="16">
                         <Border StrokeThickness="0"
                                 StrokeShape="RoundRectangle 14"
-                                BackgroundColor="#525B6C"
+                                BackgroundColor="#DDE7FF"
                                 Padding="14,12">
                             <Label Text="📖"
                                    FontSize="26"

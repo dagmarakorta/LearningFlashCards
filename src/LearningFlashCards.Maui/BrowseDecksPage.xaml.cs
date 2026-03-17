@@ -105,7 +105,7 @@ namespace LearningFlashCards.Maui
                 return;
             }
 
-            var confirm = await DisplayAlertAsync("Delete deck", "Delete this deck and all its cards?", "Delete", "Cancel");
+            var confirm = await AppDialogService.ShowConfirmAsync(this, "Delete deck", "Delete this deck and all its cards?", "Delete");
             if (!confirm)
             {
                 return;
@@ -114,7 +114,7 @@ namespace LearningFlashCards.Maui
             var existing = await _deckRepository.GetAsync(deck.Id, CancellationToken.None);
             if (existing is null || existing.OwnerId != _currentUser.UserId.Value)
             {
-                await DisplayAlertAsync("Not found", "Deck not found.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Not found", "Deck not found.");
                 return;
             }
 

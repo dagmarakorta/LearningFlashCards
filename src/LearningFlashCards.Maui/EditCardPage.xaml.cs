@@ -65,7 +65,7 @@ namespace LearningFlashCards.Maui
 
             if (_cardId is null || _deckId is null)
             {
-                await DisplayAlertAsync("Missing data", "Unable to load card.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Missing data", "Unable to load card.");
                 await Shell.Current.GoToAsync("..");
                 return;
             }
@@ -73,7 +73,7 @@ namespace LearningFlashCards.Maui
             var deck = await _deckRepository.GetAsync(_deckId.Value, CancellationToken.None);
             if (deck is null || deck.OwnerId != _currentUser.UserId.Value)
             {
-                await DisplayAlertAsync("Not authorized", "You do not have permission to edit this card.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Not authorized", "You do not have permission to edit this card.");
                 await Shell.Current.GoToAsync("..");
                 return;
             }
@@ -81,7 +81,7 @@ namespace LearningFlashCards.Maui
             _card = await _cardRepository.GetAsync(_cardId.Value, CancellationToken.None);
             if (_card is null || _card.DeckId != _deckId)
             {
-                await DisplayAlertAsync("Not found", "Card not found in this deck.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Not found", "Card not found in this deck.");
                 await Shell.Current.GoToAsync("..");
                 return;
             }
@@ -97,20 +97,20 @@ namespace LearningFlashCards.Maui
 
             if (string.IsNullOrWhiteSpace(front) || string.IsNullOrWhiteSpace(back))
             {
-                await DisplayAlertAsync("Missing text", "Please enter front and back text.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Missing text", "Please enter front and back text.");
                 return;
             }
 
             if (!_currentUser.IsAuthenticated || _currentUser.UserId is null)
             {
-                await DisplayAlertAsync("Not signed in", "Please login to edit cards.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Not signed in", "Please login to edit cards.");
                 await Shell.Current.GoToAsync("//LoginPage");
                 return;
             }
 
             if (_deckId is null || _card is null)
             {
-                await DisplayAlertAsync("Missing data", "Unable to save changes.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Missing data", "Unable to save changes.");
                 await Shell.Current.GoToAsync("..");
                 return;
             }
@@ -118,7 +118,7 @@ namespace LearningFlashCards.Maui
             var deck = await _deckRepository.GetAsync(_deckId.Value, CancellationToken.None);
             if (deck is null || deck.OwnerId != _currentUser.UserId.Value)
             {
-                await DisplayAlertAsync("Not found", "Deck not found.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Not found", "Deck not found.");
                 await Shell.Current.GoToAsync("..");
                 return;
             }

@@ -21,7 +21,7 @@ namespace LearningFlashCards.Maui
         {
             if (!_currentUser.IsAuthenticated || _currentUser.UserId is null)
             {
-                await DisplayAlertAsync("Not signed in", "Please login first.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Not signed in", "Please login first.");
                 await Shell.Current.GoToAsync("//LoginPage");
                 return;
             }
@@ -29,13 +29,13 @@ namespace LearningFlashCards.Maui
             var email = EmailEntry.Text?.Trim();
             if (string.IsNullOrWhiteSpace(email))
             {
-                await DisplayAlertAsync("Missing email", "Please enter your email.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Missing email", "Please enter your email.");
                 return;
             }
 
             if (!EmailPattern.IsMatch(email))
             {
-                await DisplayAlertAsync("Invalid email", "Please enter a valid email address.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Invalid email", "Please enter a valid email address.");
                 return;
             }
 
@@ -43,7 +43,7 @@ namespace LearningFlashCards.Maui
             var owner = await _userRepository.GetByEmailAsync(normalizedEmail, CancellationToken.None);
             if (owner is not null && owner.Id != _currentUser.UserId.Value)
             {
-                await DisplayAlertAsync("Email already used", "Please use a different email.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Email already used", "Please use a different email.");
                 return;
             }
 
@@ -57,7 +57,7 @@ namespace LearningFlashCards.Maui
 
             profile.Email = normalizedEmail;
             await _userRepository.UpsertAsync(profile, CancellationToken.None);
-            await DisplayAlertAsync("Email updated", "Please login again with your new email.", "OK");
+            await AppDialogService.ShowAlertAsync(this, "Email updated", "Please login again with your new email.");
             _currentUser.Clear();
             await Shell.Current.GoToAsync("//LoginPage");
         }

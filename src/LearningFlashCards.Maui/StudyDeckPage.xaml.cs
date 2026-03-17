@@ -63,7 +63,7 @@ namespace LearningFlashCards.Maui
 
             if (_deckId is null)
             {
-                await DisplayAlertAsync("Missing deck", "Unable to study without a deck.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Missing deck", "Unable to study without a deck.");
                 await Shell.Current.GoToAsync("..");
                 return;
             }
@@ -71,7 +71,7 @@ namespace LearningFlashCards.Maui
             var deck = await _deckRepository.GetAsync(_deckId.Value, CancellationToken.None);
             if (deck is null || deck.OwnerId != _currentUser.UserId.Value)
             {
-                await DisplayAlertAsync("Not found", "Deck not found.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Not found", "Deck not found.");
                 await Shell.Current.GoToAsync("..");
                 return;
             }
@@ -102,7 +102,7 @@ namespace LearningFlashCards.Maui
 
             if (!HasCards)
             {
-                CurrentSideText = HtmlHelper.WrapWithDarkTheme("<p style=\"color:#B8BFCC;text-align:center;padding-top:20px;\">No cards due yet.</p>");
+                CurrentSideText = HtmlHelper.WrapWithDarkTheme("<div style=\"min-height:100%;display:flex;align-items:center;justify-content:center;text-align:center;color:#66708A;font-style:italic;padding:24px;\">No cards due yet.</div>");
                 ProgressText = string.Empty;
             }
             else
@@ -185,7 +185,7 @@ namespace LearningFlashCards.Maui
 
             if (_cards.Count == 0)
             {
-                await DisplayAlertAsync("Done", "You've completed all due cards for now.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Done", "You've completed all due cards for now.");
                 _currentIndex = 0;
                 _showBack = false;
                 UpdateCardDisplay();

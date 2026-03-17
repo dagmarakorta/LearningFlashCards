@@ -39,7 +39,7 @@ namespace LearningFlashCards.Maui
         {
             if (!_currentUser.IsAuthenticated || _currentUser.UserId is null)
             {
-                await DisplayAlertAsync("Not signed in", "Please login to import cards.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Not signed in", "Please login to import cards.");
                 await Shell.Current.GoToAsync("//LoginPage");
                 return;
             }
@@ -87,19 +87,19 @@ namespace LearningFlashCards.Maui
         {
             if (_cards.Count == 0)
             {
-                await DisplayAlertAsync("No cards", "Select a CSV file with at least one card.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "No cards", "Select a CSV file with at least one card.");
                 return;
             }
 
             if (_invalidRows.Count > 0)
             {
-                await DisplayAlertAsync("Invalid rows", BuildInvalidLinesMessage(), "OK");
+                await AppDialogService.ShowAlertAsync(this, "Invalid rows", BuildInvalidLinesMessage());
                 return;
             }
 
             if (!_currentUser.IsAuthenticated || _currentUser.UserId is null)
             {
-                await DisplayAlertAsync("Not signed in", "Please login to import cards.", "OK");
+                await AppDialogService.ShowAlertAsync(this, "Not signed in", "Please login to import cards.");
                 await Shell.Current.GoToAsync("//LoginPage");
                 return;
             }
@@ -110,7 +110,7 @@ namespace LearningFlashCards.Maui
                 var name = NewDeckNameEntry.Text?.Trim();
                 if (string.IsNullOrWhiteSpace(name))
                 {
-                    await DisplayAlertAsync("Missing name", "Please enter a new deck name.", "OK");
+                    await AppDialogService.ShowAlertAsync(this, "Missing name", "Please enter a new deck name.");
                     return;
                 }
 
@@ -129,14 +129,14 @@ namespace LearningFlashCards.Maui
             {
                 if (DeckPicker.SelectedItem is not DeckOption selected)
                 {
-                    await DisplayAlertAsync("Missing deck", "Select a deck for the import.", "OK");
+                    await AppDialogService.ShowAlertAsync(this, "Missing deck", "Select a deck for the import.");
                     return;
                 }
 
                 deck = await _deckRepository.GetAsync(selected.Id, CancellationToken.None);
                 if (deck is null || deck.OwnerId != _currentUser.UserId.Value)
                 {
-                    await DisplayAlertAsync("Not found", "Deck not found.", "OK");
+                    await AppDialogService.ShowAlertAsync(this, "Not found", "Deck not found.");
                     return;
                 }
             }
@@ -153,7 +153,7 @@ namespace LearningFlashCards.Maui
                 await _cardRepository.UpsertAsync(card, CancellationToken.None);
             }
 
-            await DisplayAlertAsync("Imported", $"Added {_cards.Count} cards.", "OK");
+            await AppDialogService.ShowAlertAsync(this, "Imported", $"Added {_cards.Count} cards.");
             await Shell.Current.GoToAsync($"{nameof(DeckDetailPage)}?deckId={deck.Id}");
         }
 
