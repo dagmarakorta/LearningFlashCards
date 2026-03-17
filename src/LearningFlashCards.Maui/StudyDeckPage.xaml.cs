@@ -102,13 +102,13 @@ namespace LearningFlashCards.Maui
 
             if (!HasCards)
             {
-                CurrentSideText = "No cards due yet.";
+                CurrentSideText = HtmlHelper.WrapWithDarkTheme("<p style=\"color:#B8BFCC;text-align:center;padding-top:20px;\">No cards due yet.</p>");
                 ProgressText = string.Empty;
             }
             else
             {
                 var card = _cards[_currentIndex];
-                CurrentSideText = _showBack ? card.Back : card.Front;
+                CurrentSideText = HtmlHelper.WrapWithDarkTheme(_showBack ? card.Back : card.Front);
                 ProgressText = $"{_currentIndex + 1} / {_cards.Count}";
             }
 

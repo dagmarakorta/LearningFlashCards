@@ -44,3 +44,4 @@ packages/
 *.crash
 .claude/settings.local.json
 .vscode/settings.json
+.claude/settings.json

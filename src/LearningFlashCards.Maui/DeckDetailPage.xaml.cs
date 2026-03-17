@@ -78,7 +78,10 @@ namespace LearningFlashCards.Maui
             Cards.Clear();
             foreach (var card in cards)
             {
-                Cards.Add(new CardListItem(card.Id, card.Front, card.Back));
+                Cards.Add(new CardListItem(
+                    card.Id,
+                    HtmlHelper.WrapWithDarkTheme(card.Front),
+                    HtmlHelper.WrapWithDarkTheme(card.Back)));
             }
         }
 

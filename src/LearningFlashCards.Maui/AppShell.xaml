@@ -5,7 +5,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:LearningFlashCards.Maui"
     Title="LearningFlashCards.Maui"
-    FlyoutBehavior="Disabled">
+    FlyoutBehavior="Disabled"
+    BackgroundColor="#2B313D">
 
     <ShellContent
         Title="Login"

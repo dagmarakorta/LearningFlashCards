@@ -4,80 +4,129 @@
              x:Class="LearningFlashCards.Maui.DeckDetailPage"
              Title="Deck">
 
-    <Grid
-        Padding="{StaticResource PagePadding}"
-        RowDefinitions="Auto,Auto,Auto,Auto,*"
-        RowSpacing="{StaticResource PageRowSpacing}">
-        <Label
-            Text="{Binding DeckName}"
-            Style="{StaticResource PageTitle}"
-            SemanticProperties.HeadingLevel="Level1" />
+    <ScrollView>
+        <Grid Padding="20">
+            <Border StrokeThickness="0"
+                    StrokeShape="RoundRectangle 26"
+                    HorizontalOptions="Center"
+                    MaximumWidthRequest="900">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#4A5160" Offset="0" />
+                        <GradientStop Color="#343B48" Offset="0.36" />
+                        <GradientStop Color="#2B313D" Offset="1" />
+                    </LinearGradientBrush>
+                </Border.Background>
 
-        <Label
-            Grid.Row="1"
-            Text="{Binding DeckDescription}"
-            TextColor="{StaticResource Gray500}" />
+                <VerticalStackLayout Padding="32" Spacing="24">
 
-        <Grid Grid.Row="2" ColumnDefinitions="*,*" ColumnSpacing="12">
-            <Button
-                Text="Study"
-                Style="{StaticResource PrimaryButton}"
-                Clicked="OnStudyClicked" />
-            <Button
-                Grid.Column="1"
-                Text="Add card"
-                Style="{StaticResource PrimaryButton}"
-                Clicked="OnAddCardClicked" />
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="16">
+                        <Border StrokeThickness="0"
+                                StrokeShape="RoundRectangle 14"
+                                BackgroundColor="#525B6C"
+                                Padding="14,12">
+                            <Label Text="📖"
+                                   FontSize="26"
+                                   HorizontalTextAlignment="Center"
+                                   VerticalTextAlignment="Center" />
+                        </Border>
+                        <VerticalStackLayout Grid.Column="1" Spacing="4" VerticalOptions="Center">
+                            <Label Text="{Binding DeckName}"
+                                   Style="{StaticResource DashboardTitle}"
+                                   FontSize="22" />
+                            <Label Text="{Binding DeckDescription}"
+                                   Style="{StaticResource DashboardBody}"
+                                   LineBreakMode="TailTruncation" />
+                        </VerticalStackLayout>
+                        <HorizontalStackLayout Grid.Column="2"
+                                               Spacing="10"
+                                               VerticalOptions="Center">
+                            <Button Text="Study"
+                                    Style="{StaticResource DashboardPrimaryButton}"
+                                    Padding="20,10"
+                                    Clicked="OnStudyClicked" />
+                            <Button Text="+ Add Card"
+                                    Style="{StaticResource DashboardSecondaryButton}"
+                                    Clicked="OnAddCardClicked" />
+                        </HorizontalStackLayout>
+                    </Grid>
+
+                    <BoxView HeightRequest="1"
+                             Opacity="0.55"
+                             BackgroundColor="{StaticResource DashboardBorder}" />
+
+                    <CollectionView ItemsSource="{Binding Cards}"
+                                    SelectionMode="None">
+                        <CollectionView.EmptyView>
+                            <Border Style="{StaticResource DashboardSurfaceCard}">
+                                <VerticalStackLayout Spacing="12"
+                                                     HorizontalOptions="Center"
+                                                     Padding="20">
+                                    <Label Text="📭"
+                                           FontSize="36"
+                                           HorizontalTextAlignment="Center" />
+                                    <Label Text="No cards yet"
+                                           Style="{StaticResource DashboardSectionTitle}"
+                                           HorizontalTextAlignment="Center" />
+                                    <Label Text="Add your first card to start studying."
+                                           Style="{StaticResource DashboardBody}"
+                                           HorizontalTextAlignment="Center" />
+                                </VerticalStackLayout>
+                            </Border>
+                        </CollectionView.EmptyView>
+                        <CollectionView.ItemsLayout>
+                            <LinearItemsLayout Orientation="Vertical" ItemSpacing="12" />
+                        </CollectionView.ItemsLayout>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource DashboardSurfaceCard}">
+                                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12">
+                                        <VerticalStackLayout Spacing="10">
+                                            <Border Stroke="{StaticResource DashboardBorder}"
+                                                    StrokeThickness="1"
+                                                    StrokeShape="RoundRectangle 10">
+                                                <WebView InputTransparent="True" HeightRequest="110">
+                                                    <WebView.Source>
+                                                        <HtmlWebViewSource Html="{Binding Front}" />
+                                                    </WebView.Source>
+                                                </WebView>
+                                            </Border>
+                                            <Border Stroke="{StaticResource DashboardBorder}"
+                                                    StrokeThickness="1"
+                                                    StrokeShape="RoundRectangle 10">
+                                                <WebView InputTransparent="True" HeightRequest="110">
+                                                    <WebView.Source>
+                                                        <HtmlWebViewSource Html="{Binding Back}" />
+                                                    </WebView.Source>
+                                                </WebView>
+                                            </Border>
+                                        </VerticalStackLayout>
+                                        <!-- TODO: Replace emoji with image asset when available (e.g., trash.png). -->
+                                        <Button Grid.Column="1"
+                                                Text="✏️"
+                                                Style="{StaticResource DashboardSecondaryButton}"
+                                                WidthRequest="46"
+                                                Padding="0"
+                                                FontSize="16"
+                                                VerticalOptions="Start"
+                                                Clicked="OnEditCardClicked" />
+                                        <Button Grid.Column="2"
+                                                Text="🗑"
+                                                Style="{StaticResource DashboardSecondaryButton}"
+                                                WidthRequest="46"
+                                                Padding="0"
+                                                FontSize="16"
+                                                VerticalOptions="Start"
+                                                Clicked="OnDeleteCardClicked" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+
+                </VerticalStackLayout>
+            </Border>
         </Grid>
-
-        <CollectionView
-            Grid.Row="4"
-            ItemsSource="{Binding Cards}"
-            SelectionMode="None">
-            <CollectionView.EmptyView>
-                <Label
-                    Text="No cards yet."
-                    Style="{StaticResource EmptyStateText}" />
-            </CollectionView.EmptyView>
-            <CollectionView.ItemsLayout>
-                <LinearItemsLayout Orientation="Vertical" ItemSpacing="{StaticResource CardSpacing}" />
-            </CollectionView.ItemsLayout>
-            <CollectionView.ItemTemplate>
-                <DataTemplate>
-                    <Border Style="{StaticResource DeckCard}">
-                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12">
-                            <VerticalStackLayout Spacing="6">
-                                <WebView InputTransparent="True" HeightRequest="120">
-                                    <WebView.Source>
-                                        <HtmlWebViewSource Html="{Binding Front}" />
-                                    </WebView.Source>
-                                </WebView>
-                                <WebView InputTransparent="True" HeightRequest="120">
-                                    <WebView.Source>
-                                        <HtmlWebViewSource Html="{Binding Back}" />
-                                    </WebView.Source>
-                                </WebView>
-                            </VerticalStackLayout>
-                            <!-- TODO: Replace emoji with image asset when available (e.g., trash.png). -->
-                            <Button
-                                Grid.Column="1"
-                                Text="✏️"
-                                BackgroundColor="Transparent"
-                                TextColor="{StaticResource Gray500}"
-                                FontSize="18"
-                                Clicked="OnEditCardClicked" />
-                            <Button
-                                Grid.Column="2"
-                                Text="🗑"
-                                BackgroundColor="Transparent"
-                                TextColor="{StaticResource Gray500}"
-                                FontSize="18"
-                                Clicked="OnDeleteCardClicked" />
-                        </Grid>
-                    </Border>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
-    </Grid>
+    </ScrollView>
 
 </ContentPage>

@@ -5,42 +5,84 @@
              Title="Add Card">
 
     <ScrollView>
-        <VerticalStackLayout
-            Padding="{StaticResource PagePadding}"
-            Spacing="{StaticResource PageRowSpacing}">
-            <Label
-                Text="Add Card"
-                Style="{StaticResource PageTitle}"
-                SemanticProperties.HeadingLevel="Level1" />
+        <Grid Padding="20">
+            <Border StrokeThickness="0"
+                    StrokeShape="RoundRectangle 26"
+                    HorizontalOptions="Center"
+                    MaximumWidthRequest="760">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#4A5160" Offset="0" />
+                        <GradientStop Color="#343B48" Offset="0.36" />
+                        <GradientStop Color="#2B313D" Offset="1" />
+                    </LinearGradientBrush>
+                </Border.Background>
 
-            <VerticalStackLayout Spacing="6">
-                <Label Text="Front" />
-                <Editor
-                    x:Name="FrontEditor"
-                    Placeholder="Front text"
-                    AutoSize="TextChanges"
-                    MinimumHeightRequest="120" />
-            </VerticalStackLayout>
+                <VerticalStackLayout Padding="32" Spacing="24">
 
-            <VerticalStackLayout Spacing="6">
-                <Label Text="Back" />
-                <Editor
-                    x:Name="BackEditor"
-                    Placeholder="Back text"
-                    AutoSize="TextChanges"
-                    MinimumHeightRequest="120" />
-            </VerticalStackLayout>
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16">
+                        <Border StrokeThickness="0"
+                                StrokeShape="RoundRectangle 14"
+                                BackgroundColor="#3D5265"
+                                Padding="12,10">
+                            <Label Text="🃏"
+                                   FontSize="24"
+                                   HorizontalTextAlignment="Center"
+                                   VerticalTextAlignment="Center" />
+                        </Border>
+                        <VerticalStackLayout Grid.Column="1" Spacing="4" VerticalOptions="Center">
+                            <Label Text="Add Card"
+                                   Style="{StaticResource DashboardTitle}"
+                                   FontSize="22" />
+                            <Label Text="Create a new flashcard for this deck"
+                                   Style="{StaticResource DashboardBody}" />
+                        </VerticalStackLayout>
+                    </Grid>
 
-            <VerticalStackLayout Spacing="8">
-                <Button
-                    Text="Save"
-                    Style="{StaticResource PrimaryButton}"
-                    Clicked="OnSaveClicked" />
-                <Button
-                    Text="Cancel"
-                    Clicked="OnCancelClicked" />
-            </VerticalStackLayout>
-        </VerticalStackLayout>
+                    <BoxView HeightRequest="1"
+                             Opacity="0.55"
+                             BackgroundColor="{StaticResource DashboardBorder}" />
+
+                    <Border Style="{StaticResource DashboardSurfaceCard}">
+                        <VerticalStackLayout Spacing="20">
+                            <Label Text="FRONT SIDE"
+                                   Style="{StaticResource DashboardFieldLabel}" />
+                            <Border Style="{StaticResource DashboardInputBorder}">
+                                <Editor x:Name="FrontEditor"
+                                        Style="{StaticResource DashboardEditor}"
+                                        Placeholder="Front text (supports HTML)"
+                                        AutoSize="TextChanges"
+                                        MinimumHeightRequest="120" />
+                            </Border>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border Style="{StaticResource DashboardSurfaceCard}">
+                        <VerticalStackLayout Spacing="20">
+                            <Label Text="BACK SIDE"
+                                   Style="{StaticResource DashboardFieldLabel}" />
+                            <Border Style="{StaticResource DashboardInputBorder}">
+                                <Editor x:Name="BackEditor"
+                                        Style="{StaticResource DashboardEditor}"
+                                        Placeholder="Back text (supports HTML)"
+                                        AutoSize="TextChanges"
+                                        MinimumHeightRequest="120" />
+                            </Border>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <VerticalStackLayout Spacing="12">
+                        <Button Text="Save Card"
+                                Style="{StaticResource DashboardPrimaryButton}"
+                                Clicked="OnSaveClicked" />
+                        <Button Text="Cancel"
+                                Style="{StaticResource DashboardSecondaryButton}"
+                                Clicked="OnCancelClicked" />
+                    </VerticalStackLayout>
+
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
     </ScrollView>
 
 </ContentPage>

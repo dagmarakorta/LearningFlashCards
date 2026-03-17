@@ -4,69 +4,104 @@
              x:Class="LearningFlashCards.Maui.StudyDeckPage"
              Title="Study">
 
-    <Grid
-        Padding="{StaticResource PagePadding}"
-        RowDefinitions="Auto,*,Auto"
-        RowSpacing="{StaticResource PageRowSpacing}">
-        <Label
-            Text="{Binding DeckName}"
-            Style="{StaticResource PageTitle}"
-            SemanticProperties.HeadingLevel="Level1" />
+    <Grid Padding="20"
+          RowDefinitions="Auto,*,Auto"
+          RowSpacing="16">
 
-        <Border Grid.Row="1" Style="{StaticResource DeckCard}">
+        <!-- Header -->
+        <Border StrokeThickness="0"
+                StrokeShape="RoundRectangle 20"
+                HorizontalOptions="Center"
+                WidthRequest="700">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#3C4352" Offset="0" />
+                    <GradientStop Color="#333A47" Offset="1" />
+                </LinearGradientBrush>
+            </Border.Background>
+            <Grid ColumnDefinitions="*,Auto"
+                  ColumnSpacing="16"
+                  Padding="20,14">
+                <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                    <Label Text="{Binding DeckName}"
+                           Style="{StaticResource DashboardTitle}"
+                           FontSize="18" />
+                    <Label Text="{Binding ProgressText}"
+                           Style="{StaticResource DashboardBody}"
+                           FontSize="13" />
+                </VerticalStackLayout>
+                <Border Grid.Column="1"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 10"
+                        BackgroundColor="#40495A"
+                        Padding="10,6"
+                        VerticalOptions="Center">
+                    <Label Text="📚"
+                           FontSize="18"
+                           HorizontalTextAlignment="Center" />
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- Flash Card -->
+        <Border Grid.Row="1"
+                Style="{StaticResource DashboardStudyCard}"
+                HorizontalOptions="Center"
+                WidthRequest="700">
             <Border.GestureRecognizers>
                 <TapGestureRecognizer Tapped="OnFlipTapped" />
             </Border.GestureRecognizers>
-            <Grid RowDefinitions="*,Auto">
-                <WebView
-                    InputTransparent="True"
-                    HorizontalOptions="Fill"
-                    VerticalOptions="Fill">
+            <Grid RowDefinitions="*,Auto" RowSpacing="16">
+                <WebView InputTransparent="True"
+                         HorizontalOptions="Fill"
+                         VerticalOptions="Fill">
                     <WebView.Source>
                         <HtmlWebViewSource Html="{Binding CurrentSideText}" />
                     </WebView.Source>
                 </WebView>
-                <Label
-                    Grid.Row="1"
-                    Text="Tap to flip"
-                    TextColor="{StaticResource Gray500}"
-                    HorizontalOptions="Center"
-                    IsVisible="{Binding HasCards}" />
+                <HorizontalStackLayout Grid.Row="1"
+                                       Spacing="6"
+                                       HorizontalOptions="Center"
+                                       IsVisible="{Binding HasCards}">
+                    <Label Text="👆"
+                           FontSize="14" />
+                    <Label Text="Tap card to flip"
+                           Style="{StaticResource DashboardBody}"
+                           FontSize="13" />
+                </HorizontalStackLayout>
             </Grid>
         </Border>
 
-        <Grid Grid.Row="2" RowDefinitions="Auto,Auto,Auto" RowSpacing="12">
-            <Label
-                Text="{Binding ProgressText}"
-                VerticalOptions="Center" />
-            <Button
-                Grid.Row="1"
-                Text="Show answer"
-                Style="{StaticResource PrimaryButton}"
-                IsVisible="{Binding CanShowAnswer}"
-                Clicked="OnShowAnswerClicked" />
-            <Grid
-                Grid.Row="2"
-                ColumnDefinitions="*,*,*,*"
-                ColumnSpacing="8"
-                IsVisible="{Binding CanRate}">
-                <Button
-                    Text="Again"
-                    Clicked="OnRateAgainClicked" />
-                <Button
-                    Grid.Column="1"
-                    Text="Hard"
-                    Clicked="OnRateHardClicked" />
-                <Button
-                    Grid.Column="2"
-                    Text="Medium"
-                    Clicked="OnRateMediumClicked" />
-                <Button
-                    Grid.Column="3"
-                    Text="Easy"
-                    Clicked="OnRateEasyClicked" />
+        <!-- Action Buttons -->
+        <VerticalStackLayout Grid.Row="2"
+                             Spacing="12"
+                             HorizontalOptions="Center"
+                             WidthRequest="700">
+            <Button Text="Show Answer"
+                    Style="{StaticResource DashboardPrimaryButton}"
+                    IsVisible="{Binding CanShowAnswer}"
+                    Clicked="OnShowAnswerClicked" />
+            <Grid ColumnDefinitions="*,*,*,*"
+                  ColumnSpacing="10"
+                  IsVisible="{Binding CanRate}">
+                <Button Text="Again"
+                        Style="{StaticResource StudyAgainButton}"
+                        Clicked="OnRateAgainClicked" />
+                <Button Grid.Column="1"
+                        Text="Hard"
+                        Style="{StaticResource StudyHardButton}"
+                        Clicked="OnRateHardClicked" />
+                <Button Grid.Column="2"
+                        Text="Medium"
+                        Style="{StaticResource StudyMediumButton}"
+                        Clicked="OnRateMediumClicked" />
+                <Button Grid.Column="3"
+                        Text="Easy"
+                        Style="{StaticResource StudyEasyButton}"
+                        Clicked="OnRateEasyClicked" />
             </Grid>
-        </Grid>
+        </VerticalStackLayout>
+
     </Grid>
 
 </ContentPage>

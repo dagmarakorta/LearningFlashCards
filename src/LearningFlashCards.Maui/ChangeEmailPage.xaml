@@ -4,32 +4,61 @@
              x:Class="LearningFlashCards.Maui.ChangeEmailPage"
              Title="Change Email">
 
-    <VerticalStackLayout
-        Padding="{StaticResource PagePadding}"
-        Spacing="{StaticResource PageRowSpacing}">
-        <Label
-            Text="Change email"
-            Style="{StaticResource PageTitle}"
-            SemanticProperties.HeadingLevel="Level1" />
+    <Grid>
+        <Border StrokeThickness="0"
+                StrokeShape="RoundRectangle 26"
+                HorizontalOptions="Center"
+                VerticalOptions="Center"
+                WidthRequest="440">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#4A5160" Offset="0" />
+                    <GradientStop Color="#343B48" Offset="0.36" />
+                    <GradientStop Color="#2B313D" Offset="1" />
+                </LinearGradientBrush>
+            </Border.Background>
+            <Border.Shadow>
+                <Shadow Brush="#C8000000" Offset="0,20" Radius="40" Opacity="0.55" />
+            </Border.Shadow>
 
-        <VerticalStackLayout Spacing="6">
-            <Label Text="New email" />
-            <Entry
-                x:Name="EmailEntry"
-                Keyboard="Email"
-                Style="{StaticResource EmailEntryStyle}"
-                Placeholder="you@example.com" />
-        </VerticalStackLayout>
+            <VerticalStackLayout Padding="40,36" Spacing="28">
 
-        <VerticalStackLayout Spacing="8">
-            <Button
-                Text="Save email"
-                Style="{StaticResource PrimaryButton}"
-                Clicked="OnSaveClicked" />
-            <Button
-                Text="Cancel"
-                Clicked="OnCancelClicked" />
-        </VerticalStackLayout>
-    </VerticalStackLayout>
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="Change Email"
+                           Style="{StaticResource DashboardTitle}"
+                           FontSize="22" />
+                    <Label Text="Enter a new email address for your account"
+                           Style="{StaticResource DashboardBody}" />
+                </VerticalStackLayout>
+
+                <BoxView HeightRequest="1"
+                         Opacity="0.4"
+                         BackgroundColor="{StaticResource DashboardBorder}" />
+
+                <VerticalStackLayout Spacing="20">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="NEW EMAIL ADDRESS"
+                               Style="{StaticResource DashboardFieldLabel}" />
+                        <Border Style="{StaticResource DashboardInputBorder}">
+                            <Entry x:Name="EmailEntry"
+                                   Keyboard="Email"
+                                   IsSpellCheckEnabled="False"
+                                   IsTextPredictionEnabled="False"
+                                   Style="{StaticResource DashboardEntry}"
+                                   Placeholder="you@example.com" />
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <Button Text="Save Email"
+                            Style="{StaticResource DashboardPrimaryButton}"
+                            Clicked="OnSaveClicked" />
+                    <Button Text="Cancel"
+                            Style="{StaticResource DashboardSecondaryButton}"
+                            Clicked="OnCancelClicked" />
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </Border>
+    </Grid>
 
 </ContentPage>

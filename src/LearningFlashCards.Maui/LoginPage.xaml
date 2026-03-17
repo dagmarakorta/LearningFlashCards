@@ -4,31 +4,77 @@
              x:Class="LearningFlashCards.Maui.LoginPage"
              Title="Sign In">
 
-    <VerticalStackLayout
-        Padding="{StaticResource PagePadding}"
-        Spacing="{StaticResource PageRowSpacing}">
-        <Label
-            Text="Welcome back"
-            Style="{StaticResource PageTitle}"
-            SemanticProperties.HeadingLevel="Level1" />
+    <Grid>
+        <Border StrokeThickness="0"
+                StrokeShape="RoundRectangle 26"
+                HorizontalOptions="Center"
+                VerticalOptions="Center"
+                WidthRequest="440">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#4A5160" Offset="0" />
+                    <GradientStop Color="#343B48" Offset="0.36" />
+                    <GradientStop Color="#2B313D" Offset="1" />
+                </LinearGradientBrush>
+            </Border.Background>
+            <Border.Shadow>
+                <Shadow Brush="#C8000000" Offset="0,20" Radius="40" Opacity="0.55" />
+            </Border.Shadow>
 
-        <VerticalStackLayout Spacing="6">
-            <Label Text="Email" />
-            <Entry
-                x:Name="EmailEntry"
-                Keyboard="Email"
-                Style="{StaticResource EmailEntryStyle}"
-                Placeholder="you@example.com" />
-        </VerticalStackLayout>
+            <VerticalStackLayout Padding="40,36" Spacing="28">
 
-        <Button
-            Text="Login"
-            Style="{StaticResource PrimaryButton}"
-            Clicked="OnLoginClicked" />
+                <VerticalStackLayout Spacing="12" HorizontalOptions="Center">
+                    <Border StrokeThickness="0"
+                            StrokeShape="RoundRectangle 18"
+                            BackgroundColor="#40495A"
+                            Padding="18,14"
+                            HorizontalOptions="Center">
+                        <Label Text="🎓"
+                               FontSize="34"
+                               HorizontalTextAlignment="Center" />
+                    </Border>
+                    <Label Text="Learning Flashcards"
+                           Style="{StaticResource DashboardTitle}"
+                           FontSize="22"
+                           HorizontalTextAlignment="Center" />
+                    <Label Text="Sign in to continue your learning journey"
+                           Style="{StaticResource DashboardBody}"
+                           HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
 
-        <Button
-            Text="Create new account"
-            Clicked="OnRegisterClicked" />
-    </VerticalStackLayout>
+                <BoxView HeightRequest="1"
+                         Opacity="0.4"
+                         BackgroundColor="{StaticResource DashboardBorder}" />
+
+                <VerticalStackLayout Spacing="20">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="EMAIL ADDRESS"
+                               Style="{StaticResource DashboardFieldLabel}" />
+                        <Border Style="{StaticResource DashboardInputBorder}">
+                            <Entry x:Name="EmailEntry"
+                                   Keyboard="Email"
+                                   IsSpellCheckEnabled="False"
+                                   IsTextPredictionEnabled="False"
+                                   Style="{StaticResource DashboardEntry}"
+                                   Placeholder="you@example.com" />
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <Button Text="Sign In"
+                            Style="{StaticResource DashboardPrimaryButton}"
+                            Clicked="OnLoginClicked" />
+
+                    <BoxView HeightRequest="1"
+                             Opacity="0.3"
+                             BackgroundColor="{StaticResource DashboardBorder}" />
+
+                    <Button Text="Create new account"
+                            Style="{StaticResource DashboardSecondaryButton}"
+                            Clicked="OnRegisterClicked" />
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </Border>
+    </Grid>
 
 </ContentPage>

@@ -7,6 +7,11 @@
     <x:Double x:Key="PageRowSpacing">16</x:Double>
     <x:Double x:Key="CardSpacing">8</x:Double>
 
+    <Style TargetType="ContentPage" ApplyToDerivedTypes="True">
+        <Setter Property="Shell.NavBarIsVisible" Value="False" />
+        <Setter Property="BackgroundColor" Value="#2B313D" />
+    </Style>
+
     <Style TargetType="ActivityIndicator">
         <Setter Property="Color" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource White}}" />
     </Style>
@@ -557,28 +562,159 @@
     </Style>
     -->
 
+    <!-- Dashboard form element styles -->
+    <Style TargetType="Entry" x:Key="DashboardEntry">
+        <Setter Property="TextColor" Value="{StaticResource DashboardInk}" />
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="PlaceholderColor" Value="{StaticResource DashboardMuted}" />
+        <Setter Property="FontFamily" Value="OpenSansRegular" />
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="MinimumHeightRequest" Value="44" />
+    </Style>
+
+    <Style TargetType="Editor" x:Key="DashboardEditor">
+        <Setter Property="TextColor" Value="{StaticResource DashboardInk}" />
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="PlaceholderColor" Value="{StaticResource DashboardMuted}" />
+        <Setter Property="FontFamily" Value="OpenSansRegular" />
+        <Setter Property="FontSize" Value="15" />
+    </Style>
+
+    <Style TargetType="Border" x:Key="DashboardInputBorder">
+        <Setter Property="Stroke" Value="{StaticResource DashboardBorder}" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 12" />
+        <Setter Property="BackgroundColor" Value="#333A47" />
+        <Setter Property="Padding" Value="8,4" />
+    </Style>
+
+    <Style TargetType="Label" x:Key="DashboardFieldLabel">
+        <Setter Property="TextColor" Value="{StaticResource DashboardMuted}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontAttributes" Value="Bold" />
+    </Style>
+
+    <Style TargetType="Switch" x:Key="DashboardSwitch">
+        <Setter Property="OnColor" Value="{StaticResource DashboardPrimary}" />
+        <Setter Property="ThumbColor" Value="{StaticResource DashboardInk}" />
+    </Style>
+
+    <Style TargetType="Picker" x:Key="DashboardPicker">
+        <Setter Property="TextColor" Value="{StaticResource DashboardInk}" />
+        <Setter Property="TitleColor" Value="{StaticResource DashboardMuted}" />
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="FontFamily" Value="OpenSansRegular" />
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="MinimumHeightRequest" Value="44" />
+    </Style>
+
+    <Style TargetType="Border" x:Key="DashboardStudyCard">
+        <Setter Property="Background">
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#3A4150" Offset="0" />
+                <GradientStop Color="{StaticResource DashboardPanel}" Offset="0.45" />
+                <GradientStop Color="#2C3340" Offset="1" />
+            </LinearGradientBrush>
+        </Setter>
+        <Setter Property="Stroke" Value="{StaticResource DashboardBorder}" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 24" />
+        <Setter Property="Padding" Value="28" />
+        <Setter Property="Shadow">
+            <Shadow Brush="#C8000000" Offset="0,16" Radius="30" Opacity="0.5" />
+        </Setter>
+    </Style>
+
+    <Style TargetType="Button" x:Key="StudyAgainButton">
+        <Setter Property="TextColor" Value="{StaticResource White}" />
+        <Setter Property="Background">
+            <LinearGradientBrush EndPoint="0,1">
+                <GradientStop Color="#6B3535" Offset="0" />
+                <GradientStop Color="#572B2B" Offset="1" />
+            </LinearGradientBrush>
+        </Setter>
+        <Setter Property="Padding" Value="0,14" />
+        <Setter Property="CornerRadius" Value="16" />
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="Shadow">
+            <Shadow Brush="#BE000000" Offset="0,8" Radius="16" Opacity="0.4" />
+        </Setter>
+    </Style>
+
+    <Style TargetType="Button" x:Key="StudyHardButton">
+        <Setter Property="TextColor" Value="{StaticResource White}" />
+        <Setter Property="Background">
+            <LinearGradientBrush EndPoint="0,1">
+                <GradientStop Color="#664B2B" Offset="0" />
+                <GradientStop Color="#523C22" Offset="1" />
+            </LinearGradientBrush>
+        </Setter>
+        <Setter Property="Padding" Value="0,14" />
+        <Setter Property="CornerRadius" Value="16" />
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="Shadow">
+            <Shadow Brush="#BE000000" Offset="0,8" Radius="16" Opacity="0.4" />
+        </Setter>
+    </Style>
+
+    <Style TargetType="Button" x:Key="StudyMediumButton">
+        <Setter Property="TextColor" Value="{StaticResource White}" />
+        <Setter Property="Background">
+            <LinearGradientBrush EndPoint="0,1">
+                <GradientStop Color="#2B4666" Offset="0" />
+                <GradientStop Color="#223552" Offset="1" />
+            </LinearGradientBrush>
+        </Setter>
+        <Setter Property="Padding" Value="0,14" />
+        <Setter Property="CornerRadius" Value="16" />
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="Shadow">
+            <Shadow Brush="#BE000000" Offset="0,8" Radius="16" Opacity="0.4" />
+        </Setter>
+    </Style>
+
+    <Style TargetType="Button" x:Key="StudyEasyButton">
+        <Setter Property="TextColor" Value="{StaticResource White}" />
+        <Setter Property="Background">
+            <LinearGradientBrush EndPoint="0,1">
+                <GradientStop Color="#2B5240" Offset="0" />
+                <GradientStop Color="#224134" Offset="1" />
+            </LinearGradientBrush>
+        </Setter>
+        <Setter Property="Padding" Value="0,14" />
+        <Setter Property="CornerRadius" Value="16" />
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="Shadow">
+            <Shadow Brush="#BE000000" Offset="0,8" Radius="16" Opacity="0.4" />
+        </Setter>
+    </Style>
+
     <Style TargetType="Page" ApplyToDerivedTypes="True">
         <Setter Property="Padding" Value="0"/>
-        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}" />
+        <Setter Property="BackgroundColor" Value="{StaticResource DashboardMist}" />
     </Style>
 
     <Style TargetType="Shell" ApplyToDerivedTypes="True">
-        <Setter Property="Shell.BackgroundColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}" />
-        <Setter Property="Shell.ForegroundColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource SecondaryDarkText}}" />
-        <Setter Property="Shell.TitleColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource SecondaryDarkText}}" />
-        <Setter Property="Shell.DisabledColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray950}}" />
-        <Setter Property="Shell.UnselectedColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray200}}" />
+        <Setter Property="Shell.BackgroundColor" Value="{StaticResource DashboardPanel}" />
+        <Setter Property="Shell.ForegroundColor" Value="{StaticResource DashboardInk}" />
+        <Setter Property="Shell.TitleColor" Value="{StaticResource DashboardInk}" />
+        <Setter Property="Shell.DisabledColor" Value="{StaticResource DashboardMuted}" />
+        <Setter Property="Shell.UnselectedColor" Value="{StaticResource DashboardMuted}" />
         <Setter Property="Shell.NavBarHasShadow" Value="False" />
-        <Setter Property="Shell.TabBarBackgroundColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Black}}" />
-        <Setter Property="Shell.TabBarForegroundColor" Value="{AppThemeBinding Light={StaticResource Magenta}, Dark={StaticResource White}}" />
-        <Setter Property="Shell.TabBarTitleColor" Value="{AppThemeBinding Light={StaticResource Magenta}, Dark={StaticResource White}}" />
-        <Setter Property="Shell.TabBarUnselectedColor" Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray200}}" />
+        <Setter Property="Shell.TabBarBackgroundColor" Value="{StaticResource DashboardPanel}" />
+        <Setter Property="Shell.TabBarForegroundColor" Value="{StaticResource DashboardInk}" />
+        <Setter Property="Shell.TabBarTitleColor" Value="{StaticResource DashboardInk}" />
+        <Setter Property="Shell.TabBarUnselectedColor" Value="{StaticResource DashboardMuted}" />
     </Style>
 
     <Style TargetType="NavigationPage">
-        <Setter Property="BarBackgroundColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}" />
-        <Setter Property="BarTextColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource White}}" />
-        <Setter Property="IconColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource White}}" />
+        <Setter Property="BarBackgroundColor" Value="{StaticResource DashboardPanel}" />
+        <Setter Property="BarTextColor" Value="{StaticResource DashboardInk}" />
+        <Setter Property="IconColor" Value="{StaticResource DashboardInk}" />
     </Style>
 
     <Style TargetType="TabbedPage">
