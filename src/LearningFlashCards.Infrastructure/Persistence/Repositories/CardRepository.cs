@@ -50,6 +50,12 @@ public class CardRepository : ICardRepository
         await _db.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task AddRangeAsync(IEnumerable<Card> cards, CancellationToken cancellationToken)
+    {
+        _db.Cards.AddRange(cards);
+        await _db.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task SoftDeleteAsync(Guid cardId, DateTimeOffset deletedAt, CancellationToken cancellationToken)
     {
         var card = await _db.Cards.FirstOrDefaultAsync(c => c.Id == cardId, cancellationToken);

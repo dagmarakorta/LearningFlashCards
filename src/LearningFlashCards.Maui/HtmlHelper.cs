@@ -1,7 +1,20 @@
+using System.Text.RegularExpressions;
+
 namespace LearningFlashCards.Maui
 {
     internal static class HtmlHelper
     {
+        internal static string StripHtml(string html)
+        {
+            if (string.IsNullOrWhiteSpace(html))
+                return string.Empty;
+
+            var text = Regex.Replace(html, @"<br\s*/?>", "\n", RegexOptions.IgnoreCase);
+            text = Regex.Replace(text, @"<[^>]+>", string.Empty);
+            text = System.Net.WebUtility.HtmlDecode(text);
+            return text.Trim();
+        }
+
         internal static string WrapWithDarkTheme(string content)
         {
             return $$"""

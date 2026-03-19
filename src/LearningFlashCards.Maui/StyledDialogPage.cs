@@ -135,8 +135,8 @@ namespace LearningFlashCards.Maui
                 return;
             }
 
-            _resultSource.TrySetResult(result);
             await Navigation.PopModalAsync(false);
+            _resultSource.TrySetResult(result);
         }
     }
 }

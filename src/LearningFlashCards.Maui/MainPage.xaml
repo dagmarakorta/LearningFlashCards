@@ -287,28 +287,30 @@
                                         </BindableLayout.ItemTemplate>
                                     </FlexLayout>
 
-                                    <Grid ColumnDefinitions="*,Auto,*"
-                                          IsVisible="{Binding HasDecks}">
+                                    <Grid ColumnDefinitions="*,Auto,*">
                                         <BoxView HeightRequest="1"
                                                  VerticalOptions="Center"
                                                  Opacity="0.55"
                                                  BackgroundColor="{StaticResource DashboardBorder}" />
-                                        <Button Grid.Column="1"
-                                                Text="Browse All Decks  >"
-                                                Style="{StaticResource DashboardGhostIconButton}"
-                                                FontSize="16"
-                                                HorizontalOptions="Center"
-                                                Clicked="OnBrowseAllDecksClicked" />
+                                        <VerticalStackLayout Grid.Column="1"
+                                                             HorizontalOptions="Center"
+                                                             Spacing="6">
+                                            <Label Text="No decks yet. Create your first one to start studying."
+                                                   Style="{StaticResource DashboardBody}"
+                                                   IsVisible="{Binding HasNoDecks}"
+                                                   HorizontalTextAlignment="Center" />
+                                            <Button Text="Browse All Decks  >"
+                                                    Style="{StaticResource DashboardGhostIconButton}"
+                                                    FontSize="16"
+                                                    HorizontalOptions="Center"
+                                                    Clicked="OnBrowseAllDecksClicked" />
+                                        </VerticalStackLayout>
                                         <BoxView Grid.Column="2"
                                                  HeightRequest="1"
                                                  VerticalOptions="Center"
                                                  Opacity="0.55"
                                                  BackgroundColor="{StaticResource DashboardBorder}" />
                                     </Grid>
-
-                                    <Label Text="No decks yet. Create your first one to start studying."
-                                           Style="{StaticResource DashboardBody}"
-                                           IsVisible="{Binding HasNoDecks}" />
                                 </VerticalStackLayout>
                             </Border>
 

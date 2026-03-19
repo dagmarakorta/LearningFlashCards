@@ -48,6 +48,9 @@
                             <Button Text="+ Add Card"
                                     Style="{StaticResource DashboardSecondaryButton}"
                                     Clicked="OnAddCardClicked" />
+                            <Button Text="⬆ Import"
+                                    Style="{StaticResource DashboardSecondaryButton}"
+                                    Clicked="OnImportClicked" />
                         </HorizontalStackLayout>
                     </Grid>
 
@@ -84,21 +87,21 @@
                                         <VerticalStackLayout Spacing="10">
                                             <Border Stroke="{StaticResource DashboardBorder}"
                                                     StrokeThickness="1"
-                                                    StrokeShape="RoundRectangle 10">
-                                                <WebView InputTransparent="True" HeightRequest="110">
-                                                    <WebView.Source>
-                                                        <HtmlWebViewSource Html="{Binding Front}" />
-                                                    </WebView.Source>
-                                                </WebView>
+                                                    StrokeShape="RoundRectangle 10"
+                                                    Padding="14,10">
+                                                <Label Text="{Binding Front}"
+                                                       Style="{StaticResource DashboardBody}"
+                                                       LineBreakMode="TailTruncation"
+                                                       MaxLines="4" />
                                             </Border>
                                             <Border Stroke="{StaticResource DashboardBorder}"
                                                     StrokeThickness="1"
-                                                    StrokeShape="RoundRectangle 10">
-                                                <WebView InputTransparent="True" HeightRequest="110">
-                                                    <WebView.Source>
-                                                        <HtmlWebViewSource Html="{Binding Back}" />
-                                                    </WebView.Source>
-                                                </WebView>
+                                                    StrokeShape="RoundRectangle 10"
+                                                    Padding="14,10">
+                                                <Label Text="{Binding Back}"
+                                                       Style="{StaticResource DashboardBody}"
+                                                       LineBreakMode="TailTruncation"
+                                                       MaxLines="4" />
                                             </Border>
                                         </VerticalStackLayout>
                                         <!-- TODO: Replace emoji with image asset when available (e.g., trash.png). -->

@@ -141,17 +141,14 @@ namespace LearningFlashCards.Maui
                 }
             }
 
-            foreach (var row in _cards)
+            var cardsToInsert = _cards.Select(row => new Card
             {
-                var card = new Card
-                {
-                    DeckId = deck.Id,
-                    Front = row.Front,
-                    Back = row.Back
-                };
+                DeckId = deck.Id,
+                Front = row.Front,
+                Back = row.Back
+            });
 
-                await _cardRepository.UpsertAsync(card, CancellationToken.None);
-            }
+            await _cardRepository.AddRangeAsync(cardsToInsert, CancellationToken.None);
 
             await AppDialogService.ShowAlertAsync(this, "Imported", $"Added {_cards.Count} cards.");
             await Shell.Current.GoToAsync($"{nameof(DeckDetailPage)}?deckId={deck.Id}");
