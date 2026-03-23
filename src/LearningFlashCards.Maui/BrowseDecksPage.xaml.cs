@@ -8,7 +8,9 @@ namespace LearningFlashCards.Maui
 {
     public partial class BrowseDecksPage : ContentPage
     {
-        private readonly string[] _deckIcons = ["📁", "🧠", "💻", "🌍", "🔬", "📝"];
+        private const double CardHorizontalPadding = 40;
+        private const double CardMaxWidth = 1180;
+
         private readonly IDeckRepository _deckRepository;
         private readonly ICardRepository _cardRepository;
         private readonly ICurrentUserService _currentUser;
@@ -23,11 +25,14 @@ namespace LearningFlashCards.Maui
             _deckRepository = GetRequiredService<IDeckRepository>();
             _cardRepository = GetRequiredService<ICardRepository>();
             _currentUser = GetRequiredService<ICurrentUserService>();
+
+            SizeChanged += OnPageSizeChanged;
         }
 
         protected override async void OnAppearing()
         {
             base.OnAppearing();
+            UpdateCardWidth();
             await LoadDecksAsync();
         }
 
@@ -60,11 +65,22 @@ namespace LearningFlashCards.Maui
 
                 Decks.Add(new DeckBrowseItem(
                     item.Deck.Id,
-                    _deckIcons[index % _deckIcons.Length],
+                    GetDeckMonogram(item.Deck.Name),
                     item.Deck.Name,
                     summary,
                     item.Cards.Count));
             }
+        }
+
+        private static string GetDeckMonogram(string? deckName)
+        {
+            var firstCharacter = deckName?.Trim().FirstOrDefault(static c => char.IsLetterOrDigit(c));
+            if (firstCharacter is null || firstCharacter == default)
+            {
+                return "D";
+            }
+
+            return char.ToUpperInvariant(firstCharacter.Value).ToString();
         }
 
         private async void OnDeckTapped(object? sender, TappedEventArgs e)
@@ -122,6 +138,25 @@ namespace LearningFlashCards.Maui
             await _cardRepository.SoftDeleteByDeckAsync(deck.Id, deletedAt, CancellationToken.None);
             await _deckRepository.SoftDeleteAsync(deck.Id, deletedAt, CancellationToken.None);
             Decks.Remove(deck);
+        }
+
+        private void OnPageSizeChanged(object? sender, EventArgs e)
+        {
+            UpdateCardWidth();
+        }
+
+        private void UpdateCardWidth()
+        {
+            if (Width <= 0)
+            {
+                return;
+            }
+
+            var availableWidth = Math.Max(0, Width - CardHorizontalPadding);
+            var cardWidth = Math.Min(CardMaxWidth, availableWidth);
+
+            CardHost.WidthRequest = cardWidth;
+            DecksCard.WidthRequest = cardWidth;
         }
 
         private static T GetRequiredService<T>() where T : notnull

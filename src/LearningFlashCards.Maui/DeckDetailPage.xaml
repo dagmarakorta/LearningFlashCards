@@ -25,8 +25,9 @@
                                 StrokeShape="RoundRectangle 14"
                                 BackgroundColor="#DDE7FF"
                                 Padding="14,12">
-                            <Label Text="📖"
+                            <Label Text="{Binding DeckMonogram}"
                                    FontSize="26"
+                                   TextColor="{StaticResource DashboardInk}"
                                    HorizontalTextAlignment="Center"
                                    VerticalTextAlignment="Center" />
                         </Border>
@@ -45,10 +46,10 @@
                                     Style="{StaticResource DashboardPrimaryButton}"
                                     Padding="20,10"
                                     Clicked="OnStudyClicked" />
-                            <Button Text="+ Add Card"
+                            <Button Text="Add Card"
                                     Style="{StaticResource DashboardSecondaryButton}"
                                     Clicked="OnAddCardClicked" />
-                            <Button Text="⬆ Import"
+                            <Button Text="Import"
                                     Style="{StaticResource DashboardSecondaryButton}"
                                     Clicked="OnImportClicked" />
                         </HorizontalStackLayout>
@@ -65,9 +66,6 @@
                                 <VerticalStackLayout Spacing="12"
                                                      HorizontalOptions="Center"
                                                      Padding="20">
-                                    <Label Text="📭"
-                                           FontSize="36"
-                                           HorizontalTextAlignment="Center" />
                                     <Label Text="No cards yet"
                                            Style="{StaticResource DashboardSectionTitle}"
                                            HorizontalTextAlignment="Center" />
@@ -104,21 +102,18 @@
                                                        MaxLines="4" />
                                             </Border>
                                         </VerticalStackLayout>
-                                        <!-- TODO: Replace emoji with image asset when available (e.g., trash.png). -->
                                         <Button Grid.Column="1"
-                                                Text="✏️"
+                                                Text="Edit"
                                                 Style="{StaticResource DashboardSecondaryButton}"
-                                                WidthRequest="46"
-                                                Padding="0"
-                                                FontSize="16"
+                                                MinimumWidthRequest="72"
+                                                Padding="14,10"
                                                 VerticalOptions="Start"
                                                 Clicked="OnEditCardClicked" />
                                         <Button Grid.Column="2"
-                                                Text="🗑"
-                                                Style="{StaticResource DashboardSecondaryButton}"
-                                                WidthRequest="46"
-                                                Padding="0"
-                                                FontSize="16"
+                                                Text="Delete"
+                                                Style="{StaticResource DashboardPrimaryButton}"
+                                                MinimumWidthRequest="78"
+                                                Padding="14,10"
                                                 VerticalOptions="Start"
                                                 Clicked="OnDeleteCardClicked" />
                                     </Grid>

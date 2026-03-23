@@ -8,8 +8,12 @@ namespace LearningFlashCards.Maui
     [QueryProperty(nameof(DeckId), "deckId")]
     public partial class StudyDeckPage : ContentPage
     {
+        private const int MaxTrackedSegmentSeconds = 120;
+        private const int PersistThresholdSeconds = 15;
+
         private readonly IDeckRepository _deckRepository;
         private readonly ICardRepository _cardRepository;
+        private readonly IUserProfileRepository _userProfileRepository;
         private readonly ICurrentUserService _currentUser;
 
         private Guid? _deckId;
@@ -17,6 +21,8 @@ namespace LearningFlashCards.Maui
         private int _currentIndex;
         private bool _showBack;
         private DeckStudySettings _studySettings = new();
+        private DateTimeOffset? _studySegmentStartedAt;
+        private int _pendingTrackedStudySeconds;
 
         public string DeckName { get; private set; } = "Study";
         public string CurrentSideText { get; private set; } = string.Empty;
@@ -44,6 +50,7 @@ namespace LearningFlashCards.Maui
 
             _deckRepository = GetRequiredService<IDeckRepository>();
             _cardRepository = GetRequiredService<ICardRepository>();
+            _userProfileRepository = GetRequiredService<IUserProfileRepository>();
             _currentUser = GetRequiredService<ICurrentUserService>();
         }
 
@@ -90,6 +97,8 @@ namespace LearningFlashCards.Maui
             _cards.AddRange(dueCards);
             _currentIndex = 0;
             _showBack = false;
+            _pendingTrackedStudySeconds = 0;
+            _studySegmentStartedAt = _cards.Count > 0 ? DateTimeOffset.UtcNow : null;
 
             UpdateCardDisplay();
         }
@@ -126,6 +135,7 @@ namespace LearningFlashCards.Maui
                 return;
             }
 
+            TrackStudySegment();
             _showBack = !_showBack;
             UpdateCardDisplay();
         }
@@ -137,6 +147,7 @@ namespace LearningFlashCards.Maui
                 return;
             }
 
+            TrackStudySegment();
             _showBack = true;
             UpdateCardDisplay();
         }
@@ -168,6 +179,7 @@ namespace LearningFlashCards.Maui
                 return;
             }
 
+            TrackStudySegment();
             var card = _cards[_currentIndex];
             var now = DateTimeOffset.UtcNow;
 
@@ -185,10 +197,9 @@ namespace LearningFlashCards.Maui
 
             if (_cards.Count == 0)
             {
+                await PersistTrackedStudyTimeAsync(force: true);
                 await AppDialogService.ShowAlertAsync(this, "Done", "You've completed all due cards for now.");
-                _currentIndex = 0;
-                _showBack = false;
-                UpdateCardDisplay();
+                await Shell.Current.GoToAsync("//MainPage");
                 return;
             }
 
@@ -198,7 +209,65 @@ namespace LearningFlashCards.Maui
             }
 
             _showBack = false;
+            _studySegmentStartedAt = DateTimeOffset.UtcNow;
+            await PersistTrackedStudyTimeAsync(force: false);
             UpdateCardDisplay();
+        }
+
+        private void TrackStudySegment()
+        {
+            if (_studySegmentStartedAt is null)
+            {
+                _studySegmentStartedAt = DateTimeOffset.UtcNow;
+                return;
+            }
+
+            var elapsed = DateTimeOffset.UtcNow - _studySegmentStartedAt.Value;
+            var trackedSeconds = (int)Math.Floor(Math.Min(elapsed.TotalSeconds, MaxTrackedSegmentSeconds));
+            if (trackedSeconds > 0)
+            {
+                _pendingTrackedStudySeconds += trackedSeconds;
+            }
+
+            _studySegmentStartedAt = DateTimeOffset.UtcNow;
+        }
+
+        private async Task PersistTrackedStudyTimeAsync(bool force)
+        {
+            if (_pendingTrackedStudySeconds <= 0)
+            {
+                return;
+            }
+
+            if (!force && _pendingTrackedStudySeconds < PersistThresholdSeconds)
+            {
+                return;
+            }
+
+            if (!_currentUser.IsAuthenticated || _currentUser.UserId is null)
+            {
+                _pendingTrackedStudySeconds = 0;
+                return;
+            }
+
+            var profile = await _userProfileRepository.GetAsync(_currentUser.UserId.Value, CancellationToken.None);
+            if (profile is null)
+            {
+                _pendingTrackedStudySeconds = 0;
+                return;
+            }
+
+            var now = DateTimeOffset.Now;
+            if (profile.StudySecondsTrackedAt?.LocalDateTime.Date != now.LocalDateTime.Date)
+            {
+                profile.StudySecondsToday = 0;
+            }
+
+            profile.StudySecondsToday += _pendingTrackedStudySeconds;
+            profile.StudySecondsTrackedAt = now;
+            await _userProfileRepository.UpsertAsync(profile, CancellationToken.None);
+
+            _pendingTrackedStudySeconds = 0;
         }
 
         private static T GetRequiredService<T>() where T : notnull

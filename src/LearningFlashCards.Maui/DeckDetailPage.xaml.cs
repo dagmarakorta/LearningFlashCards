@@ -20,6 +20,7 @@ namespace LearningFlashCards.Maui
         public ObservableCollection<CardListItem> Cards { get; } = new();
         public string DeckName { get; private set; } = "Deck";
         public string DeckDescription { get; private set; } = string.Empty;
+        public string DeckMonogram { get; private set; } = "D";
 
         public string? DeckId
         {
@@ -74,8 +75,10 @@ namespace LearningFlashCards.Maui
 
             DeckName = deck.Name;
             DeckDescription = string.IsNullOrWhiteSpace(deck.Description) ? "No description" : deck.Description;
+            DeckMonogram = GetDeckMonogram(deck.Name);
             OnPropertyChanged(nameof(DeckName));
             OnPropertyChanged(nameof(DeckDescription));
+            OnPropertyChanged(nameof(DeckMonogram));
 
             var cards = await _cardRepository.GetByDeckAsync(deck.Id, CancellationToken.None);
             Cards.Clear();
@@ -244,6 +247,17 @@ namespace LearningFlashCards.Maui
         }
 
         public record CardListItem(Guid Id, string Front, string Back);
+
+        private static string GetDeckMonogram(string? deckName)
+        {
+            var firstCharacter = deckName?.Trim().FirstOrDefault(static c => char.IsLetterOrDigit(c));
+            if (firstCharacter is null || firstCharacter == default)
+            {
+                return "D";
+            }
+
+            return char.ToUpperInvariant(firstCharacter.Value).ToString();
+        }
 
         private static T GetRequiredService<T>() where T : notnull
         {

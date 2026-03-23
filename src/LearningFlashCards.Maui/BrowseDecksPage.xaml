@@ -6,114 +6,131 @@
 
     <ScrollView>
         <Grid Padding="20">
-            <Border StrokeThickness="0"
-                    StrokeShape="RoundRectangle 26"
-                    HorizontalOptions="Center"
-                    MaximumWidthRequest="1180">
-                <Border.Background>
-                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                        <GradientStop Color="#F8FAFF" Offset="0" />
-                        <GradientStop Color="#EDF3FF" Offset="0.36" />
-                        <GradientStop Color="#E1EAFE" Offset="1" />
-                    </LinearGradientBrush>
-                </Border.Background>
+            <Grid x:Name="CardHost"
+                  HorizontalOptions="Center">
+                <Border x:Name="DecksCard"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 26">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Color="#F8FAFF" Offset="0" />
+                            <GradientStop Color="#EDF3FF" Offset="0.36" />
+                            <GradientStop Color="#E1EAFE" Offset="1" />
+                        </LinearGradientBrush>
+                    </Border.Background>
 
-                <VerticalStackLayout Padding="26"
-                                     Spacing="20">
-                    <Grid ColumnDefinitions="*,Auto"
-                          ColumnSpacing="16">
-                        <VerticalStackLayout Spacing="4">
-                            <Label Text="Browse Decks"
-                                   Style="{StaticResource DashboardTitle}"
-                                   FontSize="22" />
-                            <Label Text="All your decks in one place."
-                                   Style="{StaticResource DashboardBody}" />
-                        </VerticalStackLayout>
-                        <Button Grid.Column="1"
-                                Text="New Deck"
-                                Style="{StaticResource DashboardSecondaryButton}"
-                                Clicked="OnNewDeckClicked" />
-                    </Grid>
+                    <VerticalStackLayout Padding="26"
+                                         Spacing="20">
+                        <FlexLayout Direction="Row"
+                                    Wrap="Wrap"
+                                    JustifyContent="SpaceBetween"
+                                    AlignItems="Center">
+                            <VerticalStackLayout FlexLayout.Basis="420"
+                                                 FlexLayout.Grow="1"
+                                                 Spacing="4">
+                                <Label Text="Browse Decks"
+                                       Style="{StaticResource DashboardTitle}"
+                                       FontSize="22" />
+                                <Label Text="All your decks in one place."
+                                       Style="{StaticResource DashboardBody}" />
+                            </VerticalStackLayout>
+                            <Button Text="+ New Deck"
+                                    Style="{StaticResource DashboardSecondaryButton}"
+                                    Padding="18,12"
+                                    Margin="0,10,0,0"
+                                    Clicked="OnNewDeckClicked" />
+                        </FlexLayout>
 
-                    <CollectionView ItemsSource="{Binding Decks}"
-                                    SelectionMode="None">
-                        <CollectionView.EmptyView>
-                            <Label Text="No decks yet. Create your first one."
-                                   Style="{StaticResource DashboardBody}" />
-                        </CollectionView.EmptyView>
-                        <CollectionView.ItemsLayout>
-                            <LinearItemsLayout Orientation="Vertical"
-                                               ItemSpacing="16" />
-                        </CollectionView.ItemsLayout>
-                        <CollectionView.ItemTemplate>
-                            <DataTemplate>
-                                <Border Style="{StaticResource DashboardSurfaceCard}">
-                                    <Border.GestureRecognizers>
-                                        <TapGestureRecognizer Tapped="OnDeckTapped" />
-                                    </Border.GestureRecognizers>
-
-                                    <Grid ColumnDefinitions="Auto,*,Auto,Auto"
-                                          ColumnSpacing="18"
-                                          RowDefinitions="Auto,Auto">
-                                        <Border Grid.RowSpan="2"
-                                                StrokeThickness="0"
-                                                BackgroundColor="#DDE7FF"
-                                                StrokeShape="RoundRectangle 14"
-                                                Padding="18,14"
-                                                VerticalOptions="Center">
-                                            <Label Text="{Binding Icon}"
-                                                   FontSize="24"
-                                                   TextColor="{StaticResource DashboardInk}" />
-                                        </Border>
-
-                                        <VerticalStackLayout Grid.Column="1"
-                                                             Spacing="4">
-                                            <Label Text="{Binding Name}"
-                                                   Style="{StaticResource DashboardSectionTitle}"
-                                                   FontSize="22" />
-                                            <Label Text="{Binding Summary}"
-                                                   Style="{StaticResource DashboardBody}"
-                                                   LineBreakMode="TailTruncation" />
-                                        </VerticalStackLayout>
-
-                                        <Label Grid.Row="1"
-                                               Grid.Column="1"
-                                               Text="{Binding CardCount, StringFormat='{}{0} cards'}"
-                                               Style="{StaticResource DashboardValue}" />
-
-                                        <HorizontalStackLayout Grid.RowSpan="2"
-                                                               Grid.Column="2"
-                                                               Spacing="10"
-                                                               VerticalOptions="Center">
-                                            <Button Text="✎"
-                                                    Style="{StaticResource DashboardSecondaryButton}"
-                                                    WidthRequest="54"
-                                                    Padding="0"
-                                                    FontSize="18"
-                                                    Clicked="OnEditDeckClicked" />
-                                            <Button Text="🗑"
-                                                    Style="{StaticResource DashboardSecondaryButton}"
-                                                    WidthRequest="54"
-                                                    Padding="0"
-                                                    FontSize="18"
-                                                    Clicked="OnDeleteDeckClicked" />
-                                        </HorizontalStackLayout>
-
-                                        <Label Grid.RowSpan="2"
-                                               Grid.Column="3"
-                                               Text=">"
-                                               FontSize="28"
-                                               TextColor="{StaticResource DashboardMuted}"
-                                               VerticalTextAlignment="Center"
-                                               HorizontalTextAlignment="End"
-                                               VerticalOptions="Center" />
-                                    </Grid>
+                        <CollectionView ItemsSource="{Binding Decks}"
+                                        SelectionMode="None"
+                                        HorizontalOptions="Fill">
+                            <CollectionView.EmptyView>
+                                <Border Stroke="{StaticResource DashboardBorder}"
+                                        StrokeThickness="1"
+                                        StrokeShape="RoundRectangle 20"
+                                        BackgroundColor="#F6F9FF"
+                                        Padding="24,22">
+                                    <VerticalStackLayout Spacing="8">
+                                        <Label Text="No decks yet."
+                                               Style="{StaticResource DashboardSectionTitle}"
+                                               FontSize="20" />
+                                        <Label Text="Create your first deck to start adding cards and studying."
+                                               Style="{StaticResource DashboardBody}" />
+                                    </VerticalStackLayout>
                                 </Border>
-                            </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
-                </VerticalStackLayout>
-            </Border>
+                            </CollectionView.EmptyView>
+                            <CollectionView.ItemsLayout>
+                                <LinearItemsLayout Orientation="Vertical"
+                                                   ItemSpacing="16" />
+                            </CollectionView.ItemsLayout>
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource DashboardSurfaceCard}">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnDeckTapped" />
+                                        </Border.GestureRecognizers>
+
+                                        <Grid ColumnDefinitions="Auto,*,Auto,Auto"
+                                              ColumnSpacing="18"
+                                              RowDefinitions="Auto,Auto">
+                                            <Border Grid.RowSpan="2"
+                                                    StrokeThickness="0"
+                                                    BackgroundColor="#DDE7FF"
+                                                    StrokeShape="RoundRectangle 14"
+                                                    Padding="18,14"
+                                                    VerticalOptions="Center">
+                                                <Label Text="{Binding Icon}"
+                                                       FontSize="24"
+                                                       TextColor="{StaticResource DashboardInk}" />
+                                            </Border>
+
+                                            <VerticalStackLayout Grid.Column="1"
+                                                                 Spacing="4">
+                                                <Label Text="{Binding Name}"
+                                                       Style="{StaticResource DashboardSectionTitle}"
+                                                       FontSize="22" />
+                                                <Label Text="{Binding Summary}"
+                                                       Style="{StaticResource DashboardBody}"
+                                                       LineBreakMode="TailTruncation" />
+                                            </VerticalStackLayout>
+
+                                            <Label Grid.Row="1"
+                                                   Grid.Column="1"
+                                                   Text="{Binding CardCount, StringFormat='{}{0} cards'}"
+                                                   Style="{StaticResource DashboardValue}" />
+
+                                            <HorizontalStackLayout Grid.RowSpan="2"
+                                                                   Grid.Column="2"
+                                                                   Spacing="10"
+                                                                   VerticalOptions="Center">
+                                                <Button Text="Edit"
+                                                        Style="{StaticResource DashboardSecondaryButton}"
+                                                        MinimumWidthRequest="72"
+                                                        Padding="14,10"
+                                                        Clicked="OnEditDeckClicked" />
+                                                <Button Text="Delete"
+                                                        Style="{StaticResource DashboardPrimaryButton}"
+                                                        MinimumWidthRequest="78"
+                                                        Padding="14,10"
+                                                        Clicked="OnDeleteDeckClicked" />
+                                            </HorizontalStackLayout>
+
+                                            <Label Grid.RowSpan="2"
+                                                   Grid.Column="3"
+                                                   Text=">"
+                                                   FontSize="28"
+                                                   TextColor="{StaticResource DashboardMuted}"
+                                                   VerticalTextAlignment="Center"
+                                                   HorizontalTextAlignment="End"
+                                                   VerticalOptions="Center" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
         </Grid>
     </ScrollView>
 

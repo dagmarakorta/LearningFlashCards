@@ -26,6 +26,12 @@ public class UserProfileConfiguration : IEntityTypeConfiguration<UserProfile>
         builder.Property(u => u.LastSyncToken)
             .HasMaxLength(256);
 
+        builder.Property(u => u.StudySecondsToday)
+            .IsRequired()
+            .HasDefaultValue(0);
+
+        builder.Property(u => u.StudySecondsTrackedAt);
+
         builder.Property(u => u.CreatedAt)
             .IsRequired();
 

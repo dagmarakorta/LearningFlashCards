@@ -9,7 +9,6 @@ namespace LearningFlashCards.Maui
     public partial class MainPage : ContentPage
     {
         private const int DailyGoalMinutesTarget = 30;
-        private readonly string[] _deckIcons = ["📁", "🧠", "💻", "🌍", "🔬", "📝"];
         private readonly string[] _deckBackgrounds =
         [
             "#EAF2FF",
@@ -40,7 +39,7 @@ namespace LearningFlashCards.Maui
         }
 
         public string GreetingName { get; private set; } = "learner";
-        public string HeroMessage => $"Welcome back, {GreetingName}. 👋 Ready to study?";
+        public string HeroMessage => $"Welcome back, {GreetingName}. Ready to study?";
         public string DeckCountLabel => $"{Decks.Count} {(Decks.Count == 1 ? "set" : "sets")}";
         public int TotalDecks { get; private set; }
         public int DueTodayCount { get; private set; }
@@ -56,7 +55,14 @@ namespace LearningFlashCards.Maui
         public bool HasQuickPractice => QuickPracticeDeck is not null;
         public string QuickPracticeDeckName => QuickPracticeDeck?.Name ?? "No decks yet";
         public int QuickPracticeQuestionCount { get; private set; }
-        public string DailyGoalStatus => DailyGoalCompletedMinutes >= DailyGoalMinutesTarget ? "Daily goal reached." : "You're on track.";
+        public string DailyGoalStatus =>
+            DailyGoalCompletedMinutes <= 0
+                ? "Start your first study session today."
+                : DailyGoalCompletedMinutes >= DailyGoalMinutesTarget
+                    ? "Daily goal reached."
+                    : DailyGoalCompletedMinutes >= 20
+                        ? "You're on track."
+                        : "Keep going.";
         public string DailyGoalSummary => $"{DailyGoalCompletedMinutes} min completed";
         public string KeepGoingMessage => DueTodayCount > 0 ? "Keep the streak alive" : "Add a new deck";
         public string DeckPanelFooter => HasDecks ? "Choose your next deck" : "Create or import your first deck";
@@ -223,7 +229,7 @@ namespace LearningFlashCards.Maui
                 .ThenByDescending(deck => deck.CardCount)
                 .FirstOrDefault();
             QuickPracticeQuestionCount = QuickPracticeDeck is null ? 0 : Math.Max(5, Math.Min(15, QuickPracticeDeck.DueCount > 0 ? QuickPracticeDeck.DueCount : QuickPracticeDeck.CardCount));
-            DailyGoalCompletedMinutes = Math.Min(DailyGoalMinutesTarget, (DueTodayCount * 3) + (ReviewStreakDays * 2) + (TotalDecks * 2));
+            DailyGoalCompletedMinutes = GetTrackedStudyMinutesForToday(profile);
 
             RaiseDashboardPropertiesChanged();
         }
@@ -259,7 +265,7 @@ namespace LearningFlashCards.Maui
         {
             var cardCount = cards.Count;
             var dueCount = cards.Count(card => card.State.DueAt <= DateTimeOffset.UtcNow);
-            var icon = _deckIcons[index % _deckIcons.Length];
+            var icon = GetDeckMonogram(deck.Name);
             var background = _deckBackgrounds[index % _deckBackgrounds.Length];
             var summary = string.IsNullOrWhiteSpace(deck.Description) ? "Ready for another round" : deck.Description.Trim();
 
@@ -271,6 +277,17 @@ namespace LearningFlashCards.Maui
             return card.State.IntervalDays >= 21 || card.State.Streak >= 5;
         }
 
+        private static string GetDeckMonogram(string? deckName)
+        {
+            var firstCharacter = deckName?.Trim().FirstOrDefault(static c => char.IsLetterOrDigit(c));
+            if (firstCharacter is null || firstCharacter == default)
+            {
+                return "D";
+            }
+
+            return char.ToUpperInvariant(firstCharacter.Value).ToString();
+        }
+
         private static double CalculateProgress(int value, int target)
         {
             if (target <= 0)
@@ -279,6 +296,22 @@ namespace LearningFlashCards.Maui
             }
 
             return Math.Clamp((double)value / target, 0, 1);
+        }
+
+        private static int GetTrackedStudyMinutesForToday(UserProfile? profile)
+        {
+            if (profile?.StudySecondsTrackedAt is null)
+            {
+                return 0;
+            }
+
+            var now = DateTimeOffset.Now;
+            if (profile.StudySecondsTrackedAt.Value.LocalDateTime.Date != now.LocalDateTime.Date)
+            {
+                return 0;
+            }
+
+            return Math.Max(0, profile.StudySecondsToday / 60);
         }
 
         private static T GetRequiredService<T>() where T : notnull
