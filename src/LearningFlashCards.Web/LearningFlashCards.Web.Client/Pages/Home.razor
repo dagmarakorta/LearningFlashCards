@@ -1,0 +1,117 @@
+@page "/"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@inject ApiClient Api
+@inject UserSessionService Session
+@inject NavigationManager Nav
+
+<PageTitle>Moje talie – LearningFlashCards</PageTitle>
+
+@if (!initialized)
+{
+    <div class="loading-spinner">Ładowanie...</div>
+}
+else
+{
+    <div class="page-header">
+        <h1>Moje talie</h1>
+        <button class="btn btn-primary" @onclick="() => showCreateDeck = true">+ Nowa talia</button>
+    </div>
+
+    @if (showCreateDeck)
+    {
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5>Nowa talia</h5>
+                <div class="form-group mb-2">
+                    <input class="form-control" @bind="newDeckName" placeholder="Nazwa talii" />
+                </div>
+                <div class="form-group mb-2">
+                    <input class="form-control" @bind="newDeckDescription" placeholder="Opis (opcjonalnie)" />
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-primary" @onclick="CreateDeckAsync">Utwórz</button>
+                    <button class="btn btn-secondary" @onclick="() => showCreateDeck = false">Anuluj</button>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (decks.Count == 0)
+    {
+        <div class="empty-state">
+            <p>Nie masz jeszcze żadnych talii. Utwórz pierwszą!</p>
+        </div>
+    }
+    else
+    {
+        <div class="decks-grid">
+            @foreach (var deck in decks)
+            {
+                <div class="deck-card" @onclick="() => GoToDeck(deck.Id)">
+                    <div class="deck-card-header">
+                        <h3>@deck.Name</h3>
+                        <span class="card-count">@deck.Cards.Count kart</span>
+                    </div>
+                    @if (!string.IsNullOrEmpty(deck.Description))
+                    {
+                        <p class="deck-description">@deck.Description</p>
+                    }
+                    <div class="deck-card-footer">
+                        <button class="btn btn-sm btn-success" @onclick:stopPropagation @onclick="() => GoToStudy(deck.Id)">
+                            Ucz się
+                        </button>
+                        <button class="btn btn-sm btn-danger" @onclick:stopPropagation @onclick="() => DeleteDeckAsync(deck.Id)">
+                            Usuń
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+}
+
+@code {
+    private List<LearningFlashCards.Core.Domain.Entities.Deck> decks = [];
+    private bool initialized;
+    private bool showCreateDeck;
+    private string newDeckName = "";
+    private string newDeckDescription = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var ownerId = await Session.GetOwnerIdAsync();
+        if (!ownerId.HasValue)
+        {
+            Nav.NavigateTo("/login");
+            return;
+        }
+
+        await LoadDecksAsync();
+        initialized = true;
+    }
+
+    private async Task LoadDecksAsync()
+    {
+        decks = await Api.GetDecksAsync();
+    }
+
+    private async Task CreateDeckAsync()
+    {
+        if (string.IsNullOrWhiteSpace(newDeckName)) return;
+
+        await Api.UpsertDeckAsync(new { Name = newDeckName, Description = newDeckDescription });
+        newDeckName = "";
+        newDeckDescription = "";
+        showCreateDeck = false;
+        await LoadDecksAsync();
+    }
+
+    private async Task DeleteDeckAsync(Guid deckId)
+    {
+        await Api.DeleteDeckAsync(deckId);
+        await LoadDecksAsync();
+    }
+
+    private void GoToDeck(Guid id) => Nav.NavigateTo("/deck/" + id);
+    private void GoToStudy(Guid id) => Nav.NavigateTo("/study/" + id);
+}

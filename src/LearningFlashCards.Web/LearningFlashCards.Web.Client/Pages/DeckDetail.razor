@@ -1,0 +1,135 @@
+@page "/deck/{DeckId:guid}"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@inject ApiClient Api
+@inject UserSessionService Session
+@inject NavigationManager Nav
+
+<PageTitle>@(deck?.Name ?? "Talia") – LearningFlashCards</PageTitle>
+
+@if (!initialized)
+{
+    <div class="loading-spinner">Ładowanie...</div>
+}
+else if (deck is null)
+{
+    <div class="alert alert-warning">Nie znaleziono talii.</div>
+}
+else
+{
+    <div class="page-header">
+        <div>
+            <a href="/" class="back-link">← Moje talie</a>
+            <h1>@deck.Name</h1>
+            @if (!string.IsNullOrEmpty(deck.Description))
+            {
+                <p class="text-muted">@deck.Description</p>
+            }
+        </div>
+        <button class="btn btn-success" @onclick="GoToStudy">Ucz się</button>
+    </div>
+
+    <div class="section-header">
+        <h2>Karty (@cards.Count)</h2>
+        <button class="btn btn-primary" @onclick="() => showAddCard = !showAddCard">+ Dodaj kartę</button>
+    </div>
+
+    @if (showAddCard)
+    {
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5>Nowa karta</h5>
+                <div class="form-group mb-2">
+                    <label>Przód</label>
+                    <textarea class="form-control" @bind="newCardFront" rows="2" placeholder="Pytanie / pojęcie"></textarea>
+                </div>
+                <div class="form-group mb-2">
+                    <label>Tył</label>
+                    <textarea class="form-control" @bind="newCardBack" rows="2" placeholder="Odpowiedź / definicja"></textarea>
+                </div>
+                <div class="form-group mb-2">
+                    <label>Notatki (opcjonalnie)</label>
+                    <textarea class="form-control" @bind="newCardNotes" rows="2"></textarea>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-primary" @onclick="AddCardAsync">Dodaj</button>
+                    <button class="btn btn-secondary" @onclick="() => showAddCard = false">Anuluj</button>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (cards.Count == 0)
+    {
+        <div class="empty-state">
+            <p>Talia jest pusta. Dodaj pierwszą kartę!</p>
+        </div>
+    }
+    else
+    {
+        <div class="cards-list">
+            @foreach (var card in cards)
+            {
+                <div class="card-item">
+                    <div class="card-item-content">
+                        <div class="card-front">@card.Front</div>
+                        <div class="card-separator">→</div>
+                        <div class="card-back">@card.Back</div>
+                    </div>
+                    <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteCardAsync(card.Id)">Usuń</button>
+                </div>
+            }
+        </div>
+    }
+}
+
+@code {
+    [Parameter] public Guid DeckId { get; set; }
+
+    private LearningFlashCards.Core.Domain.Entities.Deck? deck;
+    private List<LearningFlashCards.Core.Domain.Entities.Card> cards = [];
+    private bool initialized;
+    private bool showAddCard;
+    private string newCardFront = "";
+    private string newCardBack = "";
+    private string newCardNotes = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var ownerId = await Session.GetOwnerIdAsync();
+        if (!ownerId.HasValue)
+        {
+            Nav.NavigateTo("/login");
+            return;
+        }
+
+        deck = await Api.GetDeckAsync(DeckId);
+        cards = await Api.GetCardsAsync(DeckId);
+        initialized = true;
+    }
+
+    private async Task AddCardAsync()
+    {
+        if (string.IsNullOrWhiteSpace(newCardFront) || string.IsNullOrWhiteSpace(newCardBack)) return;
+
+        await Api.UpsertCardAsync(DeckId, new
+        {
+            Front = newCardFront,
+            Back = newCardBack,
+            Notes = string.IsNullOrWhiteSpace(newCardNotes) ? null : newCardNotes
+        });
+
+        newCardFront = "";
+        newCardBack = "";
+        newCardNotes = "";
+        showAddCard = false;
+        cards = await Api.GetCardsAsync(DeckId);
+    }
+
+    private async Task DeleteCardAsync(Guid cardId)
+    {
+        await Api.DeleteCardAsync(DeckId, cardId);
+        cards = await Api.GetCardsAsync(DeckId);
+    }
+
+    private void GoToStudy() => Nav.NavigateTo("/study/" + DeckId);
+}

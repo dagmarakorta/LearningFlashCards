@@ -1,0 +1,123 @@
+@page "/login"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@inject ApiClient Api
+@inject UserSessionService Session
+@inject NavigationManager Nav
+
+<PageTitle>Logowanie – LearningFlashCards</PageTitle>
+
+<div class="login-container">
+    <div class="login-card">
+        <h1>LearningFlashCards</h1>
+        <p class="subtitle">Zaloguj się lub utwórz konto</p>
+
+        @if (error is not null)
+        {
+            <div class="alert alert-danger">@error</div>
+        }
+
+        <div class="tab-buttons">
+            <button class="@(isLogin ? "active" : "")" @onclick="() => isLogin = true">Zaloguj</button>
+            <button class="@(!isLogin ? "active" : "")" @onclick="() => isLogin = false">Zarejestruj</button>
+        </div>
+
+        @if (isLogin)
+        {
+            <div class="form-group">
+                <label>Owner ID</label>
+                <input class="form-control" @bind="loginOwnerId" placeholder="Wklej swoje Owner ID (GUID)" />
+            </div>
+            <button class="btn btn-primary w-100" @onclick="LoginAsync" disabled="@isLoading">
+                @(isLoading ? "Logowanie..." : "Zaloguj")
+            </button>
+        }
+        else
+        {
+            <div class="form-group">
+                <label>Nazwa użytkownika</label>
+                <input class="form-control" @bind="username" placeholder="np. jan.kowalski" />
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input class="form-control" type="email" @bind="email" placeholder="email@przykład.pl" />
+            </div>
+            <button class="btn btn-primary w-100" @onclick="RegisterAsync" disabled="@isLoading">
+                @(isLoading ? "Rejestracja..." : "Zarejestruj")
+            </button>
+        }
+    </div>
+</div>
+
+@code {
+    private bool isLogin = true;
+    private bool isLoading;
+    private string? error;
+    private string loginOwnerId = "";
+    private string username = "";
+    private string email = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var ownerId = await Session.GetOwnerIdAsync();
+        if (ownerId.HasValue)
+            Nav.NavigateTo("/");
+    }
+
+    private async Task LoginAsync()
+    {
+        error = null;
+        if (!Guid.TryParse(loginOwnerId, out var id))
+        {
+            error = "Nieprawidłowy format Owner ID.";
+            return;
+        }
+
+        isLoading = true;
+        try
+        {
+            await Session.SetOwnerIdAsync(id);
+            var profile = await Api.GetProfileAsync();
+            if (profile is null)
+            {
+                await Session.ClearAsync();
+                error = "Nie znaleziono konta dla podanego ID.";
+                return;
+            }
+            Nav.NavigateTo("/");
+        }
+        catch
+        {
+            await Session.ClearAsync();
+            error = "Błąd połączenia z serwerem.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task RegisterAsync()
+    {
+        error = null;
+        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(email))
+        {
+            error = "Podaj nazwę użytkownika i email.";
+            return;
+        }
+
+        isLoading = true;
+        try
+        {
+            await Api.CreateProfileAsync(username, email);
+            Nav.NavigateTo("/");
+        }
+        catch (Exception ex)
+        {
+            error = $"Błąd rejestracji: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

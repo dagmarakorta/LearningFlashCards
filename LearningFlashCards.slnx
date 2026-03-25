@@ -6,6 +6,8 @@
     <Project Path="tests/LearningFlashCards.Infrastructure.Tests/LearningFlashCards.Infrastructure.Tests.csproj" />
   </Folder>
   <Project Path="src/LearningFlashCards.Api/LearningFlashCards.Api.csproj" />
+  <Project Path="src/LearningFlashCards.Web/LearningFlashCards.Web/LearningFlashCards.Web.csproj" />
+  <Project Path="src/LearningFlashCards.Web/LearningFlashCards.Web.Client/LearningFlashCards.Web.Client.csproj" />
   <Project Path="src/LearningFlashCards.Maui/LearningFlashCards.Maui.csproj">
     <Deploy Solution="Debug|*" />
   </Project>
