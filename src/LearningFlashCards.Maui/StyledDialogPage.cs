@@ -57,12 +57,10 @@ namespace LearningFlashCards.Maui
             messageLabel.SetDynamicResource(StyleProperty, "DashboardBody");
             messageLabel.TextColor = Color.FromArgb("#4E5876");
 
-            var buttonRow = new Grid
+            var buttonRow = new HorizontalStackLayout
             {
-                ColumnSpacing = 12,
-                ColumnDefinitions = cancelText is null
-                    ? [new ColumnDefinition(GridLength.Star)]
-                    : [new ColumnDefinition(GridLength.Star), new ColumnDefinition(GridLength.Star)]
+                Spacing = 12,
+                HorizontalOptions = LayoutOptions.Center
             };
 
             if (cancelText is not null)
@@ -70,23 +68,23 @@ namespace LearningFlashCards.Maui
                 var cancelButton = new Button
                 {
                     Text = cancelText,
-                    HorizontalOptions = LayoutOptions.Fill
+                    HorizontalOptions = LayoutOptions.Fill,
+                    MinimumWidthRequest = 128
                 };
                 cancelButton.SetDynamicResource(StyleProperty, "DashboardSecondaryButton");
                 cancelButton.Clicked += async (_, _) => await CloseAsync(false);
                 buttonRow.Add(cancelButton);
-                Grid.SetColumn(cancelButton, 0);
             }
 
             var acceptButton = new Button
             {
                 Text = acceptText,
-                HorizontalOptions = LayoutOptions.Fill
+                HorizontalOptions = LayoutOptions.Fill,
+                MinimumWidthRequest = 128
             };
             acceptButton.SetDynamicResource(StyleProperty, "DashboardPrimaryButton");
             acceptButton.Clicked += async (_, _) => await CloseAsync(true);
             buttonRow.Add(acceptButton);
-            Grid.SetColumn(acceptButton, cancelText is null ? 0 : 1);
 
             dialogCard.Content = new VerticalStackLayout
             {

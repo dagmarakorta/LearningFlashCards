@@ -33,6 +33,27 @@ namespace LearningFlashCards.Maui
                         line-height: 1.65;
                         padding: 14px 16px;
                         word-break: break-word;
+                        scrollbar-color: #B5C7F0 #F4F7FF;
+                        scrollbar-width: thin;
+                    }
+                    ::-webkit-scrollbar {
+                        width: 14px;
+                        height: 14px;
+                    }
+                    ::-webkit-scrollbar-track {
+                        background: #F4F7FF;
+                        border-radius: 10px;
+                    }
+                    ::-webkit-scrollbar-thumb {
+                        background: #B5C7F0;
+                        border-radius: 10px;
+                        border: 3px solid #F4F7FF;
+                    }
+                    ::-webkit-scrollbar-thumb:hover {
+                        background: #8EA5D9;
+                    }
+                    ::-webkit-scrollbar-corner {
+                        background: #F4F7FF;
                     }
                     h1, h2, h3, h4, h5, h6 {
                         color: #2C3148;
