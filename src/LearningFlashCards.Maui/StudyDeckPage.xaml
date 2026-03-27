@@ -9,78 +9,67 @@
                              HorizontalOptions="Fill"
                              MaximumWidthRequest="1040">
 
-            <!-- Header -->
             <Border StrokeThickness="0"
                     StrokeShape="RoundRectangle 20"
                     HorizontalOptions="Fill"
                     MaximumWidthRequest="1040">
-            <Border.Background>
-                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                    <GradientStop Color="#F8FAFF" Offset="0" />
-                    <GradientStop Color="#EAF1FF" Offset="1" />
-                </LinearGradientBrush>
-            </Border.Background>
-            <Border.Shadow>
-                <Shadow Brush="#225E6A91" Offset="0,10" Radius="18" Opacity="0.9" />
-            </Border.Shadow>
-            <Grid ColumnDefinitions="*,Auto"
-                  ColumnSpacing="16"
-                  Padding="20,14">
-                <VerticalStackLayout Spacing="2" VerticalOptions="Center">
-                    <Label Text="{Binding DeckName}"
-                           Style="{StaticResource DashboardTitle}"
-                           FontSize="18" />
-                    <Label Text="{Binding ProgressText}"
-                           Style="{StaticResource DashboardBody}"
-                           FontSize="13" />
-                </VerticalStackLayout>
-                <Border Grid.Column="1"
-                        StrokeThickness="0"
-                        StrokeShape="RoundRectangle 10"
-                        BackgroundColor="#FFFFFF"
-                        Padding="10,6"
-                        VerticalOptions="Center">
-                    <Label Text="📚"
-                           FontSize="18"
-                           HorizontalTextAlignment="Center" />
-                </Border>
-            </Grid>
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#F8FAFF" Offset="0" />
+                        <GradientStop Color="#EAF1FF" Offset="1" />
+                    </LinearGradientBrush>
+                </Border.Background>
+                <Border.Shadow>
+                    <Shadow Brush="#225E6A91" Offset="0,10" Radius="18" Opacity="0.9" />
+                </Border.Shadow>
+                <Grid ColumnDefinitions="*,Auto"
+                      ColumnSpacing="16"
+                      Padding="20,14">
+                    <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                        <Label Text="{Binding DeckName}"
+                               Style="{StaticResource DashboardTitle}"
+                               FontSize="18" />
+                        <Label Text="{Binding ProgressText}"
+                               Style="{StaticResource DashboardBody}"
+                               FontSize="13" />
+                    </VerticalStackLayout>
+                    <Border Grid.Column="1"
+                            StrokeThickness="0"
+                            StrokeShape="RoundRectangle 10"
+                            BackgroundColor="#FFFFFF"
+                            Padding="10,6"
+                            VerticalOptions="Center">
+                        <Label Text="Study"
+                               FontSize="14"
+                               TextColor="{StaticResource DashboardMuted}"
+                               HorizontalTextAlignment="Center" />
+                    </Border>
+                </Grid>
             </Border>
 
-            <!-- Flash Card -->
-            <Border
-                    Style="{StaticResource DashboardStudyCard}"
+            <Border Style="{StaticResource DashboardStudyCard}"
                     HorizontalOptions="Fill"
                     VerticalOptions="Fill"
                     MaximumWidthRequest="1040"
                     MinimumHeightRequest="320">
-            <Border.GestureRecognizers>
-                <TapGestureRecognizer Tapped="OnFlipTapped" />
-            </Border.GestureRecognizers>
-            <Grid RowDefinitions="*,Auto" RowSpacing="16">
-                <WebView InputTransparent="True"
-                         HorizontalOptions="Fill"
-                         VerticalOptions="Fill">
-                    <WebView.Source>
-                        <HtmlWebViewSource Html="{Binding CurrentSideText}" />
-                    </WebView.Source>
-                </WebView>
-                <HorizontalStackLayout Grid.Row="1"
-                                       Spacing="6"
-                                       HorizontalOptions="Center"
-                                       IsVisible="{Binding HasCards}">
-                    <Label Text="👆"
-                           FontSize="14" />
-                    <Label Text="Tap card to flip"
+                <Grid RowDefinitions="*,Auto" RowSpacing="16">
+                    <WebView InputTransparent="False"
+                             HorizontalOptions="Fill"
+                             VerticalOptions="Fill">
+                        <WebView.Source>
+                            <HtmlWebViewSource Html="{Binding CurrentSideText}" />
+                        </WebView.Source>
+                    </WebView>
+                    <Label Grid.Row="1"
+                           Text="Tap to flip"
                            Style="{StaticResource DashboardBody}"
-                           FontSize="13" />
-                </HorizontalStackLayout>
-            </Grid>
+                           FontSize="13"
+                           HorizontalOptions="Center"
+                           IsVisible="{Binding HasCards}" />
+                </Grid>
             </Border>
 
-            <!-- Action Buttons -->
-            <VerticalStackLayout
-                                 Spacing="12"
+            <VerticalStackLayout Spacing="12"
                                  HorizontalOptions="Fill"
                                  MaximumWidthRequest="1040">
                 <Button Text="Show Answer"
