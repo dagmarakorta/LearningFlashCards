@@ -8,8 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\LearningFlashCards.Api\LearningFlashCards.Api.csproj" />
     <ProjectReference Include="..\LearningFlashCards.Web.Client\LearningFlashCards.Web.Client.csproj" />
     <ProjectReference Include="..\..\LearningFlashCards.Core\LearningFlashCards.Core.csproj" />
+    <ProjectReference Include="..\..\LearningFlashCards.Infrastructure\LearningFlashCards.Infrastructure.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.3" />
   </ItemGroup>
 

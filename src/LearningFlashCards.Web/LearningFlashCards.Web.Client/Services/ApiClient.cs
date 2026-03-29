@@ -8,7 +8,7 @@ public class ApiClient(HttpClient http, UserSessionService session)
     // Users
     public async Task<UserProfile?> CreateProfileAsync(string username, string email, CancellationToken ct = default)
     {
-        var response = await http.PostAsJsonAsync("api/users", new { Username = username, Email = email }, ct);
+        var response = await http.PostAsJsonAsync("api/users", new { DisplayName = username, Email = email }, ct);
         response.EnsureSuccessStatusCode();
 
         if (response.Headers.TryGetValues("X-Owner-Id", out var values) &&

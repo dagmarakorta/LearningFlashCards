@@ -32,6 +32,14 @@ packages/
 [Tt]humbs.db
 *.DS_Store
 
+# Local .NET tooling
+.dotnet/
+
+# Local web app database
+src/LearningFlashCards.Web/LearningFlashCards.Web/*.db
+src/LearningFlashCards.Web/LearningFlashCards.Web/*.db-shm
+src/LearningFlashCards.Web/LearningFlashCards.Web/*.db-wal
+
 # MAUI / mobile artifacts
 *.apk
 *.aab

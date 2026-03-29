@@ -4,78 +4,254 @@
 @inject UserSessionService Session
 @inject NavigationManager Nav
 
-<PageTitle>Moje talie – LearningFlashCards</PageTitle>
+<PageTitle>Dashboard - LearningFlashCards</PageTitle>
 
 @if (!initialized)
 {
-    <div class="loading-spinner">Ładowanie...</div>
+    <div class="dashboard-loading">Loading dashboard...</div>
 }
 else
 {
-    <div class="page-header">
-        <h1>Moje talie</h1>
-        <button class="btn btn-primary" @onclick="() => showCreateDeck = true">+ Nowa talia</button>
-    </div>
+    <div class="dashboard-page">
+        <div class="dashboard-frame">
+            <div class="dashboard-shell">
+                <header class="dashboard-topbar surface-card">
+                    <div class="dashboard-brand">
+                        <div class="dashboard-brand-icon">📚</div>
+                        <div class="dashboard-brand-name">Learning Flashcards</div>
+                    </div>
+                    <button type="button" class="dashboard-secondary-button" @onclick="OpenProfile">Profile</button>
+                </header>
 
-    @if (showCreateDeck)
-    {
-        <div class="card mb-4">
-            <div class="card-body">
-                <h5>Nowa talia</h5>
-                <div class="form-group mb-2">
-                    <input class="form-control" @bind="newDeckName" placeholder="Nazwa talii" />
-                </div>
-                <div class="form-group mb-2">
-                    <input class="form-control" @bind="newDeckDescription" placeholder="Opis (opcjonalnie)" />
-                </div>
-                <div class="d-flex gap-2">
-                    <button class="btn btn-primary" @onclick="CreateDeckAsync">Utwórz</button>
-                    <button class="btn btn-secondary" @onclick="() => showCreateDeck = false">Anuluj</button>
+                <div class="dashboard-content">
+                    <section class="dashboard-hero">
+                        <div class="dashboard-hero-copy">
+                            <h1>@HeroMessage</h1>
+                            <p>Pick up where you left off and keep your streak going.</p>
+                        </div>
+                    </section>
+
+                    <section class="dashboard-stats">
+                        @foreach (var stat in StatCards)
+                        {
+                            <article class="inner-card dashboard-stat-card">
+                                <div class="dashboard-stat-icon" style="@($"background:{stat.IconBackground};")">@stat.Icon</div>
+                                <div class="dashboard-stat-copy">
+                                    <div class="dashboard-stat-title">@stat.Title</div>
+                                    <div class="dashboard-stat-value">@stat.Value</div>
+                                </div>
+                            </article>
+                        }
+                    </section>
+
+                    <section class="surface-card dashboard-section">
+                        <div class="dashboard-section-header">
+                            <h2>Choose a Deck</h2>
+                        </div>
+
+                        <div class="dashboard-divider"></div>
+
+                        <div class="dashboard-featured-grid">
+                            @foreach (var deck in FeaturedDecks)
+                            {
+                                <article class="inner-card dashboard-featured-card"
+                                         @onclick="() => GoToDeck(deck.Id)"
+                                         role="button"
+                                         tabindex="0">
+                                    <div class="dashboard-featured-icon">@deck.Icon</div>
+                                    <div class="dashboard-featured-name">@deck.Name</div>
+                                    <div class="dashboard-featured-footer">
+                                        <div class="dashboard-featured-count">@deck.CardCount <span>Cards</span></div>
+                                        <div class="dashboard-featured-arrow">&gt;</div>
+                                    </div>
+                                </article>
+                            }
+                        </div>
+
+                        @if (HasNoDecks)
+                        {
+                            <div class="dashboard-empty-message">
+                                No decks yet. Create your first one to start studying.
+                            </div>
+                        }
+
+                        <div class="dashboard-footer-action">
+                            <div class="dashboard-divider"></div>
+                            @if (HasDecks)
+                            {
+                                <a class="dashboard-ghost-button" href="#all-decks">Browse All Decks  &gt;</a>
+                            }
+                            else
+                            {
+                                <button type="button" class="dashboard-ghost-button" @onclick="() => showCreateDeck = true">
+                                    Browse All Decks  &gt;
+                                </button>
+                            }
+                            <div class="dashboard-divider"></div>
+                        </div>
+                    </section>
+
+                    <section class="dashboard-bottom-grid">
+                        <article class="surface-card dashboard-section dashboard-progress-card">
+                            <h2>Progress Overview</h2>
+                            <div class="dashboard-divider"></div>
+
+                            <div class="dashboard-progress-group">
+                                <div class="dashboard-progress-labels">
+                                    <span>Cards to Review</span>
+                                    <strong>@ReviewProgressLabel</strong>
+                                </div>
+                                <div class="dashboard-progress-track">
+                                    <div class="dashboard-progress-value" style="@($"width: {ReviewProgressPercent}%;")"></div>
+                                </div>
+                            </div>
+
+                            <div class="dashboard-progress-group">
+                                <div class="dashboard-progress-labels">
+                                    <span>Cards Mastered</span>
+                                    <strong>@MasteredProgressLabel</strong>
+                                </div>
+                                <div class="dashboard-progress-track">
+                                    <div class="dashboard-progress-value dashboard-progress-success" style="@($"width: {MasteredProgressPercent}%;")"></div>
+                                </div>
+                            </div>
+
+                            <div class="dashboard-keep-going">
+                                <div class="dashboard-keep-going-icon">🎯</div>
+                                <div>
+                                    <div class="dashboard-keep-going-title">@KeepGoingMessage</div>
+                                    <div class="dashboard-keep-going-body">Consistent short sessions work best.</div>
+                                </div>
+                            </div>
+                        </article>
+
+                        <article class="surface-card dashboard-section dashboard-goal-card">
+                            <h2>Daily Goal</h2>
+                            <div class="dashboard-divider"></div>
+                            <div class="dashboard-goal-title">Daily study goal: 30 min</div>
+                            <p class="dashboard-goal-body">@DailyGoalStatus</p>
+                            <div class="dashboard-goal-summary">
+                                <span>@DailyGoalSummary</span>
+                                <span>&gt;</span>
+                            </div>
+                        </article>
+                    </section>
+
+                    @if (showCreateDeck)
+                    {
+                        <section class="surface-card dashboard-section dashboard-create-deck" id="create-deck">
+                            <div class="dashboard-section-header">
+                                <h2>Create Deck</h2>
+                            </div>
+                            <div class="dashboard-divider"></div>
+                            <div class="dashboard-form-grid">
+                                <label>
+                                    <span>Name</span>
+                                    <input @bind="newDeckName" placeholder="Deck name" />
+                                </label>
+                                <label>
+                                    <span>Description</span>
+                                    <input @bind="newDeckDescription" placeholder="Optional description" />
+                                </label>
+                            </div>
+                            <div class="dashboard-form-actions">
+                                <button type="button" class="dashboard-primary-button" @onclick="CreateDeckAsync">Create deck</button>
+                                <button type="button" class="dashboard-secondary-button" @onclick="CloseCreateDeck">Cancel</button>
+                            </div>
+                        </section>
+                    }
+
+                    <section class="surface-card dashboard-section" id="all-decks">
+                        <div class="dashboard-section-header dashboard-section-header-split">
+                            <h2>All Decks</h2>
+                            <button type="button" class="dashboard-primary-button" @onclick="() => showCreateDeck = true">New Deck</button>
+                        </div>
+                        <div class="dashboard-divider"></div>
+
+                        @if (HasNoDecks)
+                        {
+                            <div class="dashboard-empty-panel">Create or import your first deck.</div>
+                        }
+                        else
+                        {
+                            <div class="dashboard-all-decks-grid">
+                                @foreach (var deck in Decks)
+                                {
+                                    <article class="inner-card dashboard-deck-card">
+                                        <div class="dashboard-deck-card-top" @onclick="() => GoToDeck(deck.Id)">
+                                            <div class="dashboard-deck-monogram" style="@($"background:{deck.BackgroundColor};")">@deck.Icon</div>
+                                            <div class="dashboard-deck-copy">
+                                                <h3>@deck.Name</h3>
+                                                <p>@deck.Summary</p>
+                                            </div>
+                                        </div>
+                                        <div class="dashboard-deck-meta">
+                                            <span>@deck.CardCount cards</span>
+                                            <span>@deck.DueCount due</span>
+                                        </div>
+                                        <div class="dashboard-deck-actions">
+                                            <button type="button" class="dashboard-secondary-button" @onclick="() => GoToDeck(deck.Id)">Open</button>
+                                            <button type="button" class="dashboard-primary-button" @onclick="() => GoToStudy(deck.Id)">Study</button>
+                                            <button type="button" class="dashboard-danger-button" @onclick="() => DeleteDeckAsync(deck.Id)">Delete</button>
+                                        </div>
+                                    </article>
+                                }
+                            </div>
+                        }
+                    </section>
                 </div>
             </div>
         </div>
-    }
-
-    @if (decks.Count == 0)
-    {
-        <div class="empty-state">
-            <p>Nie masz jeszcze żadnych talii. Utwórz pierwszą!</p>
-        </div>
-    }
-    else
-    {
-        <div class="decks-grid">
-            @foreach (var deck in decks)
-            {
-                <div class="deck-card" @onclick="() => GoToDeck(deck.Id)">
-                    <div class="deck-card-header">
-                        <h3>@deck.Name</h3>
-                        <span class="card-count">@deck.Cards.Count kart</span>
-                    </div>
-                    @if (!string.IsNullOrEmpty(deck.Description))
-                    {
-                        <p class="deck-description">@deck.Description</p>
-                    }
-                    <div class="deck-card-footer">
-                        <button class="btn btn-sm btn-success" @onclick:stopPropagation @onclick="() => GoToStudy(deck.Id)">
-                            Ucz się
-                        </button>
-                        <button class="btn btn-sm btn-danger" @onclick:stopPropagation @onclick="() => DeleteDeckAsync(deck.Id)">
-                            Usuń
-                        </button>
-                    </div>
-                </div>
-            }
-        </div>
-    }
+    </div>
 }
 
 @code {
-    private List<LearningFlashCards.Core.Domain.Entities.Deck> decks = [];
+    private const int DailyGoalMinutesTarget = 30;
+    private static readonly string[] DeckBackgrounds =
+    [
+        "#EAF2FF",
+        "#EAF7E1",
+        "#FFF2DA",
+        "#F5ECFF",
+        "#E7F8F5",
+        "#FFE8EB"
+    ];
+
+    private List<DeckDashboardItem> Decks { get; set; } = [];
+    private List<DeckDashboardItem> FeaturedDecks { get; set; } = [];
+    private List<DashboardStat> StatCards { get; set; } = [];
     private bool initialized;
     private bool showCreateDeck;
     private string newDeckName = "";
     private string newDeckDescription = "";
+    private string GreetingName { get; set; } = "learner";
+    private int DueTodayCount { get; set; }
+    private int ReviewStreakDays { get; set; }
+    private int MasteredCardsCount { get; set; }
+    private int ReviewTarget { get; set; } = 10;
+    private int MasteredTarget { get; set; } = 25;
+    private double ReviewProgress { get; set; }
+    private double MasteredProgress { get; set; }
+    private int DailyGoalCompletedMinutes { get; set; }
+
+    private string HeroMessage => $"Welcome back, {GreetingName}. Ready to study?";
+    private bool HasDecks => Decks.Count > 0;
+    private bool HasNoDecks => !HasDecks;
+    private string DeckCountLabel => $"{Decks.Count} {(Decks.Count == 1 ? "set" : "sets")}";
+    private string DailyGoalStatus =>
+        DailyGoalCompletedMinutes <= 0
+            ? "Start your first study session today."
+            : DailyGoalCompletedMinutes >= DailyGoalMinutesTarget
+                ? "Daily goal reached."
+                : DailyGoalCompletedMinutes >= 20
+                    ? "You're on track."
+                    : "Keep going.";
+    private string DailyGoalSummary => $"{DailyGoalCompletedMinutes} min completed";
+    private string KeepGoingMessage => DueTodayCount > 0 ? "Keep the streak alive" : "Add a new deck";
+    private string ReviewProgressLabel => $"{DueTodayCount} / {ReviewTarget}";
+    private string MasteredProgressLabel => $"{MasteredCardsCount} / {MasteredTarget}";
+    private string ReviewProgressPercent => (ReviewProgress * 100).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+    private string MasteredProgressPercent => (MasteredProgress * 100).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
 
     protected override async Task OnInitializedAsync()
     {
@@ -86,32 +262,145 @@ else
             return;
         }
 
-        await LoadDecksAsync();
+        await LoadDashboardAsync();
         initialized = true;
     }
 
-    private async Task LoadDecksAsync()
+    private async Task LoadDashboardAsync()
     {
-        decks = await Api.GetDecksAsync();
+        var deckEntities = await Api.GetDecksAsync();
+        var cardTasks = deckEntities.Select(deck => Api.GetCardsAsync(deck.Id)).ToArray();
+        var profileTask = Api.GetProfileAsync();
+
+        await Task.WhenAll(cardTasks.Cast<Task>().Append(profileTask));
+
+        var profile = await profileTask;
+        GreetingName = string.IsNullOrWhiteSpace(profile?.DisplayName) ? "learner" : profile.DisplayName.Trim();
+
+        var loadedDecks = deckEntities
+            .Select((deck, index) => BuildDeckItem(deck, cardTasks[index].Result, index))
+            .OrderBy(deck => deck.Name)
+            .ToList();
+
+        Decks = loadedDecks;
+        FeaturedDecks = loadedDecks.Take(3).ToList();
+
+        var allCards = cardTasks.SelectMany(task => task.Result).ToList();
+        var now = DateTimeOffset.UtcNow;
+        DueTodayCount = allCards.Count(card => card.State.DueAt <= now);
+        ReviewStreakDays = allCards.Count == 0 ? 0 : allCards.Max(card => card.State.Streak);
+        MasteredCardsCount = allCards.Count(IsMastered);
+        ReviewTarget = Math.Max(10, DueTodayCount + Math.Max(4, Decks.Count * 3));
+        MasteredTarget = Math.Max(25, MasteredCardsCount + Math.Max(10, Decks.Count * 6));
+        ReviewProgress = CalculateProgress(DueTodayCount, ReviewTarget);
+        MasteredProgress = CalculateProgress(MasteredCardsCount, MasteredTarget);
+        DailyGoalCompletedMinutes = GetTrackedStudyMinutesForToday(profile);
+
+        StatCards =
+        [
+            new("🗂", "#DFE8FF", "My Decks", DeckCountLabel),
+            new("🕒", "#F1E3F5", "Due Today", $"{DueTodayCount} cards"),
+            new("🔥", "#E8E1FF", "Review Streak", $"{ReviewStreakDays} days"),
+            new("✔", "#DDEEFF", "Mastered", $"{MasteredCardsCount} cards")
+        ];
     }
 
     private async Task CreateDeckAsync()
     {
-        if (string.IsNullOrWhiteSpace(newDeckName)) return;
+        if (string.IsNullOrWhiteSpace(newDeckName))
+        {
+            return;
+        }
 
         await Api.UpsertDeckAsync(new { Name = newDeckName, Description = newDeckDescription });
         newDeckName = "";
         newDeckDescription = "";
         showCreateDeck = false;
-        await LoadDecksAsync();
+        await LoadDashboardAsync();
     }
 
     private async Task DeleteDeckAsync(Guid deckId)
     {
         await Api.DeleteDeckAsync(deckId);
-        await LoadDecksAsync();
+        await LoadDashboardAsync();
     }
 
+    private void CloseCreateDeck()
+    {
+        showCreateDeck = false;
+        newDeckName = "";
+        newDeckDescription = "";
+    }
+
+    private void OpenProfile() => Nav.NavigateTo("/login");
     private void GoToDeck(Guid id) => Nav.NavigateTo("/deck/" + id);
     private void GoToStudy(Guid id) => Nav.NavigateTo("/study/" + id);
+
+    private static DeckDashboardItem BuildDeckItem(
+        LearningFlashCards.Core.Domain.Entities.Deck deck,
+        IReadOnlyList<LearningFlashCards.Core.Domain.Entities.Card> cards,
+        int index)
+    {
+        var dueCount = cards.Count(card => card.State.DueAt <= DateTimeOffset.UtcNow);
+        var summary = string.IsNullOrWhiteSpace(deck.Description) ? "Ready for another round" : deck.Description.Trim();
+
+        return new DeckDashboardItem(
+            deck.Id,
+            deck.Name,
+            summary,
+            GetDeckMonogram(deck.Name),
+            DeckBackgrounds[index % DeckBackgrounds.Length],
+            cards.Count,
+            dueCount);
+    }
+
+    private static bool IsMastered(LearningFlashCards.Core.Domain.Entities.Card card) =>
+        card.State.IntervalDays >= 21 || card.State.Streak >= 5;
+
+    private static string GetDeckMonogram(string? deckName)
+    {
+        var firstCharacter = deckName?.Trim().FirstOrDefault(static c => char.IsLetterOrDigit(c));
+        return firstCharacter is null or '\0' ? "D" : char.ToUpperInvariant(firstCharacter.Value).ToString();
+    }
+
+    private static double CalculateProgress(int value, int target)
+    {
+        if (target <= 0)
+        {
+            return 0;
+        }
+
+        return Math.Clamp((double)value / target, 0, 1);
+    }
+
+    private static int GetTrackedStudyMinutesForToday(LearningFlashCards.Core.Domain.Entities.UserProfile? profile)
+    {
+        if (profile?.StudySecondsTrackedAt is null)
+        {
+            return 0;
+        }
+
+        var now = DateTimeOffset.Now;
+        if (profile.StudySecondsTrackedAt.Value.LocalDateTime.Date != now.LocalDateTime.Date)
+        {
+            return 0;
+        }
+
+        return Math.Max(0, profile.StudySecondsToday / 60);
+    }
+
+    private sealed record DeckDashboardItem(
+        Guid Id,
+        string Name,
+        string Summary,
+        string Icon,
+        string BackgroundColor,
+        int CardCount,
+        int DueCount);
+
+    private sealed record DashboardStat(
+        string Icon,
+        string IconBackground,
+        string Title,
+        string Value);
 }
