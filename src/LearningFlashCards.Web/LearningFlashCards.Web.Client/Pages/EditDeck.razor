@@ -1,0 +1,186 @@
+@page "/edit-deck/{DeckId:guid}"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@inject ApiClient Api
+@inject UserSessionService Session
+@inject NavigationManager Nav
+@using LearningFlashCards.Core.Domain.Study
+
+<PageTitle>Edit Deck - LearningFlashCards</PageTitle>
+
+@if (!initialized)
+{
+    <div class="deck-form-loading">Loading deck...</div>
+}
+else
+{
+    <div class="deck-form-page">
+        <div class="deck-form-frame">
+            <section class="deck-form-shell">
+                <div class="deck-form-header">
+                    <div class="deck-form-header-icon">@("\u270E")</div>
+                    <div class="deck-form-header-copy">
+                        <h1>Edit Deck</h1>
+                        <p>Update your flashcard deck settings</p>
+                    </div>
+                </div>
+
+                <div class="deck-form-divider"></div>
+
+                @if (error is not null)
+                {
+                    <div class="deck-form-error">@error</div>
+                }
+
+                <section class="deck-form-card">
+                    <div class="deck-form-card-label">DECK INFO</div>
+
+                    <label class="deck-form-field">
+                        <span>DECK NAME</span>
+                        <div class="deck-form-input-shell">
+                            <input @bind="name" placeholder="Example: Biology Terms" />
+                        </div>
+                    </label>
+
+                    <label class="deck-form-field">
+                        <span>DESCRIPTION</span>
+                        <div class="deck-form-input-shell deck-form-textarea-shell">
+                            <textarea @bind="description" rows="4" placeholder="Short description for this deck"></textarea>
+                        </div>
+                    </label>
+                </section>
+
+                <section class="deck-form-card">
+                    <div class="deck-form-card-label">STUDY SETTINGS</div>
+
+                    <label class="deck-form-field">
+                        <span>DAILY REVIEW LIMIT</span>
+                        <div class="deck-form-input-shell">
+                            <input type="number" @bind="dailyReviewLimit" min="1" />
+                        </div>
+                    </label>
+
+                    <label class="deck-form-field">
+                        <span>EASY MINIMUM INTERVAL (DAYS)</span>
+                        <div class="deck-form-input-shell">
+                            <input type="number" @bind="easyMinIntervalDays" min="1" />
+                        </div>
+                    </label>
+
+                    <label class="deck-form-field">
+                        <span>MAX INTERVAL (DAYS)</span>
+                        <div class="deck-form-input-shell">
+                            <input type="number" @bind="maxIntervalDays" min="1" />
+                        </div>
+                    </label>
+
+                    <div class="deck-form-switch-card">
+                        <div class="deck-form-switch-copy">
+                            <div class="deck-form-switch-title">Repeat Again / Hard in session</div>
+                            <div class="deck-form-switch-body">Repeat difficult cards within the same session</div>
+                        </div>
+                        <input class="deck-form-switch" type="checkbox" @bind="repeatInSession" />
+                    </div>
+                </section>
+
+                <div class="deck-form-actions">
+                    <button type="button" class="deck-form-primary-button" @onclick="SaveAsync" disabled="@isSaving">
+                        @(isSaving ? "Saving..." : "Save Changes")
+                    </button>
+                    <button type="button" class="deck-form-secondary-button" @onclick="Cancel">Cancel</button>
+                </div>
+            </section>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public Guid DeckId { get; set; }
+
+    private bool initialized;
+    private bool isSaving;
+    private string? error;
+
+    private string name = "";
+    private string description = "";
+    private int dailyReviewLimit = 50;
+    private int easyMinIntervalDays = 3;
+    private int maxIntervalDays = 180;
+    private bool repeatInSession = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var ownerId = await Session.GetOwnerIdAsync();
+        if (!ownerId.HasValue)
+        {
+            Nav.NavigateTo("/login");
+            return;
+        }
+
+        var deck = await Api.GetDeckAsync(DeckId);
+        if (deck is null)
+        {
+            Nav.NavigateTo("/");
+            return;
+        }
+
+        name = deck.Name;
+        description = deck.Description ?? string.Empty;
+        var settings = deck.StudySettings ?? new LearningFlashCards.Core.Domain.Entities.DeckStudySettings();
+        dailyReviewLimit = settings.DailyReviewLimit;
+        easyMinIntervalDays = settings.EasyMinIntervalDays;
+        maxIntervalDays = settings.MaxIntervalDays;
+        repeatInSession = settings.RepeatInSession;
+
+        initialized = true;
+    }
+
+    private async Task SaveAsync()
+    {
+        error = null;
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            error = "Please enter a deck name.";
+            return;
+        }
+
+        var settings = new LearningFlashCards.Core.Domain.Entities.DeckStudySettings
+        {
+            DailyReviewLimit = dailyReviewLimit,
+            EasyMinIntervalDays = easyMinIntervalDays,
+            MaxIntervalDays = maxIntervalDays,
+            RepeatInSession = repeatInSession
+        };
+
+        if (!StudySettingsValidator.TryValidate(settings, out var settingsError))
+        {
+            error = settingsError ?? "Study settings are invalid.";
+            return;
+        }
+
+        isSaving = true;
+        try
+        {
+            await Api.UpsertDeckAsync(new
+            {
+                Id = DeckId,
+                Name = name.Trim(),
+                Description = string.IsNullOrWhiteSpace(description) ? (string?)null : description.Trim(),
+                DailyReviewLimit = dailyReviewLimit,
+                EasyMinIntervalDays = easyMinIntervalDays,
+                MaxIntervalDays = maxIntervalDays,
+                RepeatInSession = repeatInSession
+            });
+            Nav.NavigateTo("/deck/" + DeckId);
+        }
+        catch (Exception ex)
+        {
+            error = $"Failed to save: {ex.Message}";
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void Cancel() => Nav.NavigateTo("/deck/" + DeckId);
+}

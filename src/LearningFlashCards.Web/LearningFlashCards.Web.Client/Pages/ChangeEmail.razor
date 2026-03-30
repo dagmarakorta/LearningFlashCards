@@ -1,0 +1,104 @@
+@page "/change-email"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@inject ApiClient Api
+@inject UserSessionService Session
+@inject NavigationManager Nav
+
+<PageTitle>Change Email – LearningFlashCards</PageTitle>
+
+<div class="page-container">
+    <div class="form-page-header">
+        <a href="/profile" class="back-link">← Profile</a>
+        <h1>Change Email</h1>
+    </div>
+
+    @if (error is not null)
+    {
+        <div class="alert alert-danger">@error</div>
+    }
+
+    <div class="form-card">
+        <div class="form-group">
+            <label>New Email <span class="text-danger">*</span></label>
+            <input class="form-control" type="email" @bind="newEmail" placeholder="new@email.com" />
+        </div>
+
+        <div class="form-actions mt-4">
+            <button class="btn btn-primary" @onclick="SaveAsync" disabled="@isSaving">
+                @(isSaving ? "Saving..." : "Change Email")
+            </button>
+            <button class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool isSaving;
+    private string? error;
+    private string newEmail = "";
+
+    private static readonly System.Text.RegularExpressions.Regex EmailPattern =
+        new(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", System.Text.RegularExpressions.RegexOptions.Compiled);
+
+    protected override async Task OnInitializedAsync()
+    {
+        var ownerId = await Session.GetOwnerIdAsync();
+        if (!ownerId.HasValue)
+            Nav.NavigateTo("/login");
+    }
+
+    private async Task SaveAsync()
+    {
+        error = null;
+        var email = newEmail.Trim();
+
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            error = "Please enter your new email.";
+            return;
+        }
+
+        if (!EmailPattern.IsMatch(email))
+        {
+            error = "Please enter a valid email address.";
+            return;
+        }
+
+        var normalizedEmail = email.ToLowerInvariant();
+
+        isSaving = true;
+        try
+        {
+            var existing = await Api.GetProfileByEmailAsync(normalizedEmail);
+            var ownerId = await Session.GetOwnerIdAsync();
+            if (existing is not null && existing.Id != ownerId)
+            {
+                error = "Email already in use. Please use a different email.";
+                return;
+            }
+
+            var profile = await Api.GetProfileAsync();
+            if (profile is null)
+            {
+                await Session.ClearAsync();
+                Nav.NavigateTo("/login");
+                return;
+            }
+
+            profile.Email = normalizedEmail;
+            await Api.UpdateProfileAsync(profile);
+            await Session.ClearAsync();
+            Nav.NavigateTo("/login");
+        }
+        catch (Exception ex)
+        {
+            error = $"Failed to update email: {ex.Message}";
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void Cancel() => Nav.NavigateTo("/profile");
+}

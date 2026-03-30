@@ -47,6 +47,16 @@ public class UsersController : ApiControllerBase
         return Ok(profile);
     }
 
+    [HttpGet("by-email/{email}")]
+    public async Task<ActionResult<UserProfile>> GetByEmail(string email, CancellationToken cancellationToken)
+    {
+        var normalizedEmail = email.Trim().ToLowerInvariant();
+        var profile = await _userProfileRepository.GetByEmailAsync(normalizedEmail, cancellationToken);
+        if (profile is null || profile.DeletedAt != null)
+            return NotFound();
+        return Ok(profile);
+    }
+
     [HttpPut("me")]
     public async Task<ActionResult<UserProfile>> UpsertProfile([FromBody] UserProfile profile, CancellationToken cancellationToken)
     {

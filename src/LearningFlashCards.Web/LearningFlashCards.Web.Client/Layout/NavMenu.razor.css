@@ -101,5 +101,26 @@
         /* Allow sidebar to scroll for tall menus */
         height: calc(100vh - 3.5rem);
         overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(181, 199, 240, 0.9) rgba(255, 255, 255, 0.08);
+    }
+
+    .nav-scrollable::-webkit-scrollbar {
+        width: 10px;
+    }
+
+    .nav-scrollable::-webkit-scrollbar-track {
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .nav-scrollable::-webkit-scrollbar-thumb {
+        border-radius: 999px;
+        background: linear-gradient(180deg, #c7d5f8 0%, #aebfe9 100%);
+        border: 2px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .nav-scrollable::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(180deg, #b7c8f0 0%, #9fb3e0 100%);
     }
 }

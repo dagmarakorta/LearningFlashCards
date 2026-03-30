@@ -3,95 +3,148 @@
 @inject ApiClient Api
 @inject UserSessionService Session
 @inject NavigationManager Nav
+@using Microsoft.AspNetCore.Components
+@using LearningFlashCards.Core.Application.Import
+@using Microsoft.AspNetCore.Components.Forms
+@inject Microsoft.JSInterop.IJSRuntime Js
 
-<PageTitle>@(deck?.Name ?? "Talia") – LearningFlashCards</PageTitle>
+<PageTitle>@(deckName == string.Empty ? "Deck" : deckName) - LearningFlashCards</PageTitle>
 
 @if (!initialized)
 {
-    <div class="loading-spinner">Ładowanie...</div>
+    <div class="deck-detail-loading">Loading deck...</div>
 }
-else if (deck is null)
+else if (deckName == string.Empty)
 {
-    <div class="alert alert-warning">Nie znaleziono talii.</div>
+    <div class="deck-detail-loading">Deck not found.</div>
 }
 else
 {
-    <div class="page-header">
-        <div>
-            <a href="/" class="back-link">← Moje talie</a>
-            <h1>@deck.Name</h1>
-            @if (!string.IsNullOrEmpty(deck.Description))
-            {
-                <p class="text-muted">@deck.Description</p>
-            }
-        </div>
-        <button class="btn btn-success" @onclick="GoToStudy">Ucz się</button>
-    </div>
-
-    <div class="section-header">
-        <h2>Karty (@cards.Count)</h2>
-        <button class="btn btn-primary" @onclick="() => showAddCard = !showAddCard">+ Dodaj kartę</button>
-    </div>
-
-    @if (showAddCard)
-    {
-        <div class="card mb-4">
-            <div class="card-body">
-                <h5>Nowa karta</h5>
-                <div class="form-group mb-2">
-                    <label>Przód</label>
-                    <textarea class="form-control" @bind="newCardFront" rows="2" placeholder="Pytanie / pojęcie"></textarea>
-                </div>
-                <div class="form-group mb-2">
-                    <label>Tył</label>
-                    <textarea class="form-control" @bind="newCardBack" rows="2" placeholder="Odpowiedź / definicja"></textarea>
-                </div>
-                <div class="form-group mb-2">
-                    <label>Notatki (opcjonalnie)</label>
-                    <textarea class="form-control" @bind="newCardNotes" rows="2"></textarea>
-                </div>
-                <div class="d-flex gap-2">
-                    <button class="btn btn-primary" @onclick="AddCardAsync">Dodaj</button>
-                    <button class="btn btn-secondary" @onclick="() => showAddCard = false">Anuluj</button>
-                </div>
-            </div>
-        </div>
-    }
-
-    @if (cards.Count == 0)
-    {
-        <div class="empty-state">
-            <p>Talia jest pusta. Dodaj pierwszą kartę!</p>
-        </div>
-    }
-    else
-    {
-        <div class="cards-list">
-            @foreach (var card in cards)
-            {
-                <div class="card-item">
-                    <div class="card-item-content">
-                        <div class="card-front">@card.Front</div>
-                        <div class="card-separator">→</div>
-                        <div class="card-back">@card.Back</div>
+    <div class="deck-detail-page">
+        <div class="deck-detail-frame">
+            <section class="deck-detail-shell">
+                <div class="deck-detail-header">
+                    <div class="deck-detail-monogram">@DeckMonogram</div>
+                    <div class="deck-detail-copy">
+                        <h1>@deckName</h1>
+                        <p>@DeckDescription</p>
                     </div>
-                    <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteCardAsync(card.Id)">Usuń</button>
+                    <div class="deck-detail-header-actions">
+                        <button type="button" class="deck-detail-primary-button" @onclick="GoToStudy">Study</button>
+                        <button type="button" class="deck-detail-secondary-button" @onclick="GoToAddCard">Add Card</button>
+                        <button type="button" class="deck-detail-secondary-button" @onclick="OpenImportPicker">Import</button>
+                    </div>
                 </div>
-            }
+
+                <InputFile id="deck-import-input" OnChange="OnFileSelected" accept=".csv" class="deck-detail-hidden-file-input" style="display: none;" />
+
+                <div class="deck-detail-divider"></div>
+
+                @if (showStudyDoneMessage)
+                {
+                    <div class="deck-detail-success">You've completed all due cards for now.</div>
+                }
+
+                @if (showImportDialog)
+                {
+                    <div class="deck-detail-modal-backdrop">
+                        <section class="deck-detail-import-modal">
+                            <h2>Import Cards</h2>
+                            <p>CSV format: front, back (header optional)</p>
+
+                            <div class="deck-detail-file-summary">
+                                <div>@ImportFileTitle</div>
+                                <div class="deck-detail-file-summary-body">@ImportFileBody</div>
+                            </div>
+
+                            @if (!string.IsNullOrWhiteSpace(importSummary))
+                            {
+                                <div class="@(importHasErrors ? "deck-detail-inline-error" : "deck-detail-inline-success")">@importSummary</div>
+                            }
+
+                            @if (importError is not null)
+                            {
+                                <div class="deck-detail-error">@importError</div>
+                            }
+
+                            <div class="deck-detail-import-actions">
+                                <button type="button" class="deck-detail-primary-button" @onclick="ImportCardsAsync" disabled="@(!canImport)">Import</button>
+                                <button type="button" class="deck-detail-secondary-button" @onclick="CancelImport">Cancel</button>
+                            </div>
+                        </section>
+                    </div>
+                }
+
+                @if (showImportSuccessDialog)
+                {
+                    <div class="deck-detail-modal-backdrop">
+                        <section class="deck-detail-import-modal">
+                            <h2>Imported</h2>
+                            <p>@importSuccessMessage</p>
+                            <div class="deck-detail-import-actions deck-detail-import-actions-end">
+                                <button type="button" class="deck-detail-primary-button" @onclick="CloseImportSuccessDialog">OK</button>
+                            </div>
+                        </section>
+                    </div>
+                }
+
+                @if (cards.Count == 0)
+                {
+                    <section class="deck-detail-empty-card">
+                        <h2>No cards yet</h2>
+                        <p>Add your first card to start studying.</p>
+                    </section>
+                }
+                else
+                {
+                    <div class="deck-detail-cards">
+                        @foreach (var card in cards)
+                        {
+                            <article class="deck-detail-card">
+                                <div class="deck-detail-card-content">
+                                    <div class="deck-detail-card-side">
+                                        <div class="deck-detail-card-text">@((MarkupString)card.Front)</div>
+                                    </div>
+                                    <div class="deck-detail-card-side">
+                                        <div class="deck-detail-card-text">@((MarkupString)card.Back)</div>
+                                    </div>
+                                </div>
+                                <div class="deck-detail-card-actions">
+                                    <button type="button" class="deck-detail-secondary-button" @onclick="() => GoToEditCard(card.Id)">Edit</button>
+                                    <button type="button" class="deck-detail-primary-button" @onclick="() => DeleteCardAsync(card.Id)">Delete</button>
+                                </div>
+                            </article>
+                        }
+                    </div>
+                }
+            </section>
         </div>
-    }
+    </div>
 }
 
 @code {
     [Parameter] public Guid DeckId { get; set; }
 
-    private LearningFlashCards.Core.Domain.Entities.Deck? deck;
+    private string deckName = string.Empty;
+    private string deckDescription = string.Empty;
     private List<LearningFlashCards.Core.Domain.Entities.Card> cards = [];
     private bool initialized;
-    private bool showAddCard;
-    private string newCardFront = "";
-    private string newCardBack = "";
-    private string newCardNotes = "";
+
+    private bool showImportDialog;
+    private string? importSummary;
+    private string? importError;
+    private string? selectedImportFileName;
+    private string? importSuccessMessage;
+    private bool importHasErrors;
+    private bool canImport;
+    private bool showStudyDoneMessage;
+    private bool showImportSuccessDialog;
+    private readonly List<LearningFlashCards.Core.Application.Import.ImportedCardRow> importedCards = new();
+
+    private string DeckDescription => string.IsNullOrWhiteSpace(deckDescription) ? "No description" : deckDescription;
+    private string DeckMonogram => GetDeckMonogram(deckName);
+    private string ImportFileTitle => string.IsNullOrWhiteSpace(selectedImportFileName) ? "No file selected." : $"Selected: {selectedImportFileName}";
+    private string ImportFileBody => string.IsNullOrWhiteSpace(selectedImportFileName) ? "Choose a CSV file to preview." : "Review the summary below before importing.";
 
     protected override async Task OnInitializedAsync()
     {
@@ -102,27 +155,129 @@ else
             return;
         }
 
-        deck = await Api.GetDeckAsync(DeckId);
-        cards = await Api.GetCardsAsync(DeckId);
+        var uri = Nav.ToAbsoluteUri(Nav.Uri);
+        if (HasStudyDoneFlag(uri.Query))
+        {
+            showStudyDoneMessage = true;
+        }
+
+        await LoadDeckAsync();
         initialized = true;
     }
 
-    private async Task AddCardAsync()
+    private async Task LoadDeckAsync()
     {
-        if (string.IsNullOrWhiteSpace(newCardFront) || string.IsNullOrWhiteSpace(newCardBack)) return;
-
-        await Api.UpsertCardAsync(DeckId, new
+        var deck = await Api.GetDeckAsync(DeckId);
+        if (deck is null)
         {
-            Front = newCardFront,
-            Back = newCardBack,
-            Notes = string.IsNullOrWhiteSpace(newCardNotes) ? null : newCardNotes
-        });
+            deckName = string.Empty;
+            return;
+        }
 
-        newCardFront = "";
-        newCardBack = "";
-        newCardNotes = "";
-        showAddCard = false;
+        deckName = deck.Name;
+        deckDescription = deck.Description ?? string.Empty;
         cards = await Api.GetCardsAsync(DeckId);
+    }
+
+    private async Task OpenImportPicker()
+    {
+        await Js.InvokeVoidAsync("lfc.openFilePicker", "deck-import-input");
+    }
+
+    private void CancelImport()
+    {
+        showImportDialog = false;
+        importSummary = null;
+        importError = null;
+        selectedImportFileName = null;
+        importHasErrors = false;
+        canImport = false;
+        importedCards.Clear();
+    }
+
+    private async Task OnFileSelected(InputFileChangeEventArgs e)
+    {
+        importError = null;
+        importSummary = null;
+        canImport = false;
+        importedCards.Clear();
+
+        var file = e.File;
+        if (file is null)
+        {
+            return;
+        }
+
+        selectedImportFileName = file.Name;
+        showImportDialog = true;
+
+        try
+        {
+            using var stream = file.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024);
+            using var reader = new System.IO.StreamReader(stream);
+            var content = await reader.ReadToEndAsync();
+
+            var parser = new CsvCardImportParser();
+            var result = parser.Parse(content);
+
+            importedCards.AddRange(result.Cards);
+
+            if (result.Cards.Count == 0)
+            {
+                importSummary = "No valid cards found in the selected file.";
+                importHasErrors = true;
+                canImport = false;
+                return;
+            }
+
+            if (result.InvalidRowNumbers.Count > 0)
+            {
+                var preview = string.Join(", ", result.InvalidRowNumbers.Take(5));
+                if (result.InvalidRowNumbers.Count > 5)
+                {
+                    preview += ", ...";
+                }
+
+                importSummary = $"Fix {result.InvalidRowNumbers.Count} rows missing front or back (rows: {preview}).";
+                importHasErrors = true;
+                canImport = false;
+                return;
+            }
+
+            importSummary = $"Ready to import {result.Cards.Count} cards.";
+            importHasErrors = false;
+            canImport = true;
+        }
+        catch (Exception ex)
+        {
+            importError = $"Error reading file: {ex.Message}";
+            canImport = false;
+        }
+    }
+
+    private async Task ImportCardsAsync()
+    {
+        if (importedCards.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var row in importedCards)
+        {
+            await Api.UpsertCardAsync(DeckId, new { Front = row.Front, Back = row.Back });
+        }
+
+        var importedCount = importedCards.Count;
+        CancelImport();
+        await LoadDeckAsync();
+        importSuccessMessage = $"Imported {importedCount} cards.";
+        showImportSuccessDialog = true;
+    }
+
+    private void CloseImportSuccessDialog()
+    {
+        showImportSuccessDialog = false;
+        importSuccessMessage = null;
     }
 
     private async Task DeleteCardAsync(Guid cardId)
@@ -132,4 +287,34 @@ else
     }
 
     private void GoToStudy() => Nav.NavigateTo("/study/" + DeckId);
+    private void GoToAddCard() => Nav.NavigateTo("/create-card/" + DeckId);
+    private void GoToEditCard(Guid cardId) => Nav.NavigateTo($"/edit-card/{DeckId}/{cardId}");
+
+    private static string GetDeckMonogram(string? deckName)
+    {
+        var firstCharacter = deckName?.Trim().FirstOrDefault(static c => char.IsLetterOrDigit(c));
+        return firstCharacter is null || firstCharacter == default ? "D" : char.ToUpperInvariant(firstCharacter.Value).ToString();
+    }
+
+    private static bool HasStudyDoneFlag(string? query)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return false;
+        }
+
+        var trimmed = query.TrimStart('?');
+        foreach (var pair in trimmed.Split('&', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var parts = pair.Split('=', 2);
+            if (parts.Length == 2 &&
+                string.Equals(parts[0], "studyDone", StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(Uri.UnescapeDataString(parts[1]), "1", StringComparison.Ordinal))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

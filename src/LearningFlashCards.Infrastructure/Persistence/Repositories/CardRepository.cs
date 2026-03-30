@@ -31,16 +31,24 @@ public class CardRepository : ICardRepository
 
     public async Task UpsertAsync(Card card, CancellationToken cancellationToken)
     {
-        var tracked = _db.Cards.Local.FirstOrDefault(c => c.Id == card.Id);
-        if (tracked != null && !ReferenceEquals(tracked, card))
-        {
-            _db.Entry(tracked).State = EntityState.Detached;
-        }
+        var existing = await _db.Cards
+            .Include(c => c.Tags)
+            .FirstOrDefaultAsync(c => c.Id == card.Id, cancellationToken);
 
-        var exists = await _db.Cards.AsNoTracking().AnyAsync(c => c.Id == card.Id, cancellationToken);
-        if (exists)
+        if (existing is not null)
         {
-            _db.Cards.Update(card);
+            existing.DeckId = card.DeckId;
+            existing.Front = card.Front;
+            existing.Back = card.Back;
+            existing.Notes = card.Notes;
+            existing.ModifiedAt = card.ModifiedAt;
+            existing.DeletedAt = card.DeletedAt;
+
+            existing.State.DueAt = card.State.DueAt;
+            existing.State.IntervalDays = card.State.IntervalDays;
+            existing.State.EaseFactor = card.State.EaseFactor;
+            existing.State.Streak = card.State.Streak;
+            existing.State.Lapses = card.State.Lapses;
         }
         else
         {

@@ -18,6 +18,12 @@
     <Routes @rendermode="@(new InteractiveWebAssemblyRenderMode(prerender: false))" />
     <ReconnectModal />
     <script src="@Assets["_framework/blazor.web.js"]"></script>
+    <script>
+        window.lfc = window.lfc || {};
+        window.lfc.openFilePicker = function (id) {
+            document.getElementById(id)?.click();
+        };
+    </script>
 </body>
 
 </html>

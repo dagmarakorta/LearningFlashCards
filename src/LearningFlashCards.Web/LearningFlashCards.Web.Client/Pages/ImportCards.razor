@@ -1,0 +1,272 @@
+@page "/import-cards"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@inject ApiClient Api
+@inject UserSessionService Session
+@inject NavigationManager Nav
+@using LearningFlashCards.Core.Application.Import
+@using Microsoft.AspNetCore.Components.Forms
+
+<PageTitle>Import Cards - LearningFlashCards</PageTitle>
+
+@if (!initialized)
+{
+    <div class="import-form-loading">Loading import tools...</div>
+}
+else
+{
+    <div class="import-form-page">
+        <div class="import-form-frame">
+            <section class="import-form-shell">
+                <div class="import-form-header">
+                    <div class="import-form-header-icon">@("\U0001F4E5")</div>
+                    <div class="import-form-header-copy">
+                        <h1>Import Cards</h1>
+                        <p>CSV format: front, back (header optional)</p>
+                    </div>
+                </div>
+
+                <div class="import-form-divider"></div>
+
+                @if (error is not null)
+                {
+                    <div class="import-form-error">@error</div>
+                }
+
+                <section class="import-form-card">
+                    <div class="import-form-card-label">CSV FILE</div>
+
+                    <InputFile OnChange="OnFileSelected" accept=".csv" class="import-form-file-input" />
+
+                    <div class="import-form-file-summary">
+                        <div>@FileSummaryTitle</div>
+                        <div class="import-form-file-summary-body">@FileSummaryBody</div>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(summaryText))
+                    {
+                        <div class="@(hasErrors ? "import-form-inline-error" : "import-form-inline-success")">@summaryText</div>
+                    }
+                </section>
+
+                <section class="import-form-card">
+                    <div class="import-form-card-label">DESTINATION DECK</div>
+
+                    @if (decks.Count > 0)
+                    {
+                        <label class="import-form-field">
+                            <span>SELECT A DECK</span>
+                            <div class="import-form-input-shell">
+                                <select @bind="selectedDeckId" disabled="@createNewDeck">
+                                    @foreach (var deck in decks)
+                                    {
+                                        <option value="@deck.Id">@deck.Name</option>
+                                    }
+                                </select>
+                            </div>
+                        </label>
+                    }
+
+                    <div class="import-form-switch-card">
+                        <div class="import-form-switch-copy">
+                            <div class="import-form-switch-title">Create new deck instead</div>
+                            <div class="import-form-switch-body">Import cards into a brand new deck</div>
+                        </div>
+                        <input class="import-form-switch" type="checkbox" @bind="createNewDeck" />
+                    </div>
+                </section>
+
+                @if (createNewDeck)
+                {
+                    <section class="import-form-card">
+                        <div class="import-form-card-label">NEW DECK DETAILS</div>
+
+                        <label class="import-form-field">
+                            <span>DECK NAME</span>
+                            <div class="import-form-input-shell">
+                                <input @bind="newDeckName" placeholder="Example: Imported Spanish" />
+                            </div>
+                        </label>
+
+                        <label class="import-form-field">
+                            <span>DESCRIPTION (OPTIONAL)</span>
+                            <div class="import-form-input-shell import-form-textarea-shell">
+                                <textarea @bind="newDeckDescription" rows="4" placeholder="Short description for this deck"></textarea>
+                            </div>
+                        </label>
+                    </section>
+                }
+
+                <div class="import-form-actions">
+                    <button type="button" class="import-form-primary-button" @onclick="ImportAsync" disabled="@(!canImport || isImporting)">
+                        @(isImporting ? "Importing..." : "Import Cards")
+                    </button>
+                    <button type="button" class="import-form-secondary-button" @onclick="Cancel">Cancel</button>
+                </div>
+            </section>
+        </div>
+    </div>
+}
+
+@code {
+    private bool initialized;
+    private bool isImporting;
+    private string? error;
+
+    private List<LearningFlashCards.Core.Domain.Entities.Deck> decks = [];
+    private Guid selectedDeckId;
+    private bool createNewDeck;
+    private string newDeckName = "";
+    private string newDeckDescription = "";
+
+    private string? selectedFileName;
+    private string? summaryText;
+    private bool hasErrors;
+    private bool canImport;
+    private readonly List<ImportedCardRow> importedCards = new();
+
+    private string FileSummaryTitle => string.IsNullOrWhiteSpace(selectedFileName) ? "No file selected." : $"Selected: {selectedFileName}";
+    private string FileSummaryBody => string.IsNullOrWhiteSpace(selectedFileName) ? "Select a CSV file to preview." : "Review the summary below before importing.";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var ownerId = await Session.GetOwnerIdAsync();
+        if (!ownerId.HasValue)
+        {
+            Nav.NavigateTo("/login");
+            return;
+        }
+
+        decks = await Api.GetDecksAsync();
+        if (decks.Count > 0)
+        {
+            selectedDeckId = decks[0].Id;
+        }
+        else
+        {
+            createNewDeck = true;
+        }
+
+        initialized = true;
+    }
+
+    private async Task OnFileSelected(InputFileChangeEventArgs e)
+    {
+        error = null;
+        summaryText = null;
+        canImport = false;
+        hasErrors = false;
+        importedCards.Clear();
+
+        var file = e.File;
+        if (file is null)
+        {
+            return;
+        }
+
+        selectedFileName = file.Name;
+
+        try
+        {
+            using var stream = file.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024);
+            using var reader = new System.IO.StreamReader(stream);
+            var content = await reader.ReadToEndAsync();
+
+            var parser = new CsvCardImportParser();
+            var result = parser.Parse(content);
+            importedCards.AddRange(result.Cards);
+
+            if (result.Cards.Count == 0)
+            {
+                summaryText = "No valid cards found in the selected file.";
+                hasErrors = true;
+                return;
+            }
+
+            if (result.InvalidRowNumbers.Count > 0)
+            {
+                var preview = string.Join(", ", result.InvalidRowNumbers.Take(5));
+                if (result.InvalidRowNumbers.Count > 5)
+                {
+                    preview += ", ...";
+                }
+
+                summaryText = $"Fix {result.InvalidRowNumbers.Count} rows missing front or back (rows: {preview}).";
+                hasErrors = true;
+                return;
+            }
+
+            summaryText = $"Ready to import {result.Cards.Count} cards.";
+            canImport = true;
+        }
+        catch (Exception ex)
+        {
+            error = $"Error reading file: {ex.Message}";
+        }
+    }
+
+    private async Task ImportAsync()
+    {
+        error = null;
+        if (importedCards.Count == 0)
+        {
+            error = "Select a CSV file with at least one card.";
+            return;
+        }
+
+        Guid targetDeckId;
+
+        if (createNewDeck)
+        {
+            if (string.IsNullOrWhiteSpace(newDeckName))
+            {
+                error = "Please enter a new deck name.";
+                return;
+            }
+
+            var newDeck = await Api.UpsertDeckAsync(new
+            {
+                Name = newDeckName.Trim(),
+                Description = string.IsNullOrWhiteSpace(newDeckDescription) ? (string?)null : newDeckDescription.Trim()
+            });
+
+            if (newDeck is null)
+            {
+                error = "Failed to create deck.";
+                return;
+            }
+
+            targetDeckId = newDeck.Id;
+        }
+        else
+        {
+            if (selectedDeckId == Guid.Empty)
+            {
+                error = "Please select a deck.";
+                return;
+            }
+
+            targetDeckId = selectedDeckId;
+        }
+
+        isImporting = true;
+        try
+        {
+            foreach (var row in importedCards)
+            {
+                await Api.UpsertCardAsync(targetDeckId, new { Front = row.Front, Back = row.Back });
+            }
+
+            Nav.NavigateTo("/deck/" + targetDeckId);
+        }
+        catch (Exception ex)
+        {
+            error = $"Import failed: {ex.Message}";
+        }
+        finally
+        {
+            isImporting = false;
+        }
+    }
+
+    private void Cancel() => Nav.NavigateTo("/");
+}

@@ -17,7 +17,7 @@ else
             <div class="dashboard-shell">
                 <header class="dashboard-topbar surface-card">
                     <div class="dashboard-brand">
-                        <div class="dashboard-brand-icon">📚</div>
+                        <div class="dashboard-brand-icon">@("\U0001F4DA")</div>
                         <div class="dashboard-brand-name">Learning Flashcards</div>
                     </div>
                     <button type="button" class="dashboard-secondary-button" @onclick="OpenProfile">Profile</button>
@@ -77,16 +77,9 @@ else
 
                         <div class="dashboard-footer-action">
                             <div class="dashboard-divider"></div>
-                            @if (HasDecks)
-                            {
-                                <a class="dashboard-ghost-button" href="#all-decks">Browse All Decks  &gt;</a>
-                            }
-                            else
-                            {
-                                <button type="button" class="dashboard-ghost-button" @onclick="() => showCreateDeck = true">
-                                    Browse All Decks  &gt;
-                                </button>
-                            }
+                            <button type="button" class="dashboard-ghost-button" @onclick="GoToBrowseAllDecks">
+                                Browse All Decks  &gt;
+                            </button>
                             <div class="dashboard-divider"></div>
                         </div>
                     </section>
@@ -117,7 +110,7 @@ else
                             </div>
 
                             <div class="dashboard-keep-going">
-                                <div class="dashboard-keep-going-icon">🎯</div>
+                                <div class="dashboard-keep-going-icon">@("\U0001F3AF")</div>
                                 <div>
                                     <div class="dashboard-keep-going-title">@KeepGoingMessage</div>
                                     <div class="dashboard-keep-going-body">Consistent short sessions work best.</div>
@@ -135,69 +128,6 @@ else
                                 <span>&gt;</span>
                             </div>
                         </article>
-                    </section>
-
-                    @if (showCreateDeck)
-                    {
-                        <section class="surface-card dashboard-section dashboard-create-deck" id="create-deck">
-                            <div class="dashboard-section-header">
-                                <h2>Create Deck</h2>
-                            </div>
-                            <div class="dashboard-divider"></div>
-                            <div class="dashboard-form-grid">
-                                <label>
-                                    <span>Name</span>
-                                    <input @bind="newDeckName" placeholder="Deck name" />
-                                </label>
-                                <label>
-                                    <span>Description</span>
-                                    <input @bind="newDeckDescription" placeholder="Optional description" />
-                                </label>
-                            </div>
-                            <div class="dashboard-form-actions">
-                                <button type="button" class="dashboard-primary-button" @onclick="CreateDeckAsync">Create deck</button>
-                                <button type="button" class="dashboard-secondary-button" @onclick="CloseCreateDeck">Cancel</button>
-                            </div>
-                        </section>
-                    }
-
-                    <section class="surface-card dashboard-section" id="all-decks">
-                        <div class="dashboard-section-header dashboard-section-header-split">
-                            <h2>All Decks</h2>
-                            <button type="button" class="dashboard-primary-button" @onclick="() => showCreateDeck = true">New Deck</button>
-                        </div>
-                        <div class="dashboard-divider"></div>
-
-                        @if (HasNoDecks)
-                        {
-                            <div class="dashboard-empty-panel">Create or import your first deck.</div>
-                        }
-                        else
-                        {
-                            <div class="dashboard-all-decks-grid">
-                                @foreach (var deck in Decks)
-                                {
-                                    <article class="inner-card dashboard-deck-card">
-                                        <div class="dashboard-deck-card-top" @onclick="() => GoToDeck(deck.Id)">
-                                            <div class="dashboard-deck-monogram" style="@($"background:{deck.BackgroundColor};")">@deck.Icon</div>
-                                            <div class="dashboard-deck-copy">
-                                                <h3>@deck.Name</h3>
-                                                <p>@deck.Summary</p>
-                                            </div>
-                                        </div>
-                                        <div class="dashboard-deck-meta">
-                                            <span>@deck.CardCount cards</span>
-                                            <span>@deck.DueCount due</span>
-                                        </div>
-                                        <div class="dashboard-deck-actions">
-                                            <button type="button" class="dashboard-secondary-button" @onclick="() => GoToDeck(deck.Id)">Open</button>
-                                            <button type="button" class="dashboard-primary-button" @onclick="() => GoToStudy(deck.Id)">Study</button>
-                                            <button type="button" class="dashboard-danger-button" @onclick="() => DeleteDeckAsync(deck.Id)">Delete</button>
-                                        </div>
-                                    </article>
-                                }
-                            </div>
-                        }
                     </section>
                 </div>
             </div>
@@ -221,9 +151,6 @@ else
     private List<DeckDashboardItem> FeaturedDecks { get; set; } = [];
     private List<DashboardStat> StatCards { get; set; } = [];
     private bool initialized;
-    private bool showCreateDeck;
-    private string newDeckName = "";
-    private string newDeckDescription = "";
     private string GreetingName { get; set; } = "learner";
     private int DueTodayCount { get; set; }
     private int ReviewStreakDays { get; set; }
@@ -298,43 +225,16 @@ else
 
         StatCards =
         [
-            new("🗂", "#DFE8FF", "My Decks", DeckCountLabel),
-            new("🕒", "#F1E3F5", "Due Today", $"{DueTodayCount} cards"),
-            new("🔥", "#E8E1FF", "Review Streak", $"{ReviewStreakDays} days"),
-            new("✔", "#DDEEFF", "Mastered", $"{MasteredCardsCount} cards")
+            new("\U0001F5C2", "#DFE8FF", "My Decks", DeckCountLabel),
+            new("\U0001F552", "#F1E3F5", "Due Today", $"{DueTodayCount} cards"),
+            new("\U0001F525", "#E8E1FF", "Review Streak", $"{ReviewStreakDays} days"),
+            new("\u2714", "#DDEEFF", "Mastered", $"{MasteredCardsCount} cards")
         ];
     }
 
-    private async Task CreateDeckAsync()
-    {
-        if (string.IsNullOrWhiteSpace(newDeckName))
-        {
-            return;
-        }
-
-        await Api.UpsertDeckAsync(new { Name = newDeckName, Description = newDeckDescription });
-        newDeckName = "";
-        newDeckDescription = "";
-        showCreateDeck = false;
-        await LoadDashboardAsync();
-    }
-
-    private async Task DeleteDeckAsync(Guid deckId)
-    {
-        await Api.DeleteDeckAsync(deckId);
-        await LoadDashboardAsync();
-    }
-
-    private void CloseCreateDeck()
-    {
-        showCreateDeck = false;
-        newDeckName = "";
-        newDeckDescription = "";
-    }
-
-    private void OpenProfile() => Nav.NavigateTo("/login");
+    private void OpenProfile() => Nav.NavigateTo("/profile");
+    private void GoToBrowseAllDecks() => Nav.NavigateTo(HasDecks ? "/browse-decks" : "/create-deck");
     private void GoToDeck(Guid id) => Nav.NavigateTo("/deck/" + id);
-    private void GoToStudy(Guid id) => Nav.NavigateTo("/study/" + id);
 
     private static DeckDashboardItem BuildDeckItem(
         LearningFlashCards.Core.Domain.Entities.Deck deck,

@@ -1,0 +1,144 @@
+@page "/browse-decks"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@inject ApiClient Api
+@inject UserSessionService Session
+@inject NavigationManager Nav
+
+<PageTitle>Browse Decks - LearningFlashCards</PageTitle>
+
+@if (!initialized)
+{
+    <div class="browse-loading">Loading decks...</div>
+}
+else
+{
+    <div class="browse-page">
+        <div class="browse-frame">
+            <section class="browse-shell">
+                <div class="browse-header">
+                    <div class="browse-title-group">
+                        <h1>Browse Decks</h1>
+                        <p>All your decks in one place.</p>
+                    </div>
+                    <button type="button" class="browse-secondary-button" @onclick="GoToCreateDeck">+ New Deck</button>
+                </div>
+
+                @if (decks.Count == 0)
+                {
+                    <div class="browse-empty-card">
+                        <h2>No decks yet.</h2>
+                        <p>Create your first deck to start adding cards and studying.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="browse-list">
+                        @foreach (var deck in decks)
+                        {
+                            <article class="browse-deck-card" @onclick="() => GoToDeck(deck.Id)">
+                                <div class="browse-deck-icon">@deck.Icon</div>
+
+                                <div class="browse-deck-copy">
+                                    <h2>@deck.Name</h2>
+                                    <p>@deck.Summary</p>
+                                    <div class="browse-deck-count">@deck.CardCount cards</div>
+                                </div>
+
+                                <div class="browse-deck-actions" @onclick:stopPropagation>
+                                    <button type="button" class="browse-secondary-button" @onclick="() => GoToEditDeck(deck.Id)">Edit</button>
+                                    <button type="button" class="browse-primary-button" @onclick="() => ConfirmDelete(deck)">Delete</button>
+                                </div>
+
+                                <div class="browse-deck-arrow">&gt;</div>
+                            </article>
+                        }
+                    </div>
+                }
+
+                @if (deckPendingDelete is not null)
+                {
+                    <div class="browse-modal-backdrop">
+                        <section class="browse-modal">
+                            <h2>Delete Deck</h2>
+                            <p>Delete <strong>@deckPendingDelete.Name</strong> and all its cards?</p>
+                            <div class="browse-modal-actions">
+                                <button type="button" class="browse-primary-button" @onclick="DeleteDeckConfirmedAsync">Delete</button>
+                                <button type="button" class="browse-secondary-button" @onclick="CancelDelete">Cancel</button>
+                            </div>
+                        </section>
+                    </div>
+                }
+            </section>
+        </div>
+    </div>
+}
+
+@code {
+    private List<DeckBrowseItem> decks = [];
+    private bool initialized;
+    private DeckBrowseItem? deckPendingDelete;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var ownerId = await Session.GetOwnerIdAsync();
+        if (!ownerId.HasValue)
+        {
+            Nav.NavigateTo("/login");
+            return;
+        }
+
+        await LoadDecksAsync();
+        initialized = true;
+    }
+
+    private async Task LoadDecksAsync()
+    {
+        var deckEntities = await Api.GetDecksAsync();
+        var cardTasks = deckEntities.Select(deck => Api.GetCardsAsync(deck.Id)).ToArray();
+        await Task.WhenAll(cardTasks);
+
+        decks = deckEntities
+            .Select((deck, index) =>
+            {
+                var cards = cardTasks[index].Result;
+                var summary = string.IsNullOrWhiteSpace(deck.Description) ? "Ready for another round" : deck.Description.Trim();
+                return new DeckBrowseItem(deck.Id, GetMonogram(deck.Name), deck.Name, summary, cards.Count);
+            })
+            .OrderBy(d => d.Name)
+            .ToList();
+    }
+
+    private void ConfirmDelete(DeckBrowseItem deck)
+    {
+        deckPendingDelete = deck;
+    }
+
+    private void CancelDelete()
+    {
+        deckPendingDelete = null;
+    }
+
+    private async Task DeleteDeckConfirmedAsync()
+    {
+        if (deckPendingDelete is null)
+        {
+            return;
+        }
+
+        await Api.DeleteDeckAsync(deckPendingDelete.Id);
+        deckPendingDelete = null;
+        await LoadDecksAsync();
+    }
+
+    private void GoToCreateDeck() => Nav.NavigateTo("/create-deck");
+    private void GoToDeck(Guid id) => Nav.NavigateTo("/deck/" + id);
+    private void GoToEditDeck(Guid id) => Nav.NavigateTo("/edit-deck/" + id);
+
+    private static string GetMonogram(string? name)
+    {
+        var c = name?.Trim().FirstOrDefault(static ch => char.IsLetterOrDigit(ch));
+        return c is null || c == default ? "D" : char.ToUpperInvariant(c.Value).ToString();
+    }
+
+    private sealed record DeckBrowseItem(Guid Id, string Icon, string Name, string Summary, int CardCount);
+}

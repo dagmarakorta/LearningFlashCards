@@ -20,6 +20,33 @@ public class ApiClient(HttpClient http, UserSessionService session)
         return await response.Content.ReadFromJsonAsync<UserProfile>(ct);
     }
 
+    // Login by email (no auth header needed)
+    public async Task<UserProfile?> GetProfileByEmailAsync(string email, CancellationToken ct = default)
+    {
+        var response = await http.GetAsync($"api/users/by-email/{Uri.EscapeDataString(email.ToLowerInvariant())}", ct);
+        if (response.StatusCode == System.Net.HttpStatusCode.NotFound) return null;
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<UserProfile>(ct);
+    }
+
+    public async Task<UserProfile?> UpdateProfileAsync(UserProfile profile, CancellationToken ct = default)
+    {
+        using var request = await BuildRequest(HttpMethod.Put, "api/users/me", ct);
+        request.Content = JsonContent.Create(profile);
+        var response = await http.SendAsync(request, ct);
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<UserProfile>(ct);
+    }
+
+    public async Task<Card?> GetCardAsync(Guid deckId, Guid cardId, CancellationToken ct = default)
+    {
+        using var request = await BuildRequest(HttpMethod.Get, $"api/decks/{deckId}/cards/{cardId}", ct);
+        var response = await http.SendAsync(request, ct);
+        if (response.StatusCode == System.Net.HttpStatusCode.NotFound) return null;
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<Card>(ct);
+    }
+
     public async Task<UserProfile?> GetProfileAsync(CancellationToken ct = default)
     {
         using var request = await BuildRequest(HttpMethod.Get, "api/users/me", ct);

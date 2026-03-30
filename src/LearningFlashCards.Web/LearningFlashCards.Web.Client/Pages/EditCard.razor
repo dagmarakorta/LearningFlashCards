@@ -1,0 +1,135 @@
+@page "/edit-card/{DeckId:guid}/{CardId:guid}"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@inject ApiClient Api
+@inject UserSessionService Session
+@inject NavigationManager Nav
+
+<PageTitle>Edit Card - LearningFlashCards</PageTitle>
+
+@if (!initialized)
+{
+    <div class="card-form-loading">Loading card...</div>
+}
+else
+{
+    <div class="card-form-page">
+        <div class="card-form-frame">
+            <section class="card-form-shell">
+                <div class="card-form-header">
+                    <div class="card-form-header-icon">@("\u270F")</div>
+                    <div class="card-form-header-copy">
+                        <h1>Edit Card</h1>
+                        <p>Update the content of this flashcard</p>
+                    </div>
+                </div>
+
+                <div class="card-form-divider"></div>
+
+                @if (error is not null)
+                {
+                    <div class="card-form-error">@error</div>
+                }
+
+                <section class="card-form-card">
+                    <div class="card-form-card-label">FRONT SIDE</div>
+                    <div class="card-form-input-shell card-form-textarea-shell">
+                        <textarea @bind="front" rows="6" placeholder="Front text (supports HTML)"></textarea>
+                    </div>
+                </section>
+
+                <section class="card-form-card">
+                    <div class="card-form-card-label">BACK SIDE</div>
+                    <div class="card-form-input-shell card-form-textarea-shell">
+                        <textarea @bind="back" rows="6" placeholder="Back text (supports HTML)"></textarea>
+                    </div>
+                </section>
+
+                <div class="card-form-actions">
+                    <button type="button" class="card-form-primary-button" @onclick="SaveAsync" disabled="@isSaving">
+                        @(isSaving ? "Saving..." : "Save Changes")
+                    </button>
+                    <button type="button" class="card-form-secondary-button" @onclick="Cancel">Cancel</button>
+                </div>
+            </section>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public Guid DeckId { get; set; }
+    [Parameter] public Guid CardId { get; set; }
+
+    private bool initialized;
+    private bool isSaving;
+    private string? error;
+    private string front = "";
+    private string back = "";
+    private LearningFlashCards.Core.Domain.Entities.Card? card;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var ownerId = await Session.GetOwnerIdAsync();
+        if (!ownerId.HasValue)
+        {
+            Nav.NavigateTo("/login");
+            return;
+        }
+
+        card = await Api.GetCardAsync(DeckId, CardId);
+        if (card is null)
+        {
+            Nav.NavigateTo("/deck/" + DeckId);
+            return;
+        }
+
+        front = card.Front;
+        back = card.Back;
+        initialized = true;
+    }
+
+    private async Task SaveAsync()
+    {
+        error = null;
+        if (string.IsNullOrWhiteSpace(front) || string.IsNullOrWhiteSpace(back))
+        {
+            error = "Please enter front and back text.";
+            return;
+        }
+
+        if (card is null)
+        {
+            return;
+        }
+
+        isSaving = true;
+        try
+        {
+            await Api.UpsertCardAsync(DeckId, new
+            {
+                Id = CardId,
+                Front = front.Trim(),
+                Back = back.Trim(),
+                Notes = card.Notes,
+                State = new
+                {
+                    DueAt = card.State.DueAt,
+                    IntervalDays = card.State.IntervalDays,
+                    EaseFactor = card.State.EaseFactor,
+                    Streak = card.State.Streak,
+                    Lapses = card.State.Lapses
+                }
+            });
+            Nav.NavigateTo("/deck/" + DeckId);
+        }
+        catch (Exception ex)
+        {
+            error = $"Failed to save: {ex.Message}";
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void Cancel() => Nav.NavigateTo("/deck/" + DeckId);
+}

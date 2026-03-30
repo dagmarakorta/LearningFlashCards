@@ -1,0 +1,137 @@
+@page "/profile"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@inject ApiClient Api
+@inject UserSessionService Session
+@inject NavigationManager Nav
+
+<PageTitle>Profile – LearningFlashCards</PageTitle>
+
+<div class="page-container">
+    @if (!initialized)
+    {
+        <div class="loading-spinner">Loading...</div>
+    }
+    else
+    {
+        <div class="form-page-header">
+            <a href="/" class="back-link">← Dashboard</a>
+            <h1>Profile</h1>
+        </div>
+
+        @if (successMessage is not null)
+        {
+            <div class="alert alert-success">@successMessage</div>
+        }
+
+        @if (error is not null)
+        {
+            <div class="alert alert-danger">@error</div>
+        }
+
+        <div class="form-card">
+            <div class="form-group">
+                <label>Name</label>
+                <input class="form-control" @bind="displayName" placeholder="Your name" />
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input class="form-control" value="@email" readonly disabled />
+                <small class="text-muted">
+                    <a href="/change-email">Change email</a>
+                </small>
+            </div>
+
+            <div class="form-actions mt-4">
+                <button class="btn btn-primary" @onclick="SaveAsync" disabled="@isSaving">
+                    @(isSaving ? "Saving..." : "Save")
+                </button>
+                <button class="btn btn-outline-danger" @onclick="LogoutAsync">Logout</button>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private bool initialized;
+    private bool isSaving;
+    private string? error;
+    private string? successMessage;
+
+    private string displayName = "";
+    private string email = "";
+    private LearningFlashCards.Core.Domain.Entities.UserProfile? profile;
+
+    private static readonly System.Text.RegularExpressions.Regex NamePattern =
+        new(@"^[A-Za-z][A-Za-z' -]*$", System.Text.RegularExpressions.RegexOptions.Compiled);
+
+    protected override async Task OnInitializedAsync()
+    {
+        var ownerId = await Session.GetOwnerIdAsync();
+        if (!ownerId.HasValue)
+        {
+            Nav.NavigateTo("/login");
+            return;
+        }
+
+        profile = await Api.GetProfileAsync();
+        if (profile is null)
+        {
+            await Session.ClearAsync();
+            Nav.NavigateTo("/login");
+            return;
+        }
+
+        displayName = profile.DisplayName ?? string.Empty;
+        email = profile.Email ?? string.Empty;
+        initialized = true;
+    }
+
+    private async Task SaveAsync()
+    {
+        error = null;
+        successMessage = null;
+        var name = displayName.Trim();
+
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            error = "Please enter your name.";
+            return;
+        }
+
+        if (name.Length < 3)
+        {
+            error = "Name must be at least 3 characters.";
+            return;
+        }
+
+        if (!NamePattern.IsMatch(name))
+        {
+            error = "Use letters, spaces, apostrophes, or hyphens only.";
+            return;
+        }
+
+        if (profile is null) return;
+
+        isSaving = true;
+        try
+        {
+            profile.DisplayName = name;
+            await Api.UpdateProfileAsync(profile);
+            successMessage = "Profile updated.";
+        }
+        catch (Exception ex)
+        {
+            error = $"Failed to save: {ex.Message}";
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task LogoutAsync()
+    {
+        await Session.ClearAsync();
+        Nav.NavigateTo("/login");
+    }
+}

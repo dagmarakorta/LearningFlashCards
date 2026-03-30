@@ -32,10 +32,19 @@ public class DeckRepository : IDeckRepository
 
     public async Task UpsertAsync(Deck deck, CancellationToken cancellationToken)
     {
-        var exists = await _db.Decks.AsNoTracking().AnyAsync(d => d.Id == deck.Id, cancellationToken);
-        if (exists)
+        var existing = await _db.Decks.FirstOrDefaultAsync(d => d.Id == deck.Id, cancellationToken);
+        if (existing is not null)
         {
-            _db.Decks.Update(deck);
+            existing.Name = deck.Name;
+            existing.Description = deck.Description;
+            existing.OwnerId = deck.OwnerId;
+            existing.ModifiedAt = deck.ModifiedAt;
+            existing.DeletedAt = deck.DeletedAt;
+
+            existing.StudySettings.DailyReviewLimit = deck.StudySettings.DailyReviewLimit;
+            existing.StudySettings.EasyMinIntervalDays = deck.StudySettings.EasyMinIntervalDays;
+            existing.StudySettings.MaxIntervalDays = deck.StudySettings.MaxIntervalDays;
+            existing.StudySettings.RepeatInSession = deck.StudySettings.RepeatInSession;
         }
         else
         {

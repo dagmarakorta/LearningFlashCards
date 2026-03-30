@@ -3,100 +3,91 @@
 @inject ApiClient Api
 @inject UserSessionService Session
 @inject NavigationManager Nav
+@using Microsoft.AspNetCore.Components
 @using LearningFlashCards.Core.Domain.Entities
 @using LearningFlashCards.Core.Domain.Study
 
-<PageTitle>Nauka – LearningFlashCards</PageTitle>
+<PageTitle>Study - LearningFlashCards</PageTitle>
 
 @if (!initialized)
 {
-    <div class="loading-spinner">Ładowanie...</div>
+    <div class="study-dashboard-loading">Loading study deck...</div>
+}
+else if (!hasCards)
+{
+    <div class="study-dashboard-loading">No cards due yet.</div>
 }
 else if (sessionDone)
 {
-    <div class="study-done">
-        <div class="study-done-card">
-            <div class="done-icon">🎉</div>
-            <h2>Sesja zakończona!</h2>
-            <p>Powtórzono <strong>@reviewedCount</strong> kart.</p>
-            <div class="d-flex gap-3 justify-content-center mt-3">
-                <a href="/" class="btn btn-secondary">Powrót do talii</a>
-                <button class="btn btn-primary" @onclick="RestartSession">Ucz się dalej</button>
-            </div>
-        </div>
-    </div>
-}
-else if (currentCard is null)
-{
-    <div class="study-done">
-        <div class="study-done-card">
-            <h2>Brak kart do powtórzenia</h2>
-            <p>Wszystkie karty są aktualne. Wróć jutro!</p>
-            <a href="/" class="btn btn-primary">Powrót</a>
-        </div>
-    </div>
+    <div class="study-dashboard-loading">Session complete. Returning to deck...</div>
 }
 else
 {
-    <div class="study-header">
-        <a href="/deck/@DeckId" class="back-link">← @deckName</a>
-        <span class="progress-info">@reviewedCount / @totalQueue kart</span>
-    </div>
+    <div class="study-dashboard-page">
+        <div class="study-dashboard-frame">
+            <section class="study-dashboard-shell">
+                <div class="study-dashboard-topbar">
+                    <div class="study-dashboard-topbar-copy">
+                        <h1>@deckName</h1>
+                        <p>@progressText</p>
+                    </div>
+                    <div class="study-dashboard-chip">Study</div>
+                </div>
 
-    <div class="progress mb-3">
-        <div class="progress-bar" style="width: @(totalQueue > 0 ? (reviewedCount * 100 / totalQueue) : 0)%"></div>
-    </div>
+                <div class="study-dashboard-card-wrap">
+                    <div class="study-flashcard @(showBack ? "flipped" : "")" @onclick="OnFlipTapped">
+                        <div class="study-flashcard-inner">
+                            <div class="study-flashcard-front">
+                                <div class="study-flashcard-content">@((MarkupString)currentCardFront)</div>
+                                <div class="study-flip-hint">Tap to flip</div>
+                            </div>
+                            <div class="study-flashcard-back">
+                                <div class="study-flashcard-content">@((MarkupString)currentCardBack)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-    <div class="flashcard @(showBack ? "flipped" : "")" @onclick="ShowBack">
-        <div class="flashcard-inner">
-            <div class="flashcard-front">
-                <div class="flashcard-content">@currentCard.Front</div>
-                <div class="flip-hint">Kliknij, aby zobaczyć odpowiedź</div>
-            </div>
-            <div class="flashcard-back">
-                <div class="flashcard-content">@currentCard.Back</div>
-                @if (!string.IsNullOrEmpty(currentCard.Notes))
+                @if (!showBack)
                 {
-                    <div class="card-notes">@currentCard.Notes</div>
+                    <div class="study-dashboard-actions">
+                        <button type="button" class="study-dashboard-primary-button" @onclick="OnShowAnswer">Show Answer</button>
+                    </div>
                 }
-            </div>
+                else
+                {
+                    <div class="study-rating-grid">
+                        <button type="button" class="study-rating-button study-rating-again" @onclick="() => RateAsync(CardReviewRating.Again)">Again</button>
+                        <button type="button" class="study-rating-button study-rating-hard" @onclick="() => RateAsync(CardReviewRating.Hard)">Hard</button>
+                        <button type="button" class="study-rating-button study-rating-medium" @onclick="() => RateAsync(CardReviewRating.Medium)">Medium</button>
+                        <button type="button" class="study-rating-button study-rating-easy" @onclick="() => RateAsync(CardReviewRating.Easy)">Easy</button>
+                    </div>
+                }
+            </section>
         </div>
     </div>
-
-    @if (showBack)
-    {
-        <div class="rating-buttons">
-            <button class="btn rating-btn rating-again" @onclick="() => RateAsync(CardReviewRating.Again)">
-                <span class="rating-emoji">❌</span>
-                <span>Jeszcze raz</span>
-            </button>
-            <button class="btn rating-btn rating-hard" @onclick="() => RateAsync(CardReviewRating.Hard)">
-                <span class="rating-emoji">😓</span>
-                <span>Trudne</span>
-            </button>
-            <button class="btn rating-btn rating-medium" @onclick="() => RateAsync(CardReviewRating.Medium)">
-                <span class="rating-emoji">🙂</span>
-                <span>Dobrze</span>
-            </button>
-            <button class="btn rating-btn rating-easy" @onclick="() => RateAsync(CardReviewRating.Easy)">
-                <span class="rating-emoji">⭐</span>
-                <span>Łatwe</span>
-            </button>
-        </div>
-    }
 }
 
 @code {
     [Parameter] public Guid DeckId { get; set; }
 
-    private string deckName = "";
-    private Queue<Card> queue = new();
-    private Card? currentCard;
+    private const int MaxTrackedSegmentSeconds = 120;
+    private const int PersistThresholdSeconds = 15;
+
+    private string deckName = "Study";
+    private readonly List<Card> cards = new();
+    private int currentIndex;
     private bool showBack;
     private bool initialized;
     private bool sessionDone;
-    private int reviewedCount;
-    private int totalQueue;
+    private bool hasCards;
+    private DeckStudySettings studySettings = new();
+    private DateTimeOffset? studySegmentStartedAt;
+    private int pendingTrackedStudySeconds;
+
+    private string currentCardFront = string.Empty;
+    private string currentCardBack = string.Empty;
+    private string progressText = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -108,66 +99,184 @@ else
         }
 
         var deck = await Api.GetDeckAsync(DeckId);
-        deckName = deck?.Name ?? "Talia";
+        if (deck is null)
+        {
+            Nav.NavigateTo("/");
+            return;
+        }
 
-        var cards = await Api.GetCardsAsync(DeckId);
+        deckName = deck.Name;
+        studySettings = deck.StudySettings ?? new DeckStudySettings();
+
+        var allCards = await Api.GetCardsAsync(DeckId);
         var now = DateTimeOffset.UtcNow;
-        var due = cards.Where(c => c.State.DueAt <= now).OrderBy(c => c.State.DueAt).ToList();
+        var dailyLimit = Math.Max(0, studySettings.DailyReviewLimit);
+        var dueCards = StudyQueueBuilder.SelectDue(allCards, now, dailyLimit);
 
-        queue = new Queue<Card>(due);
-        totalQueue = due.Count;
-        initialized = true;
-
-        NextCard();
-    }
-
-    private void NextCard()
-    {
+        cards.Clear();
+        cards.AddRange(dueCards);
+        currentIndex = 0;
         showBack = false;
-        currentCard = queue.Count > 0 ? queue.Dequeue() : null;
+        pendingTrackedStudySeconds = 0;
+        studySegmentStartedAt = cards.Count > 0 ? DateTimeOffset.UtcNow : null;
 
-        if (currentCard is null && reviewedCount > 0)
-            sessionDone = true;
+        initialized = true;
+        UpdateCardDisplay();
     }
 
-    private void ShowBack()
+    private void UpdateCardDisplay()
     {
-        if (!showBack)
-            showBack = true;
+        hasCards = cards.Count > 0;
+        if (!hasCards)
+        {
+            currentCardFront = string.Empty;
+            currentCardBack = string.Empty;
+            progressText = string.Empty;
+        }
+        else
+        {
+            var card = cards[currentIndex];
+            currentCardFront = card.Front;
+            currentCardBack = card.Back;
+            progressText = $"{currentIndex + 1} / {cards.Count}";
+        }
+    }
+
+    private void OnFlipTapped()
+    {
+        if (cards.Count == 0)
+        {
+            return;
+        }
+
+        TrackStudySegment();
+        showBack = !showBack;
+        UpdateCardDisplay();
+    }
+
+    private void OnShowAnswer()
+    {
+        if (cards.Count == 0)
+        {
+            return;
+        }
+
+        TrackStudySegment();
+        showBack = true;
+        UpdateCardDisplay();
     }
 
     private async Task RateAsync(CardReviewRating rating)
     {
-        if (currentCard is null) return;
+        if (cards.Count == 0)
+        {
+            return;
+        }
 
-        SpacedRepetitionScheduler.ApplyRating(currentCard.State, rating, DateTimeOffset.UtcNow);
+        TrackStudySegment();
+        var card = cards[currentIndex];
+        var now = DateTimeOffset.UtcNow;
 
-        if (rating == CardReviewRating.Again)
-            queue.Enqueue(currentCard);
+        SpacedRepetitionScheduler.ApplyRating(card.State, rating, now, studySettings);
+        card.ModifiedAt = now;
 
         await Api.UpsertCardAsync(DeckId, new
         {
-            Id = currentCard.Id,
-            Front = currentCard.Front,
-            Back = currentCard.Back,
-            Notes = currentCard.Notes,
+            Id = card.Id,
+            Front = card.Front,
+            Back = card.Back,
+            Notes = card.Notes,
             State = new
             {
-                DueAt = currentCard.State.DueAt,
-                IntervalDays = currentCard.State.IntervalDays,
-                EaseFactor = currentCard.State.EaseFactor,
-                Streak = currentCard.State.Streak,
-                Lapses = currentCard.State.Lapses
+                DueAt = card.State.DueAt,
+                IntervalDays = card.State.IntervalDays,
+                EaseFactor = card.State.EaseFactor,
+                Streak = card.State.Streak,
+                Lapses = card.State.Lapses
             }
         });
 
-        reviewedCount++;
-        NextCard();
+        var repeatInSession = StudySessionRules.ShouldRepeatInSession(rating, studySettings);
+
+        cards.RemoveAt(currentIndex);
+        if (repeatInSession)
+        {
+            cards.Add(card);
+        }
+
+        if (cards.Count == 0)
+        {
+            await PersistTrackedStudyTimeAsync(force: true);
+            sessionDone = true;
+            Nav.NavigateTo($"/deck/{DeckId}?studyDone=1", forceLoad: false);
+            return;
+        }
+
+        if (currentIndex >= cards.Count)
+        {
+            currentIndex = 0;
+        }
+
+        showBack = false;
+        studySegmentStartedAt = DateTimeOffset.UtcNow;
+        await PersistTrackedStudyTimeAsync(force: false);
+        UpdateCardDisplay();
     }
 
-    private void RestartSession()
+    private void TrackStudySegment()
     {
-        sessionDone = false;
-        reviewedCount = 0;
+        if (studySegmentStartedAt is null)
+        {
+            studySegmentStartedAt = DateTimeOffset.UtcNow;
+            return;
+        }
+
+        var elapsed = DateTimeOffset.UtcNow - studySegmentStartedAt.Value;
+        var trackedSeconds = (int)Math.Floor(Math.Min(elapsed.TotalSeconds, MaxTrackedSegmentSeconds));
+        if (trackedSeconds > 0)
+        {
+            pendingTrackedStudySeconds += trackedSeconds;
+        }
+
+        studySegmentStartedAt = DateTimeOffset.UtcNow;
+    }
+
+    private async Task PersistTrackedStudyTimeAsync(bool force)
+    {
+        if (pendingTrackedStudySeconds <= 0)
+        {
+            return;
+        }
+
+        if (!force && pendingTrackedStudySeconds < PersistThresholdSeconds)
+        {
+            return;
+        }
+
+        var ownerId = await Session.GetOwnerIdAsync();
+        if (!ownerId.HasValue)
+        {
+            pendingTrackedStudySeconds = 0;
+            return;
+        }
+
+        var profile = await Api.GetProfileAsync();
+        if (profile is null)
+        {
+            pendingTrackedStudySeconds = 0;
+            return;
+        }
+
+        var now = DateTimeOffset.Now;
+        if (profile.StudySecondsTrackedAt?.LocalDateTime.Date != now.LocalDateTime.Date)
+        {
+            profile.StudySecondsToday = 0;
+        }
+
+        profile.StudySecondsToday += pendingTrackedStudySeconds;
+        profile.StudySecondsTrackedAt = now;
+        await Api.UpdateProfileAsync(profile);
+
+        pendingTrackedStudySeconds = 0;
     }
 }
