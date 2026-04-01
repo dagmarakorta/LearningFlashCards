@@ -103,10 +103,16 @@ else
                             <article class="deck-detail-card">
                                 <div class="deck-detail-card-content">
                                     <div class="deck-detail-card-side">
-                                        <div class="deck-detail-card-text">@((MarkupString)card.Front)</div>
+                                        <div class="deck-detail-card-side-label">Front</div>
+                                        <div class="deck-detail-card-side-surface">
+                                            <div class="deck-detail-card-text">@((MarkupString)card.Front)</div>
+                                        </div>
                                     </div>
                                     <div class="deck-detail-card-side">
-                                        <div class="deck-detail-card-text">@((MarkupString)card.Back)</div>
+                                        <div class="deck-detail-card-side-label">Back</div>
+                                        <div class="deck-detail-card-side-surface">
+                                            <div class="deck-detail-card-text">@((MarkupString)card.Back)</div>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="deck-detail-card-actions">
